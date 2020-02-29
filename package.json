@@ -25,11 +25,14 @@
     "@nestjs/passport": "^6.2.0",
     "@nestjs/platform-express": "^6.10.14",
     "@nestjs/platform-fastify": "^6.11.8",
+    "@nestjs/typeorm": "^6.3.3",
+    "mysql": "^2.18.1",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
-    "rxjs": "^6.5.4"
+    "rxjs": "^6.5.4",
+    "typeorm": "^0.2.24"
   },
   "devDependencies": {
     "@nestjs/cli": "^6.13.2",
