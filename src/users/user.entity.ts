@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
 } from 'typeorm'
+import { Exclude } from 'class-transformer'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -26,6 +27,7 @@ export class User extends BaseEntity {
   @Column()
   patronymic: string
 
+  @Exclude()
   @Column()
   password: string
 
