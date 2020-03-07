@@ -4,8 +4,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToOne,
 } from 'typeorm'
 import { Exclude } from 'class-transformer'
+import { Token } from '../auth/token.entity'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -45,4 +47,10 @@ export class User extends BaseEntity {
 
   @CreateDateColumn()
   createAt: Date
+
+  @OneToOne(
+    () => Token,
+    token => token.user,
+  )
+  tokens: Token[]
 }
