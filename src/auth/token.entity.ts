@@ -2,12 +2,14 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
 
+@Entity('tokens')
 export class Token extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
