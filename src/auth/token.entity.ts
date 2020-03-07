@@ -3,9 +3,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Generated,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn, UpdateDateColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
 
@@ -15,21 +16,22 @@ export class Token extends BaseEntity {
   id: number
 
   @Column()
-  value: string
+  @Generated('uuid')
+  readonly value: string
 
-  @Column()
+  @Column({ default: true })
   active: boolean
-
-  @Column()
-  validUntil: Date
-
-  @CreateDateColumn()
-  createAt: Date
 
   @ManyToOne(
     () => User,
     user => user.tokens,
   )
   @JoinColumn()
-  user: User[]
+  readonly user: User
+
+  @CreateDateColumn()
+  createAt: Date
+
+  @UpdateDateColumn()
+  usedAt: Date
 }
