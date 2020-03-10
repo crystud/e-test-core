@@ -8,8 +8,10 @@ import {
 import { RegisterUserDto } from './dto/registerUser.dto'
 import { UsersService } from './users.service'
 import { AuthService } from '../auth/auth.service'
-import { TokensDto } from '../auth/dto/tokens.dto'
+import { TokensInterface } from '../auth/interfaces/tokens.interface'
+import { ApiTags } from '@nestjs/swagger'
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
@@ -19,7 +21,9 @@ export class UsersController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('register')
-  async register(@Body() registerUserDto: RegisterUserDto): Promise<TokensDto> {
+  async register(
+    @Body() registerUserDto: RegisterUserDto,
+  ): Promise<TokensInterface> {
     const user = await this.usersService.createUser(registerUserDto)
 
     return await this.authService.createTokens(user)

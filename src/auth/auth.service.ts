@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { TokensDto } from './dto/tokens.dto'
+import { TokensInterface } from './interfaces/tokens.interface'
 import { User } from '../users/user.entity'
 import { JwtService } from '@nestjs/jwt'
 import { Token } from './token.entity'
+import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,32 @@ export class AuthService {
     })
   }
 
-  async createTokens(user: User): Promise<TokensDto> {
+  async refresh(token: string): Promise<TokensInterface> {
+    const refreshToken = await Token.findOne({
+      where: {
+        value: token,
+        active: true,
+      },
+      relations: ['user'],
+    })
+
+    if (!refreshToken) {
+      throw new BadRequestExceptionError({
+        property: 'token',
+        value: token,
+        constraints: {
+          isNotExist: 'token is incorrect',
+        },
+      })
+    }
+
+    refreshToken.active = false
+    await refreshToken.save()
+
+    return await this.createTokens(refreshToken.user)
+  }
+
+  async createTokens(user: User): Promise<TokensInterface> {
     const token = await this.generateJWT(user)
 
     const refreshToken = await Token.create({

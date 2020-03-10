@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { User } from './user.entity'
 import { hash } from 'bcryptjs'
 import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
+import { classToClass } from 'class-transformer'
 
 @Injectable()
 export class UsersService {
@@ -38,6 +39,6 @@ export class UsersService {
       email,
     }).save()
 
-    return user
+    return classToClass<User>(user)
   }
 }
