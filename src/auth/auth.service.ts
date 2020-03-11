@@ -4,6 +4,7 @@ import { User } from '../users/user.entity'
 import { JwtService } from '@nestjs/jwt'
 import { Token } from './token.entity'
 import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
+import { classToClass } from 'class-transformer'
 
 @Injectable()
 export class AuthService {
@@ -37,7 +38,9 @@ export class AuthService {
     refreshToken.active = false
     await refreshToken.save()
 
-    return await this.createTokens(refreshToken.user)
+    const user = classToClass(refreshToken.user)
+
+    return await this.createTokens(user)
   }
 
   async createTokens(user: User): Promise<TokensInterface> {

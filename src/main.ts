@@ -16,6 +16,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe())
 
   const option = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('Crystud E-Test')
     .setDescription('Virtual testing environment')
     .setVersion('1.0')
