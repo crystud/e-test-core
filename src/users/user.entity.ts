@@ -5,9 +5,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm'
 import { Exclude } from 'class-transformer'
 import { Token } from '../auth/token.entity'
+import { College } from '../colleges/college.entity'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -53,4 +55,10 @@ export class User extends BaseEntity {
     token => token.user,
   )
   tokens: Token[]
+
+  @OneToMany(
+    () => College,
+    college => college.creator,
+  )
+  ownColleges: College[]
 }
