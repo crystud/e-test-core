@@ -5,10 +5,41 @@ import { JwtService } from '@nestjs/jwt'
 import { Token } from './token.entity'
 import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
+import { compare } from 'bcryptjs'
 
 @Injectable()
 export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
+
+  async login(email: string, password: string): Promise<TokensInterface> {
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    })
+
+    if (!user) {
+      throw new BadRequestExceptionError({
+        property: 'email',
+        value: email,
+        constraints: {
+          isNotExist: 'There`s not user with this email',
+        },
+      })
+    }
+
+    if (await compare(password, user.password)) {
+      throw new BadRequestExceptionError({
+        property: 'password',
+        value: password,
+        constraints: {
+          isNotExist: 'password is incorrect',
+        },
+      })
+    }
+
+    return await this.createTokens(classToClass(user))
+  }
 
   private async generateJWT(user: User): Promise<string> {
     return this.jwtService.signAsync({

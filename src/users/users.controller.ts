@@ -20,7 +20,7 @@ export class UsersController {
   ) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
-  @Post('register')
+  @Post()
   async register(
     @Body() registerUserDto: RegisterUserDto,
   ): Promise<TokensInterface> {

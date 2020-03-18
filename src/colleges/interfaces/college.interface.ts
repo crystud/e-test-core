@@ -4,4 +4,5 @@ export interface CollegeInterface {
   address: string
   site: string
   creator: number
+  EDBO?: number
 }
