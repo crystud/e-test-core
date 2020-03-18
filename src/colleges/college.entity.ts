@@ -27,6 +27,9 @@ export class College extends BaseEntity {
   @Column({ unique: true })
   site: string
 
+  @Column({ nullable: true })
+  EDBO?: number
+
   @ManyToOne(
     () => User,
     user => user.ownColleges,

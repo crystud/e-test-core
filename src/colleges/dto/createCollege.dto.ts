@@ -17,4 +17,8 @@ export class CreateCollegeDto {
   @ApiProperty()
   @IsUrl()
   site: string
+
+  @ApiProperty()
+  @IsNotEmpty()
+  EDBO: number
 }
