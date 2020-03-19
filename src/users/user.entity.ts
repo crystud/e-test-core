@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   OneToOne,
   OneToMany,
+  ManyToMany,
 } from 'typeorm'
 import { Exclude } from 'class-transformer'
 import { Token } from '../auth/token.entity'
@@ -55,6 +56,12 @@ export class User extends BaseEntity {
     token => token.user,
   )
   tokens: Token[]
+
+  @ManyToMany(
+    () => College,
+    college => college.editors,
+  )
+  editableColleges: College[]
 
   @OneToMany(
     () => College,

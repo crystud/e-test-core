@@ -2,6 +2,8 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
@@ -35,4 +37,11 @@ export class College extends BaseEntity {
     user => user.ownColleges,
   )
   creator: User
+
+  @ManyToMany(
+    () => User,
+    user => user.editableColleges,
+  )
+  @JoinTable()
+  editors: User[]
 }
