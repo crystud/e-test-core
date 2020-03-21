@@ -5,4 +5,5 @@ export interface CollegeInterface {
   site: string
   creator: number
   EDBO?: number
+  editors: number[]
 }

@@ -14,5 +14,8 @@ export class FilterCollegeDto {
   EDBO?: number
 
   @ApiProperty({ required: false, default: true })
-  confirmed = true
+  confirmed?: boolean
+
+  @ApiProperty({ required: false })
+  creator?: number
 }

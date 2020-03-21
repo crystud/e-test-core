@@ -54,4 +54,13 @@ export class CollegesController {
   ): Promise<CollegeInterface[]> {
     return await this.collegesService.findAll(filterCollegeDto)
   }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('own')
+  async findOwn(@Request() req): Promise<CollegeInterface[]> {
+    return await this.collegesService.findOwn(req.user)
+  }
 }
