@@ -6,6 +6,10 @@ import { classToClass } from 'class-transformer'
 
 @Injectable()
 export class UsersService {
+  async findOne(id: number): Promise<User> {
+    return await User.findOne(id)
+  }
+
   async createUser({
     firstName,
     lastName,
