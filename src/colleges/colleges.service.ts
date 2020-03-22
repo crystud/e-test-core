@@ -9,7 +9,7 @@ import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
 
 @Injectable()
 export class CollegesService {
-  private format(college: College): CollegeInterface {
+  public format(college: College): CollegeInterface {
     return {
       email: college.email,
       address: college.address,
@@ -21,19 +21,23 @@ export class CollegesService {
     }
   }
 
+  public formatAll(colleges: College[]): CollegeInterface[] {
+    return colleges.map<CollegeInterface>(college => {
+      return this.format(college)
+    })
+  }
+
   async create(
     createCollegeDto: CreateCollegeDto,
     user: User,
-  ): Promise<CollegeInterface> {
-    const college = await College.create({
+  ): Promise<College> {
+    return await College.create({
       ...createCollegeDto,
       creator: user,
     }).save()
-
-    return this.format(college)
   }
 
-  async findOne(id: number): Promise<CollegeInterface> {
+  async findOne(id: number): Promise<College> {
     const college = await College.findOne({
       where: {
         id,
@@ -51,13 +55,13 @@ export class CollegesService {
       })
     }
 
-    return this.format(college)
+    return college
   }
 
   async findAll(
     filterCollegeDto: FilterCollegeDto,
     like = true,
-  ): Promise<CollegeInterface[]> {
+  ): Promise<College[]> {
     const filter: { [k: string]: any } = {}
 
     for (const filterItem in filterCollegeDto) {
@@ -68,19 +72,15 @@ export class CollegesService {
       }
     }
 
-    const colleges = await College.find({
+    return await College.find({
       where: {
         ...filter,
       },
       relations: ['creator', 'editors'],
     })
-
-    return colleges.map<CollegeInterface>(college => {
-      return this.format(college)
-    })
   }
 
-  async findOwn(user: User): Promise<CollegeInterface[]> {
+  async findOwn(user: User): Promise<College[]> {
     return await this.findAll(
       {
         creator: user.id,
@@ -89,7 +89,7 @@ export class CollegesService {
     )
   }
 
-  async confirm(id: number): Promise<CollegeInterface> {
+  async confirm(id: number): Promise<College> {
     await College.update(
       {
         id,
@@ -100,5 +100,13 @@ export class CollegesService {
     )
 
     return await this.findOne(id)
+  }
+
+  async addEditor(college: College, user: User): Promise<College> {
+    college.editors.push(user)
+
+    await college.save()
+
+    return this.findOne(college.id)
   }
 }
