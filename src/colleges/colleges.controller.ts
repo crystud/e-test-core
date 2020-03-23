@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CreateCollegeDto } from './dto/createCollege.dto'
-import { CollegeInterface } from './interfaces/college.interface'
 import { CollegesService } from './colleges.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
@@ -40,7 +39,12 @@ export class CollegesController {
     @Body() createCollegeDto: CreateCollegeDto,
     @Request() req,
   ): Promise<College> {
-    return await this.collegesService.create(createCollegeDto, req.user)
+    const college = await this.collegesService.create(
+      createCollegeDto,
+      req.user,
+    )
+
+    return await this.collegesService.addEditor(college, req.user)
   }
 
   @ApiBearerAuth()

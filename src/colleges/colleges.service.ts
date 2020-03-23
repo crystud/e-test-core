@@ -1,32 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { CreateCollegeDto } from './dto/createCollege.dto'
 import { College } from './college.entity'
-import { CollegeInterface } from './interfaces/college.interface'
 import { User } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
-import { Like, QueryFailedError } from 'typeorm'
+import { Like } from 'typeorm'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 
 @Injectable()
 export class CollegesService {
-  public format(college: College): CollegeInterface {
-    return {
-      email: college.email,
-      address: college.address,
-      name: college.name,
-      EDBO: college.EDBO,
-      site: college.site,
-      creator: college.creator.id,
-      editors: college.editors.map<number>(editor => editor.id),
-    }
-  }
-
-  public formatAll(colleges: College[]): CollegeInterface[] {
-    return colleges.map<CollegeInterface>(college => {
-      return this.format(college)
-    })
-  }
-
   async create(
     createCollegeDto: CreateCollegeDto,
     user: User,
