@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { User } from './user.entity'
 import { hash } from 'bcryptjs'
-import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
+import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
 
 @Injectable()

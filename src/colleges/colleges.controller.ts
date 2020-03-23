@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
@@ -7,6 +8,7 @@ import {
   Query,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { CreateCollegeDto } from './dto/createCollege.dto'
@@ -18,6 +20,7 @@ import { UserRolesType } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
 import { RolesGuard } from '../auth/roles.guard'
 import { UsersService } from '../users/users.service'
+import { College } from './college.entity'
 
 @ApiTags('colleges')
 @Controller('colleges')
@@ -28,6 +31,7 @@ export class CollegesController {
   ) {}
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -35,51 +39,54 @@ export class CollegesController {
   async create(
     @Body() createCollegeDto: CreateCollegeDto,
     @Request() req,
-  ): Promise<CollegeInterface> {
-    const college = await this.collegesService.create(
-      createCollegeDto,
-      req.user,
-    )
-
-    return this.collegesService.format(college)
+  ): Promise<College> {
+    return await this.collegesService.create(createCollegeDto, req.user)
   }
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post('confirm/:id')
-  async confirm(@Param('id') id: number): Promise<CollegeInterface> {
-    const college = await this.collegesService.confirm(id)
-
-    return this.collegesService.format(college)
+  async confirm(@Param('id') id: number): Promise<College> {
+    return await this.collegesService.confirm(id)
   }
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @Query() filterCollegeDto: FilterCollegeDto,
-  ): Promise<CollegeInterface[]> {
-    const colleges = await this.collegesService.findAll(filterCollegeDto)
-
-    return this.collegesService.formatAll(colleges)
+  ): Promise<College[]> {
+    return await this.collegesService.findAll(filterCollegeDto)
   }
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get('own')
-  async findOwn(@Request() req): Promise<CollegeInterface[]> {
-    const colleges = await this.collegesService.findOwn(req.user)
-
-    return this.collegesService.formatAll(colleges)
+  async findOwn(@Request() req): Promise<College[]> {
+    return await this.collegesService.findOwn(req.user)
   }
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('editable')
+  async findEditable(@Request() req): Promise<College[]> {
+    return await this.collegesService.findEditable(req.user)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -87,12 +94,10 @@ export class CollegesController {
   async addEditor(
     @Param('id') collegeId: number,
     @Param('id') userId: number,
-  ): Promise<CollegeInterface> {
-    let college = await this.collegesService.findOne(collegeId)
+  ): Promise<College> {
+    const college = await this.collegesService.findOne(collegeId)
     const user = await this.usersService.findOne(userId)
 
-    college = await this.collegesService.addEditor(college, user)
-
-    return this.collegesService.format(college)
+    return await this.collegesService.addEditor(college, user)
   }
 }

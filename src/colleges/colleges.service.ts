@@ -4,8 +4,8 @@ import { College } from './college.entity'
 import { CollegeInterface } from './interfaces/college.interface'
 import { User } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
-import { Like } from 'typeorm'
-import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
+import { Like, QueryFailedError } from 'typeorm'
+import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 
 @Injectable()
 export class CollegesService {
@@ -31,10 +31,24 @@ export class CollegesService {
     createCollegeDto: CreateCollegeDto,
     user: User,
   ): Promise<College> {
-    return await College.create({
-      ...createCollegeDto,
-      creator: user,
-    }).save()
+    try {
+      const college = await College.create({
+        ...createCollegeDto,
+        creator: user,
+      }).save()
+
+      return await this.findOne(college.id)
+    } catch (e) {
+      if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestExceptionError({
+          property: 'field',
+          value: '',
+          constraints: {
+            duplicate: e.message,
+          },
+        })
+      }
+    }
   }
 
   async findOne(id: number): Promise<College> {
@@ -50,7 +64,7 @@ export class CollegesService {
         property: 'id',
         value: id,
         constraints: {
-          isNotExist: 'college id is incorrect',
+          isNotExist: 'college is not exist',
         },
       })
     }
@@ -108,5 +122,16 @@ export class CollegesService {
     await college.save()
 
     return this.findOne(college.id)
+  }
+
+  async findEditable(user: User): Promise<College[]> {
+    const { editableColleges } = await User.findOne({
+      where: {
+        id: user.id,
+      },
+      relations: ['editableColleges'],
+    })
+
+    return editableColleges
   }
 }

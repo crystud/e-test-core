@@ -3,7 +3,7 @@ import { TokensInterface } from './interfaces/tokens.interface'
 import { User } from '../users/user.entity'
 import { JwtService } from '@nestjs/jwt'
 import { Token } from './token.entity'
-import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
+import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
 import { compare } from 'bcryptjs'
 

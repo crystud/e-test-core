@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
+import { Transform } from 'class-transformer'
+import { transformToId } from '../tools/transformers/transformToId'
 
 @Entity('colleges')
 export class College extends BaseEntity {
@@ -32,12 +34,14 @@ export class College extends BaseEntity {
   @Column({ nullable: true })
   EDBO?: number
 
+  @Transform(transformToId)
   @ManyToOne(
     () => User,
     user => user.ownColleges,
   )
   creator: User
 
+  @Transform(transformToId)
   @ManyToMany(
     () => User,
     user => user.editableColleges,

@@ -8,9 +8,10 @@ import {
   OneToMany,
   ManyToMany,
 } from 'typeorm'
-import { Exclude } from 'class-transformer'
+import { Exclude, Transform } from 'class-transformer'
 import { Token } from '../auth/token.entity'
 import { College } from '../colleges/college.entity'
+import { transformToId } from '../tools/transformers/transformToId'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -51,18 +52,21 @@ export class User extends BaseEntity {
   @CreateDateColumn()
   createAt: Date
 
+  @Exclude()
   @OneToOne(
     () => Token,
     token => token.user,
   )
   tokens: Token[]
 
+  @Transform(transformToId)
   @ManyToMany(
     () => College,
     college => college.editors,
   )
   editableColleges: College[]
 
+  @Transform(transformToId)
   @OneToMany(
     () => College,
     college => college.creator,
