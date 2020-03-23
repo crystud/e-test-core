@@ -9,6 +9,7 @@ import { TokensInterface } from './interfaces/tokens.interface'
 import { AuthService } from './auth.service'
 import { RefreshTokenDto } from './dto/refreshToken.dto'
 import { ApiTags } from '@nestjs/swagger'
+import { LoginDto } from './dto/login.dto'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,5 +22,11 @@ export class AuthController {
     @Body() { token }: RefreshTokenDto,
   ): Promise<TokensInterface> {
     return await this.authService.refresh(token)
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('login')
+  async login(@Body() { email, password }: LoginDto): Promise<TokensInterface> {
+    return await this.authService.login(email, password)
   }
 }

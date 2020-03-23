@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { User } from './user.entity'
 import { hash } from 'bcryptjs'
-import { BadRequestExceptionError } from '../tools/BadRequestExceptionError'
+import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
 
 @Injectable()
 export class UsersService {
+  async findOne(id: number): Promise<User> {
+    return await User.findOne(id)
+  }
+
   async createUser({
     firstName,
     lastName,
