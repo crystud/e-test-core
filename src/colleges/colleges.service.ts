@@ -110,9 +110,24 @@ export class CollegesService {
       where: {
         id: user.id,
       },
-      relations: ['editableColleges'],
+      relations: [
+        'editableColleges',
+        'editableColleges.creator',
+        'editableColleges.editors',
+      ],
     })
 
     return editableColleges
+  }
+
+  async isCreator(college: College, user: User): Promise<boolean> {
+    const ownCollege = await College.findOne({
+      where: {
+        id: college.id,
+        creator: user,
+      },
+    })
+
+    return !!ownCollege
   }
 }

@@ -5,11 +5,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
 import { Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
+import { Department } from '../departments/department.entity'
 
 @Entity('colleges')
 export class College extends BaseEntity {
@@ -40,6 +42,13 @@ export class College extends BaseEntity {
     user => user.ownColleges,
   )
   creator: User
+
+  @Transform(transformToId)
+  @OneToMany(
+    () => Department,
+    department => department.college,
+  )
+  departments: Department[]
 
   @Transform(transformToId)
   @ManyToMany(
