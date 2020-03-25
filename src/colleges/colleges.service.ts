@@ -37,7 +37,7 @@ export class CollegesService {
       where: {
         id,
       },
-      relations: ['creator', 'editors', 'departments'],
+      relations: ['creator', 'editors', 'specialties'],
     })
 
     if (!college) {
@@ -71,7 +71,7 @@ export class CollegesService {
       where: {
         ...filter,
       },
-      relations: ['creator', 'editors', 'departments'],
+      relations: ['creator', 'editors', 'specialties'],
     })
   }
 

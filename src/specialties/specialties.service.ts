@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
-import { Department } from './department.entity'
-import { CreateDepartmentDto } from './dto/createDepartment.dto'
+import { Speciality } from './speciality.entity'
+import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { College } from '../colleges/college.entity'
 
 @Injectable()
-export class DepartmentsService {
+export class SpecialitysService {
   async create(
-    createDepartmentDto: CreateDepartmentDto,
+    createSpecialityDto: CreateSpecialityDto,
     college: College,
-  ): Promise<Department> {
+  ): Promise<Speciality> {
     try {
-      const department = await Department.create({
-        ...createDepartmentDto,
+      const speciality = await Speciality.create({
+        ...createSpecialityDto,
         college,
       }).save()
 
-      return await this.findOne(department.id)
+      return await this.findOne(speciality.id)
     } catch (e) {
       if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
         throw new BadRequestExceptionError({
@@ -30,24 +30,24 @@ export class DepartmentsService {
     }
   }
 
-  async findOne(id: number): Promise<Department> {
-    const department = await Department.findOne({
+  async findOne(id: number): Promise<Speciality> {
+    const speciality = await Speciality.findOne({
       where: {
         id,
       },
       relations: ['college'],
     })
 
-    if (!department) {
+    if (!speciality) {
       throw new BadRequestExceptionError({
         property: 'id',
         value: id,
         constraints: {
-          isNotExist: 'department is not exist',
+          isNotExist: 'speciality is not exist',
         },
       })
     }
 
-    return department
+    return speciality
   }
 }

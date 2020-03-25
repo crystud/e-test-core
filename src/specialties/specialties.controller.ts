@@ -15,17 +15,17 @@ import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../users/user.entity'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
-import { Department } from './department.entity'
-import { CreateDepartmentDto } from './dto/createDepartment.dto'
+import { Speciality } from './speciality.entity'
+import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { CollegesService } from '../colleges/colleges.service'
-import { DepartmentsService } from './departments.service'
+import { SpecialitysService } from './specialties.service'
 
-@ApiTags('departments')
-@Controller('departments')
-export class DepartmentsController {
+@ApiTags('specialties')
+@Controller('specialties')
+export class SpecialitysController {
   constructor(
     private readonly collegesService: CollegesService,
-    private readonly departmentsService: DepartmentsService,
+    private readonly specialtiesService: SpecialitysService,
   ) {}
 
   @ApiBearerAuth()
@@ -35,15 +35,15 @@ export class DepartmentsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
-    @Body() createDepartmentDto: CreateDepartmentDto,
+    @Body() createSpecialityDto: CreateSpecialityDto,
     @Request() req,
-  ): Promise<Department> {
+  ): Promise<Speciality> {
     const college = await this.collegesService.findOne(
-      createDepartmentDto.college,
+      createSpecialityDto.college,
     )
 
     if (await this.collegesService.isCreator(college, req.user)) {
-      return await this.departmentsService.create(createDepartmentDto, college)
+      return await this.specialtiesService.create(createSpecialityDto, college)
     }
 
     throw new ForbiddenException()
@@ -56,13 +56,13 @@ export class DepartmentsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(
-    @Param('id') departmentID: number,
+    @Param('id') specialityID: number,
     @Request() req,
-  ): Promise<Department> {
-    const department = await this.departmentsService.findOne(departmentID)
+  ): Promise<Speciality> {
+    const speciality = await this.specialtiesService.findOne(specialityID)
 
-    if (await this.collegesService.hasAccess(department.college, req.user))
-      return department
+    if (await this.collegesService.hasAccess(speciality.college, req.user))
+      return speciality
 
     throw new ForbiddenException()
   }

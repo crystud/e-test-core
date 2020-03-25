@@ -11,7 +11,7 @@ import {
 import { User } from '../users/user.entity'
 import { Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
-import { Department } from '../departments/department.entity'
+import { Speciality } from '../specialties/speciality.entity'
 
 @Entity('colleges')
 export class College extends BaseEntity {
@@ -45,10 +45,10 @@ export class College extends BaseEntity {
 
   @Transform(transformToId)
   @OneToMany(
-    () => Department,
-    department => department.college,
+    () => Speciality,
+    speciality => speciality.college,
   )
-  departments: Department[]
+  specialties: Speciality[]
 
   @Transform(transformToId)
   @ManyToMany(

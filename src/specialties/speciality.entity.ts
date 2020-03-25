@@ -9,8 +9,8 @@ import { College } from '../colleges/college.entity'
 import { Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 
-@Entity('departments')
-export class Department extends BaseEntity {
+@Entity('specialties')
+export class Speciality extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
@@ -20,7 +20,7 @@ export class Department extends BaseEntity {
   @Transform(transformToId)
   @ManyToOne(
     () => College,
-    college => college.departments,
+    college => college.specialties,
   )
   college: College
 }
