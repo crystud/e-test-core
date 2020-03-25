@@ -1,7 +1,10 @@
 import {
   Body,
   ClassSerializerInterceptor,
-  Controller, ForbiddenException,
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
   Post,
   Request,
   UseGuards,
@@ -42,6 +45,24 @@ export class DepartmentsController {
     if (await this.collegesService.isCreator(college, req.user)) {
       return await this.departmentsService.create(createDepartmentDto, college)
     }
+
+    throw new ForbiddenException()
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(
+    @Param('id') departmentID: number,
+    @Request() req,
+  ): Promise<Department> {
+    const department = await this.departmentsService.findOne(departmentID)
+
+    if (await this.collegesService.hasAccess(department.college, req.user))
+      return department
 
     throw new ForbiddenException()
   }
