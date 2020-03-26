@@ -94,10 +94,10 @@ export class CollegesController {
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Post(':id/editor/:id')
+  @Post(':college/editor/:user')
   async addEditor(
-    @Param('id') collegeId: number,
-    @Param('id') userId: number,
+    @Param('college') collegeId: number,
+    @Param('user') userId: number,
   ): Promise<College> {
     const college = await this.collegesService.findOne(collegeId)
     const user = await this.usersService.findOne(userId)

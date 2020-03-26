@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { CreateCollegeDto } from './dto/createCollege.dto'
 import { College } from './college.entity'
-import { User } from '../users/user.entity'
+import { User, UserRolesType } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
 import { Like } from 'typeorm'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
@@ -37,7 +37,7 @@ export class CollegesService {
       where: {
         id,
       },
-      relations: ['creator', 'editors'],
+      relations: ['creator', 'editors', 'specialties'],
     })
 
     if (!college) {
@@ -71,7 +71,7 @@ export class CollegesService {
       where: {
         ...filter,
       },
-      relations: ['creator', 'editors'],
+      relations: ['creator', 'editors', 'specialties'],
     })
   }
 
@@ -110,9 +110,42 @@ export class CollegesService {
       where: {
         id: user.id,
       },
-      relations: ['editableColleges'],
+      relations: [
+        'editableColleges',
+        'editableColleges.creator',
+        'editableColleges.editors',
+      ],
     })
 
     return editableColleges
+  }
+
+  async isCreator(college: College, user: User): Promise<boolean> {
+    const ownCollege = await College.findOne({
+      where: {
+        id: college.id,
+        creator: user,
+      },
+    })
+
+    return !!ownCollege
+  }
+
+  async isEditor(college: College, user: User): Promise<boolean> {
+    const editableCollege = await College.findOne({
+      relations: ['editors'],
+      where: {
+        id: college.id,
+        'editors.id': user,
+      },
+    })
+
+    return !!editableCollege
+  }
+
+  async hasAccess(college: College, user: User): Promise<boolean> {
+    if (user.roles.includes(UserRolesType.ADMIN)) return true
+
+    return this.isEditor(college, user) || this.isCreator(college, user)
   }
 }

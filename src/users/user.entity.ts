@@ -7,6 +7,7 @@ import {
   OneToOne,
   OneToMany,
   ManyToMany,
+  JoinColumn,
 } from 'typeorm'
 import { Exclude, Transform } from 'class-transformer'
 import { Token } from '../auth/token.entity'
@@ -64,6 +65,7 @@ export class User extends BaseEntity {
     () => College,
     college => college.editors,
   )
+  @JoinColumn()
   editableColleges: College[]
 
   @Transform(transformToId)
