@@ -20,6 +20,9 @@ export class Speciality extends BaseEntity {
   @Column({ type: 'varchar', length: 6 })
   symbol: string
 
+  @Column({ type: 'smallint' })
+  yearOfStudy: number
+
   @Transform(transformToId)
   @ManyToOne(
     () => College,
