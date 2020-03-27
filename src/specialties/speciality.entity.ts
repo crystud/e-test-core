@@ -17,6 +17,9 @@ export class Speciality extends BaseEntity {
   @Column()
   name: string
 
+  @Column({ type: 'varchar', length: 6 })
+  symbol: string
+
   @Transform(transformToId)
   @ManyToOne(
     () => College,
