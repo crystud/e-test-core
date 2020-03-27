@@ -35,7 +35,7 @@ export class SpecialitysService {
       where: {
         id,
       },
-      relations: ['college'],
+      relations: ['college', 'groups'],
     })
 
     if (!speciality) {

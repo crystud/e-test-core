@@ -7,7 +7,9 @@ import { classToClass } from 'class-transformer'
 @Injectable()
 export class UsersService {
   async findOne(id: number): Promise<User> {
-    return await User.findOne(id)
+    return await User.findOne(id, {
+      relations: ['ownColleges', 'editableColleges', 'groups'],
+    })
   }
 
   async createUser({
