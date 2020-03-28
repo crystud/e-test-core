@@ -2,7 +2,8 @@ import {
   BaseEntity,
   Column,
   Entity,
-  ManyToOne, OneToMany,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { College } from '../colleges/college.entity'
