@@ -18,14 +18,14 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Speciality } from './speciality.entity'
 import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { CollegesService } from '../colleges/colleges.service'
-import { SpecialitysService } from './specialties.service'
+import { SpecialtiesService } from './specialties.service'
 
 @ApiTags('specialties')
 @Controller('specialties')
-export class SpecialitysController {
+export class SpecialtiesController {
   constructor(
     private readonly collegesService: CollegesService,
-    private readonly specialtiesService: SpecialitysService,
+    private readonly specialtiesService: SpecialtiesService,
   ) {}
 
   @ApiBearerAuth()

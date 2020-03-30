@@ -8,11 +8,13 @@ import {
   OneToMany,
   ManyToMany,
   JoinColumn,
+  JoinTable,
 } from 'typeorm'
 import { Exclude, Transform } from 'class-transformer'
 import { Token } from '../auth/token.entity'
 import { College } from '../colleges/college.entity'
 import { transformToId } from '../tools/transformers/transformToId'
+import { Group } from '../groups/group.entity'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -67,6 +69,14 @@ export class User extends BaseEntity {
   )
   @JoinColumn()
   editableColleges: College[]
+
+  @Transform(transformToId)
+  @ManyToMany(
+    () => Group,
+    group => group.students,
+  )
+  @JoinTable()
+  groups: Group[]
 
   @Transform(transformToId)
   @OneToMany(

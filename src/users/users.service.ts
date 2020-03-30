@@ -7,7 +7,21 @@ import { classToClass } from 'class-transformer'
 @Injectable()
 export class UsersService {
   async findOne(id: number): Promise<User> {
-    return await User.findOne(id)
+    const user = await User.findOne(id, {
+      relations: ['ownColleges', 'editableColleges', 'groups'],
+    })
+
+    if (!user) {
+      throw new BadRequestExceptionError({
+        property: 'id',
+        value: id,
+        constraints: {
+          isNotExist: 'user is not exist',
+        },
+      })
+    }
+
+    return user
   }
 
   async createUser({
