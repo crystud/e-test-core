@@ -7,6 +7,7 @@ import { UsersModule } from '../users/users.module'
 
 @Module({
   imports: [SpecialtiesModule, CollegesModule, UsersModule],
+  exports: [GroupsService],
   providers: [GroupsService],
   controllers: [GroupsController],
 })
