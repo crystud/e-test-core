@@ -4,6 +4,7 @@ import { Speciality } from '../specialties/speciality.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { CreateGroupDto } from './dto/createGroup.dto'
 import * as moment from 'moment'
+import { User } from '../users/user.entity'
 
 @Injectable()
 export class GroupsService {
@@ -73,5 +74,25 @@ export class GroupsService {
         })
       }
     }
+  }
+
+  async addStudent(group: Group, user: User): Promise<Group> {
+    if (this.isStudent(group, user))
+      throw new BadRequestExceptionError({
+        property: 'student',
+        value: user.id,
+        constraints: {
+          duplicate: 'student is duplicate in group',
+        },
+      })
+
+    group.students.push(user)
+    await group.save()
+
+    return this.findOne(group.id)
+  }
+
+  isStudent(group: Group, user: User): boolean {
+    return group.students.some(student => student.id === user.id)
   }
 }
