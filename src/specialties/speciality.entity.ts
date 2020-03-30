@@ -19,7 +19,7 @@ export class Speciality extends BaseEntity {
   @Column()
   name: string
 
-  @Column({ type: 'varchar', length: 6 })
+  @Column({ type: 'varchar', length: 8 })
   symbol: string
 
   @Column({ type: 'smallint' })

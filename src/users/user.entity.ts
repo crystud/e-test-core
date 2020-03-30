@@ -8,6 +8,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinColumn,
+  JoinTable,
 } from 'typeorm'
 import { Exclude, Transform } from 'class-transformer'
 import { Token } from '../auth/token.entity'
@@ -74,7 +75,7 @@ export class User extends BaseEntity {
     () => Group,
     group => group.students,
   )
-  @JoinColumn()
+  @JoinTable()
   groups: Group[]
 
   @Transform(transformToId)

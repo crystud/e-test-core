@@ -5,7 +5,7 @@ import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { College } from '../colleges/college.entity'
 
 @Injectable()
-export class SpecialitysService {
+export class SpecialtiesService {
   async create(
     createSpecialityDto: CreateSpecialityDto,
     college: College,

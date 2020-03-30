@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsersModule } from './users/users.module'
 import { AuthModule } from './auth/auth.module'
 import { CollegesModule } from './colleges/colleges.module'
-import { SpecialitysModule } from './specialties/specialties.module'
+import { SpecialtiesModule } from './specialties/specialties.module'
 import { GroupsModule } from './groups/groups.module'
 
 @Module({
@@ -22,7 +22,7 @@ import { GroupsModule } from './groups/groups.module'
     UsersModule,
     AuthModule,
     CollegesModule,
-    SpecialitysModule,
+    SpecialtiesModule,
     GroupsModule,
   ],
 })

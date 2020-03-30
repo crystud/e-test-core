@@ -1,11 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDateString, IsNumber, Length } from 'class-validator'
+import { IsDateString, IsNumber } from 'class-validator'
 
 export class CreateGroupDto {
-  @ApiProperty()
-  @Length(1, 5)
-  symbol: string
-
   @ApiProperty()
   @IsNumber()
   speciality: number
