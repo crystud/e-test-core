@@ -11,6 +11,11 @@ import { Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
 
+export enum SubjectStudyType {
+  DAILY = 'daily',
+  EXTERNAL = 'external',
+}
+
 @Entity('specialties')
 export class Speciality extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -25,6 +30,9 @@ export class Speciality extends BaseEntity {
   @Column({ type: 'smallint' })
   yearOfStudy: number
 
+  @Column({ unique: true })
+  code: number
+
   @Transform(transformToId)
   @ManyToOne(
     () => College,
@@ -38,4 +46,11 @@ export class Speciality extends BaseEntity {
     group => group.speciality,
   )
   groups: Group[]
+
+  @Column({
+    type: 'set',
+    enum: SubjectStudyType,
+    default: [SubjectStudyType.DAILY, SubjectStudyType.EXTERNAL],
+  })
+  roles: SubjectStudyType[]
 }

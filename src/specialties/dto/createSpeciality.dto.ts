@@ -17,5 +17,9 @@ export class CreateSpecialityDto {
 
   @ApiProperty()
   @IsNotEmpty()
+  code: number
+
+  @ApiProperty()
+  @IsNotEmpty()
   college: number
 }
