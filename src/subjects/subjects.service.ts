@@ -2,16 +2,21 @@ import { Injectable } from '@nestjs/common'
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { Subject } from './subject.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
-import { FilterCollegeDto } from '../colleges/dto/filterCollege.dto'
-import { College } from '../colleges/college.entity'
 import { Like } from 'typeorm'
 import { FilterSubjectDto } from './dto/filterSubject.dto'
+import { User } from '../users/user.entity'
 
 @Injectable()
 export class SubjectsService {
-  async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
+  async create(
+    createSubjectDto: CreateSubjectDto,
+    user: User,
+  ): Promise<Subject> {
     try {
-      const subject = await Subject.create(createSubjectDto).save()
+      const subject = await Subject.create({
+        ...createSubjectDto,
+        creator: user,
+      }).save()
 
       return await this.findOne(subject.id)
     } catch (e) {
@@ -56,7 +61,12 @@ export class SubjectsService {
     const filter: { [k: string]: any } = {}
 
     for (const filterItem in filterSubjectDto) {
-      if (like && typeof filterSubjectDto[filterItem] === 'string') {
+      if (
+        like &&
+        typeof filterSubjectDto[filterItem] === 'string' &&
+        (filterSubjectDto[filterItem] != 'false' ||
+          filterSubjectDto[filterItem] != 'true')
+      ) {
         filter[filterItem] = Like(`%${filterSubjectDto[filterItem]}%`)
       } else {
         filter[filterItem] = filterSubjectDto[filterItem]
@@ -67,6 +77,7 @@ export class SubjectsService {
       where: {
         ...filter,
       },
+      relations: ['teachers', 'colleges', 'specialties'],
     })
   }
 

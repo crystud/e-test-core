@@ -86,6 +86,13 @@ export class User extends BaseEntity {
   ownColleges: College[]
 
   @Transform(transformToId)
+  @OneToMany(
+    () => Subject,
+    subject => subject.creator,
+  )
+  createSubjectRequests: Subject[]
+
+  @Transform(transformToId)
   @ManyToMany(
     () => Subject,
     subject => subject.teachers,

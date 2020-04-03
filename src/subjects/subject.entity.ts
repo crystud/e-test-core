@@ -4,6 +4,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
@@ -22,6 +23,13 @@ export class Subject extends BaseEntity {
 
   @Column({ default: false })
   confirmed: boolean
+
+  @Transform(transformToId)
+  @ManyToOne(
+    () => User,
+    user => user.createSubjectRequests,
+  )
+  creator: User
 
   @Transform(transformToId)
   @ManyToMany(

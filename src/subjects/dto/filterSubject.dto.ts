@@ -4,6 +4,6 @@ export class FilterSubjectDto {
   @ApiProperty({ required: false })
   name?: string
 
-  @ApiProperty({ required: false, default: true })
-  confirmed?: boolean
+  @ApiProperty({ required: false, default: 1 })
+  confirmed?: number
 }

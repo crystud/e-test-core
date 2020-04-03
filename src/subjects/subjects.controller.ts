@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Query,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -19,7 +20,7 @@ import { Subject } from './subject.entity'
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { FilterSubjectDto } from './dto/filterSubject.dto'
 
-@ApiTags('colleges')
+@ApiTags('subjects')
 @Controller('subjects')
 export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
@@ -30,8 +31,11 @@ export class SubjectsController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() createSubjectDto: CreateSubjectDto): Promise<Subject> {
-    return await this.subjectsService.create(createSubjectDto)
+  async create(
+    @Body() createSubjectDto: CreateSubjectDto,
+    @Request() req,
+  ): Promise<Subject> {
+    return await this.subjectsService.create(createSubjectDto, req.user)
   }
 
   @ApiBearerAuth()
