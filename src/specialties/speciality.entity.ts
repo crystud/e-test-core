@@ -2,6 +2,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import { College } from '../colleges/college.entity'
 import { Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
+import { Subject } from '../subjects/subject.entity'
 
 export enum SubjectStudyType {
   DAILY = 'daily',
@@ -53,4 +55,11 @@ export class Speciality extends BaseEntity {
     default: [SubjectStudyType.DAILY, SubjectStudyType.EXTERNAL],
   })
   roles: SubjectStudyType[]
+
+  @Transform(transformToId)
+  @ManyToMany(
+    () => Subject,
+    subject => subject.specialties,
+  )
+  subjects: Subject[]
 }

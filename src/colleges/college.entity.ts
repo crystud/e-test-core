@@ -12,6 +12,7 @@ import { User } from '../users/user.entity'
 import { Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Speciality } from '../specialties/speciality.entity'
+import { Subject } from '../subjects/subject.entity'
 
 @Entity('colleges')
 export class College extends BaseEntity {
@@ -57,4 +58,11 @@ export class College extends BaseEntity {
   )
   @JoinTable()
   editors: User[]
+
+  @Transform(transformToId)
+  @ManyToMany(
+    () => Subject,
+    subject => subject.colleges,
+  )
+  subjects: Subject[]
 }
