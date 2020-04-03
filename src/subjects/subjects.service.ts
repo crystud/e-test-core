@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common'
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { Subject } from './subject.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
+import { FilterCollegeDto } from '../colleges/dto/filterCollege.dto'
+import { College } from '../colleges/college.entity'
+import { Like } from 'typeorm'
+import { FilterSubjectDto } from './dto/filterSubject.dto'
 
 @Injectable()
 export class SubjectsService {
@@ -42,5 +46,27 @@ export class SubjectsService {
     }
 
     return subject
+  }
+
+  async findAll(
+    filterSubjectDto: FilterSubjectDto,
+    like = true,
+  ): Promise<Subject[]> {
+    // TODO: refactor
+    const filter: { [k: string]: any } = {}
+
+    for (const filterItem in filterSubjectDto) {
+      if (like && typeof filterSubjectDto[filterItem] === 'string') {
+        filter[filterItem] = Like(`%${filterSubjectDto[filterItem]}%`)
+      } else {
+        filter[filterItem] = filterSubjectDto[filterItem]
+      }
+    }
+
+    return await Subject.find({
+      where: {
+        ...filter,
+      },
+    })
   }
 }
