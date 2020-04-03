@@ -17,7 +17,6 @@ import { SubjectsModule } from './subjects/subjects.module'
       password: process.env.DB_PASSWORD || 'root',
       database: 'eTest',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
       cache: true,
     }),
     UsersModule,
