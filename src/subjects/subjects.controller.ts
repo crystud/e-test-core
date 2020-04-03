@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   UseGuards,
@@ -43,5 +44,15 @@ export class SubjectsController {
     @Query() filterSubjectDto: FilterSubjectDto,
   ): Promise<Subject[]> {
     return await this.subjectsService.findAll(filterSubjectDto)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('confirm/:id')
+  async confirm(@Param('id') id: number): Promise<Subject> {
+    return await this.subjectsService.confirm(id)
   }
 }

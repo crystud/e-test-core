@@ -21,7 +21,7 @@ export class Subject extends BaseEntity {
   name: string
 
   @Column({ default: false })
-  confirmed: string
+  confirmed: boolean
 
   @Transform(transformToId)
   @ManyToMany(

@@ -69,4 +69,17 @@ export class SubjectsService {
       },
     })
   }
+
+  async confirm(id: number): Promise<Subject> {
+    await Subject.update(
+      {
+        id,
+      },
+      {
+        confirmed: true,
+      },
+    )
+
+    return await this.findOne(id)
+  }
 }
