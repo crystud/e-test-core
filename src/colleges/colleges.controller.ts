@@ -2,6 +2,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Post,
@@ -20,6 +21,7 @@ import { FilterCollegeDto } from './dto/filterCollege.dto'
 import { RolesGuard } from '../auth/roles.guard'
 import { UsersService } from '../users/users.service'
 import { College } from './college.entity'
+import { SubjectsService } from '../subjects/subjects.service'
 
 @ApiTags('colleges')
 @Controller('colleges')
@@ -27,6 +29,7 @@ export class CollegesController {
   constructor(
     private readonly collegesService: CollegesService,
     private readonly usersService: UsersService,
+    private readonly subjectsService: SubjectsService,
   ) {}
 
   @ApiBearerAuth()
@@ -98,10 +101,38 @@ export class CollegesController {
   async addEditor(
     @Param('college') collegeId: number,
     @Param('user') userId: number,
+    @Request() req,
   ): Promise<College> {
     const college = await this.collegesService.findOne(collegeId)
-    const user = await this.usersService.findOne(userId)
 
-    return await this.collegesService.addEditor(college, user)
+    if (await this.collegesService.isEditor(college, req.user)) {
+      const user = await this.usersService.findOne(userId)
+
+      return await this.collegesService.addEditor(college, user)
+    }
+
+    throw new ForbiddenException()
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':college/subject/:subject')
+  async addSubject(
+    @Param('college') collegeId: number,
+    @Param('subject') subjectId: number,
+    @Request() req,
+  ): Promise<College> {
+    const college = await this.collegesService.findOne(collegeId)
+
+    if (await this.collegesService.isEditor(college, req.user)) {
+      const subject = await this.subjectsService.findOne(subjectId)
+
+      return await this.collegesService.addSubject(college, subject)
+    }
+
+    throw new ForbiddenException()
   }
 }

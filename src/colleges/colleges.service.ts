@@ -5,6 +5,7 @@ import { User, UserRolesType } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
 import { Like } from 'typeorm'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
+import { Subject } from '../subjects/subject.entity'
 
 @Injectable()
 export class CollegesService {
@@ -147,5 +148,25 @@ export class CollegesService {
     if (user.roles.includes(UserRolesType.ADMIN)) return true
 
     return this.isEditor(college, user) || this.isCreator(college, user)
+  }
+
+  private hasSubject(college: College, subject: Subject): boolean {
+    return college.subjects.some(value => value.id === subject.id)
+  }
+
+  async addSubject(college: College, subject: Subject): Promise<College> {
+    if (this.hasSubject(college, subject))
+      throw new BadRequestExceptionError({
+        value: subject.id,
+        property: 'subject',
+        constraints: {
+          duplicate: "College's already contained this subject",
+        },
+      })
+
+    college.subjects.push(subject)
+    await college.save()
+
+    return college
   }
 }
