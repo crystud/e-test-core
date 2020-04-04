@@ -28,6 +28,9 @@ export class Subject extends BaseEntity {
   @ManyToOne(
     () => User,
     user => user.createSubjectRequests,
+    {
+      nullable: false,
+    },
   )
   creator: User
 

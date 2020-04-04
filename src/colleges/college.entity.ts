@@ -41,6 +41,9 @@ export class College extends BaseEntity {
   @ManyToOne(
     () => User,
     user => user.ownColleges,
+    {
+      nullable: false,
+    },
   )
   creator: User
 

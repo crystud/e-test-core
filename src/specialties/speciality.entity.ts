@@ -39,6 +39,9 @@ export class Speciality extends BaseEntity {
   @ManyToOne(
     () => College,
     college => college.specialties,
+    {
+      nullable: false,
+    },
   )
   college: College
 
