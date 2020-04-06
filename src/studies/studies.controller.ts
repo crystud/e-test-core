@@ -3,12 +3,14 @@ import {
   ClassSerializerInterceptor,
   Controller,
   ForbiddenException,
+  Get,
+  Param,
   Post,
   Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiBearerAuth } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../users/user.entity'
 import { RolesGuard } from '../auth/roles.guard'
@@ -19,6 +21,7 @@ import { StudiesService } from './studies.service'
 import { CollegesService } from '../colleges/colleges.service'
 import { SubjectsService } from '../subjects/subjects.service'
 
+@ApiTags('studies')
 @Controller('studies')
 export class StudiesController {
   constructor(
@@ -44,6 +47,22 @@ export class StudiesController {
 
     if (await this.collegesService.isEditor(college, req.user)) {
       return await this.studiesService.create(college, subject)
+    }
+
+    throw new ForbiddenException()
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Param('id') studyId: number, @Request() req): Promise<Study> {
+    const study = await this.studiesService.findOne(studyId)
+
+    if (await this.collegesService.hasAccess(study.college, req.user)) {
+      return study
     }
 
     throw new ForbiddenException()

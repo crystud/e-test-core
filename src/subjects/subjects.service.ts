@@ -37,7 +37,7 @@ export class SubjectsService {
       where: {
         id,
       },
-      relations: ['teachers', 'colleges', 'specialties'],
+      relations: ['teachers', 'colleges'],
     })
 
     if (!subject) {
@@ -77,7 +77,7 @@ export class SubjectsService {
       where: {
         ...filter,
       },
-      relations: ['teachers', 'colleges', 'specialties'],
+      relations: ['teachers', 'colleges'],
     })
   }
 
