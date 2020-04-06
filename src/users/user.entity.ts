@@ -15,6 +15,7 @@ import { College } from '../colleges/college.entity'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
 import { Subject } from '../subjects/subject.entity'
+import { Study } from '../studies/study.entity'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -98,4 +99,11 @@ export class User extends BaseEntity {
     subject => subject.teachers,
   )
   teachSubjects: Subject[]
+
+  @Transform(transformToId)
+  @ManyToMany(
+    () => Subject,
+    subject => subject.teachers,
+  )
+  studies: Study[]
 }

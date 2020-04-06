@@ -38,7 +38,7 @@ export class CollegesService {
       where: {
         id,
       },
-      relations: ['creator', 'editors', 'specialties', 'subjects'],
+      relations: ['creator', 'editors', 'specialties', 'subjects', 'studies'],
     })
 
     if (!college) {
@@ -72,7 +72,7 @@ export class CollegesService {
       where: {
         ...filter,
       },
-      relations: ['creator', 'editors', 'specialties'],
+      relations: ['creator', 'editors', 'specialties', 'subjects', 'studies'],
     })
   }
 
@@ -150,7 +150,7 @@ export class CollegesService {
     return this.isEditor(college, user) || this.isCreator(college, user)
   }
 
-  private hasSubject(college: College, subject: Subject): boolean {
+  public hasSubject(college: College, subject: Subject): boolean {
     return college.subjects.some(value => value.id === subject.id)
   }
 

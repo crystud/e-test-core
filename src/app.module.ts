@@ -6,6 +6,7 @@ import { CollegesModule } from './colleges/colleges.module'
 import { SpecialtiesModule } from './specialties/specialties.module'
 import { GroupsModule } from './groups/groups.module'
 import { SubjectsModule } from './subjects/subjects.module'
+import { StudiesModule } from './studies/studies.module'
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { SubjectsModule } from './subjects/subjects.module'
       password: process.env.DB_PASSWORD || 'root',
       database: 'eTest',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      cache: true,
+      synchronize: true,
     }),
     UsersModule,
     AuthModule,
@@ -25,6 +26,7 @@ import { SubjectsModule } from './subjects/subjects.module'
     SpecialtiesModule,
     GroupsModule,
     SubjectsModule,
+    StudiesModule,
   ],
 })
 export class AppModule {}

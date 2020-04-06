@@ -113,26 +113,4 @@ export class CollegesController {
 
     throw new ForbiddenException()
   }
-
-  @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.USER)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
-  @Post(':college/subject/:subject')
-  async addSubject(
-    @Param('college') collegeId: number,
-    @Param('subject') subjectId: number,
-    @Request() req,
-  ): Promise<College> {
-    const college = await this.collegesService.findOne(collegeId)
-
-    if (await this.collegesService.isEditor(college, req.user)) {
-      const subject = await this.subjectsService.findOne(subjectId)
-
-      return await this.collegesService.addSubject(college, subject)
-    }
-
-    throw new ForbiddenException()
-  }
 }

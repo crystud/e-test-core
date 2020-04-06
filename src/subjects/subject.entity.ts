@@ -5,13 +5,14 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
 import { College } from '../colleges/college.entity'
-import { Speciality } from '../specialties/speciality.entity'
 import { Exclude, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
+import { Study } from '../studies/study.entity'
 
 @Entity('subjects')
 export class Subject extends BaseEntity {
@@ -51,10 +52,9 @@ export class Subject extends BaseEntity {
   colleges: College[]
 
   @Exclude()
-  @ManyToMany(
-    () => Speciality,
-    speciality => speciality.subjects,
+  @OneToMany(
+    () => Study,
+    study => study.subject,
   )
-  @JoinTable()
-  specialties: Speciality[]
+  studies: Study[]
 }

@@ -9,10 +9,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
-import { Transform } from 'class-transformer'
+import { Exclude, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Speciality } from '../specialties/speciality.entity'
 import { Subject } from '../subjects/subject.entity'
+import { Study } from '../studies/study.entity'
 
 @Entity('colleges')
 export class College extends BaseEntity {
@@ -62,10 +63,17 @@ export class College extends BaseEntity {
   @JoinTable()
   editors: User[]
 
-  @Transform(transformToId)
+  @Exclude()
   @ManyToMany(
     () => Subject,
     subject => subject.colleges,
   )
   subjects: Subject[]
+
+  @Transform(transformToId)
+  @OneToMany(
+    () => Study,
+    study => study.college,
+  )
+  studies: Study[]
 }
