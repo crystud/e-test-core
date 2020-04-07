@@ -13,8 +13,8 @@ export class FilterCollegeDto {
   @ApiProperty({ required: false })
   EDBO?: number
 
-  @ApiProperty({ required: false, default: true })
-  confirmed?: boolean
+  @ApiProperty({ required: false, default: 1 })
+  confirmed?: number
 
   @ApiProperty({ required: false })
   creator?: number

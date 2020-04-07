@@ -26,6 +26,9 @@ export class Token extends BaseEntity {
   @ManyToOne(
     () => User,
     user => user.tokens,
+    {
+      nullable: false,
+    },
   )
   @JoinColumn()
   readonly user: User

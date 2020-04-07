@@ -35,6 +35,9 @@ export class Group extends BaseEntity {
   @ManyToOne(
     () => Speciality,
     speciality => speciality.groups,
+    {
+      nullable: false,
+    },
   )
   @JoinTable()
   speciality: Speciality

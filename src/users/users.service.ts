@@ -8,7 +8,13 @@ import { classToClass } from 'class-transformer'
 export class UsersService {
   async findOne(id: number): Promise<User> {
     const user = await User.findOne(id, {
-      relations: ['ownColleges', 'editableColleges', 'groups'],
+      relations: [
+        'ownColleges',
+        'editableColleges',
+        'groups',
+        'teachSubjects',
+        'studies',
+      ],
     })
 
     if (!user) {

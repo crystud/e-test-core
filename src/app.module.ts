@@ -5,6 +5,8 @@ import { AuthModule } from './auth/auth.module'
 import { CollegesModule } from './colleges/colleges.module'
 import { SpecialtiesModule } from './specialties/specialties.module'
 import { GroupsModule } from './groups/groups.module'
+import { SubjectsModule } from './subjects/subjects.module'
+import { StudiesModule } from './studies/studies.module'
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { GroupsModule } from './groups/groups.module'
     CollegesModule,
     SpecialtiesModule,
     GroupsModule,
+    SubjectsModule,
+    StudiesModule,
   ],
 })
 export class AppModule {}

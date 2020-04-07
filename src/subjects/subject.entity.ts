@@ -9,39 +9,26 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
+import { College } from '../colleges/college.entity'
 import { Exclude, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
-import { Speciality } from '../specialties/speciality.entity'
-import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
 
-@Entity('colleges')
-export class College extends BaseEntity {
+@Entity('subjects')
+export class Subject extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
   @Column({ unique: true })
   name: string
 
-  @Column()
-  address: string
-
   @Column({ default: false })
   confirmed: boolean
-
-  @Column({ unique: true })
-  email: string
-
-  @Column({ unique: true })
-  site: string
-
-  @Column({ nullable: true })
-  EDBO?: number
 
   @Transform(transformToId)
   @ManyToOne(
     () => User,
-    user => user.ownColleges,
+    user => user.createSubjectRequests,
     {
       nullable: false,
     },
@@ -49,31 +36,25 @@ export class College extends BaseEntity {
   creator: User
 
   @Transform(transformToId)
-  @OneToMany(
-    () => Speciality,
-    speciality => speciality.college,
-  )
-  specialties: Speciality[]
-
-  @Transform(transformToId)
   @ManyToMany(
     () => User,
-    user => user.editableColleges,
+    user => user.teachSubjects,
   )
   @JoinTable()
-  editors: User[]
-
-  @Exclude()
-  @ManyToMany(
-    () => Subject,
-    subject => subject.colleges,
-  )
-  subjects: Subject[]
+  teachers: User[]
 
   @Transform(transformToId)
+  @ManyToMany(
+    () => College,
+    college => college.subjects,
+  )
+  @JoinTable()
+  colleges: College[]
+
+  @Exclude()
   @OneToMany(
     () => Study,
-    study => study.college,
+    study => study.subject,
   )
   studies: Study[]
 }

@@ -2,6 +2,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -10,6 +11,12 @@ import { College } from '../colleges/college.entity'
 import { Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
+import { Study } from '../studies/study.entity'
+
+export enum SubjectStudyType {
+  DAILY = 'daily',
+  EXTERNAL = 'external',
+}
 
 @Entity('specialties')
 export class Speciality extends BaseEntity {
@@ -25,10 +32,16 @@ export class Speciality extends BaseEntity {
   @Column({ type: 'smallint' })
   yearOfStudy: number
 
+  @Column({ unique: true })
+  code: number
+
   @Transform(transformToId)
   @ManyToOne(
     () => College,
     college => college.specialties,
+    {
+      nullable: false,
+    },
   )
   college: College
 
@@ -38,4 +51,18 @@ export class Speciality extends BaseEntity {
     group => group.speciality,
   )
   groups: Group[]
+
+  @Column({
+    type: 'set',
+    enum: SubjectStudyType,
+    default: [SubjectStudyType.DAILY, SubjectStudyType.EXTERNAL],
+  })
+  types: SubjectStudyType[]
+
+  @Transform(transformToId)
+  @ManyToMany(
+    () => Study,
+    study => study.specialties,
+  )
+  studies: Study[]
 }
