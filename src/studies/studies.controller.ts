@@ -49,6 +49,10 @@ export class StudiesController {
     ])
 
     if (await this.collegesService.isEditor(college, req.user)) {
+      try {
+        await this.collegesService.addSubject(college, subject)
+      } catch {}
+
       return await this.studiesService.create(college, subject)
     }
 
