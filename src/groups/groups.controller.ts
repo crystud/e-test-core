@@ -46,7 +46,9 @@ export class GroupsController {
       createGroupDto.speciality,
     )
 
-    if (await this.collegesService.isEditor(speciality.college, req.user)) {
+    const college = await this.collegesService.findOne(speciality.college.id)
+
+    if (await this.collegesService.isEditor(college, req.user)) {
       return await this.groupsService.create(createGroupDto, speciality)
     }
 
@@ -66,8 +68,9 @@ export class GroupsController {
       group.speciality.id,
     )
 
-    if (await this.collegesService.hasAccess(speciality.college, req.user))
-      return group
+    const college = await this.collegesService.findOne(speciality.college.id)
+
+    if (await this.collegesService.hasAccess(college, req.user)) return group
 
     throw new ForbiddenException()
   }
@@ -90,7 +93,9 @@ export class GroupsController {
       group.speciality.id,
     )
 
-    if (await this.collegesService.isEditor(speciality.college, req.user))
+    const college = await this.collegesService.findOne(speciality.college.id)
+
+    if (await this.collegesService.isEditor(college, req.user))
       return await this.groupsService.addStudent(group, student)
 
     throw new ForbiddenException()

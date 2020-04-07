@@ -19,6 +19,8 @@ import { Speciality } from './speciality.entity'
 import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { CollegesService } from '../colleges/colleges.service'
 import { SpecialtiesService } from './specialties.service'
+import { StudiesService } from '../studies/studies.service'
+import { AddStudyDto } from './dto/addStudy.dto'
 
 @ApiTags('specialties')
 @Controller('specialties')
@@ -26,6 +28,7 @@ export class SpecialtiesController {
   constructor(
     private readonly collegesService: CollegesService,
     private readonly specialtiesService: SpecialtiesService,
+    private readonly studiesService: StudiesService,
   ) {}
 
   @ApiBearerAuth()
@@ -60,9 +63,34 @@ export class SpecialtiesController {
     @Request() req,
   ): Promise<Speciality> {
     const speciality = await this.specialtiesService.findOne(specialityID)
+    const college = await this.collegesService.findOne(speciality.college.id)
 
-    if (await this.collegesService.hasAccess(speciality.college, req.user))
+    if (await this.collegesService.hasAccess(college, req.user))
       return speciality
+
+    throw new ForbiddenException()
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/study')
+  async addStudy(
+    @Body() addStudyDto: AddStudyDto,
+    @Param('id') specialityId: number,
+    @Request() req,
+  ): Promise<Speciality> {
+    const [study, speciality] = await Promise.all([
+      this.studiesService.findOne(addStudyDto.study),
+      this.specialtiesService.findOne(specialityId),
+    ])
+
+    const college = await this.collegesService.findOne(speciality.college.id)
+
+    if (await this.collegesService.isEditor(college, req.user))
+      return await this.specialtiesService.addStudy(speciality, study)
 
     throw new ForbiddenException()
   }

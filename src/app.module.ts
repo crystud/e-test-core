@@ -19,6 +19,7 @@ import { StudiesModule } from './studies/studies.module'
       database: 'eTest',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      cache: true,
     }),
     UsersModule,
     AuthModule,

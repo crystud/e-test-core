@@ -59,6 +59,7 @@ export class Speciality extends BaseEntity {
   })
   types: SubjectStudyType[]
 
+  @Transform(transformToId)
   @ManyToMany(
     () => Study,
     study => study.specialties,

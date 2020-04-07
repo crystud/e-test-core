@@ -3,6 +3,7 @@ import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptio
 import { Speciality } from './speciality.entity'
 import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { College } from '../colleges/college.entity'
+import { Study } from '../studies/study.entity'
 
 @Injectable()
 export class SpecialtiesService {
@@ -47,6 +48,28 @@ export class SpecialtiesService {
         },
       })
     }
+
+    return speciality
+  }
+
+  hasStudy(speciality: Speciality, study: Study): boolean {
+    return speciality.studies.some(value => value.id === study.id)
+  }
+
+  async addStudy(speciality: Speciality, study: Study): Promise<Speciality> {
+    if (this.hasStudy(speciality, study)) {
+      throw new BadRequestExceptionError({
+        property: 'studyId',
+        value: study.id,
+        constraints: {
+          isNotExist: 'Cannon add study which already is in the speciality',
+        },
+      })
+    }
+
+    speciality.studies.push(study)
+
+    await speciality.save()
 
     return speciality
   }
