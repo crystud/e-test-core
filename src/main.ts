@@ -13,6 +13,11 @@ async function bootstrap() {
     new FastifyAdapter(),
   )
 
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  })
+
   app.useGlobalPipes(new ValidationPipe())
 
   const option = new DocumentBuilder()
