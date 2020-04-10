@@ -51,6 +51,14 @@ export class Subject extends BaseEntity {
   @JoinTable()
   colleges: College[]
 
+  @Transform(transformToId)
+  @ManyToMany(
+    () => College,
+    college => college.subjects,
+  )
+  @JoinTable()
+  tests: College[]
+
   @Exclude()
   @OneToMany(
     () => Study,

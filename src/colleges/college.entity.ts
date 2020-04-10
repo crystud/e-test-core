@@ -14,6 +14,7 @@ import { transformToId } from '../tools/transformers/transformToId'
 import { Speciality } from '../specialties/speciality.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
+import { Test } from '../tests/test.entity'
 
 @Entity('colleges')
 export class College extends BaseEntity {
@@ -69,6 +70,13 @@ export class College extends BaseEntity {
     subject => subject.colleges,
   )
   subjects: Subject[]
+
+  @Exclude()
+  @ManyToMany(
+    () => Test,
+    test => test.colleges,
+  )
+  tests: Test[]
 
   @Transform(transformToId)
   @OneToMany(

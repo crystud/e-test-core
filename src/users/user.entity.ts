@@ -16,6 +16,7 @@ import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
+import { Test } from '../tests/test.entity'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -106,4 +107,11 @@ export class User extends BaseEntity {
     subject => subject.teachers,
   )
   studies: Study[]
+
+  @Transform(transformToId)
+  @OneToMany(
+    () => Test,
+    test => test.creator,
+  )
+  tests: Test[]
 }
