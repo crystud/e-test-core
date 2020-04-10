@@ -28,7 +28,9 @@ export class AuthService {
       })
     }
 
-    if (await compare(password, user.password)) {
+    const passwordIsCorrect = await compare(password, user.password)
+
+    if (!passwordIsCorrect) {
       throw new BadRequestExceptionError({
         property: 'password',
         value: password,
