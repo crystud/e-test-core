@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateCollegeDto } from './dto/createCollege.dto'
 import { College } from './college.entity'
 import { User, UserRolesType } from '../users/user.entity'
@@ -99,6 +99,7 @@ export class CollegesService {
   }
 
   async addEditor(college: College, user: User): Promise<College> {
+    global.console.log(college)
     college.editors.push(user)
 
     await college.save()

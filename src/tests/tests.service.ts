@@ -3,11 +3,13 @@ import { CreateTestDto } from './dto/createTest.dto'
 import { User } from '../users/user.entity'
 import { Test } from './test.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
-import { College } from '../colleges/college.entity'
 import { Subject } from '../subjects/subject.entity'
+import { UsersService } from '../users/users.service'
 
 @Injectable()
 export class TestsService {
+  constructor(private readonly usersService: UsersService) {}
+
   async create(
     createTestDto: CreateTestDto,
     subject: Subject,
@@ -53,5 +55,13 @@ export class TestsService {
     }
 
     return test
+  }
+
+  hasAccess(test: Test, user: User) {
+    return this.usersService.isAdmin(user) || this.isCreator(test, user)
+  }
+
+  isCreator(test: Test, user: User): boolean {
+    return test.creator.id === user.id
   }
 }
