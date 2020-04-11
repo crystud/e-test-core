@@ -61,5 +61,6 @@ export class Test extends BaseEntity {
     () => College,
     college => college.tests,
   )
+  @JoinTable()
   colleges: College[]
 }

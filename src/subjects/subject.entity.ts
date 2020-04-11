@@ -40,7 +40,6 @@ export class Subject extends BaseEntity {
     () => User,
     user => user.teachSubjects,
   )
-  @JoinTable()
   teachers: User[]
 
   @Transform(transformToId)

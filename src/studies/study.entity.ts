@@ -26,7 +26,6 @@ export class Study extends BaseEntity {
     () => User,
     user => user.studies,
   )
-  @JoinTable()
   teachers: User[]
 
   @Transform(transformToId)

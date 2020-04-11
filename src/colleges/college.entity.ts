@@ -61,7 +61,6 @@ export class College extends BaseEntity {
     () => User,
     user => user.editableColleges,
   )
-  @JoinTable()
   editors: User[]
 
   @Exclude()

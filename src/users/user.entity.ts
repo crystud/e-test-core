@@ -4,7 +4,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToOne,
   OneToMany,
   ManyToMany,
   JoinTable,
@@ -58,7 +57,7 @@ export class User extends BaseEntity {
   createAt: Date
 
   @Exclude()
-  @OneToOne(
+  @OneToMany(
     () => Token,
     token => token.user,
   )
@@ -99,6 +98,7 @@ export class User extends BaseEntity {
     () => Subject,
     subject => subject.teachers,
   )
+  @JoinTable()
   teachSubjects: Subject[]
 
   @Transform(transformToId)
@@ -106,6 +106,7 @@ export class User extends BaseEntity {
     () => Subject,
     subject => subject.teachers,
   )
+  @JoinTable()
   studies: Study[]
 
   @Transform(transformToId)

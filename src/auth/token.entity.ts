@@ -30,7 +30,6 @@ export class Token extends BaseEntity {
       nullable: false,
     },
   )
-  @JoinColumn()
   readonly user: User
 
   @CreateDateColumn()
