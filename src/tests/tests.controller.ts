@@ -2,6 +2,9 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  ForbiddenException,
+  Get,
+  Param,
   Post,
   Request,
   UseGuards,
@@ -38,5 +41,21 @@ export class TestsController {
     const subject = await this.subjectsService.findOne(createTestDto.subject)
 
     return await this.testsService.create(createTestDto, subject, req.user)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Param('id') id: number, @Request() req): Promise<Test> {
+    const test = await this.testsService.findOne(id)
+
+    if (this.testsService.hasAccess(test, req.user)) {
+      return test
+    }
+
+    throw new ForbiddenException()
   }
 }
