@@ -3,7 +3,6 @@ import {
   ClassSerializerInterceptor,
   Controller,
   ForbiddenException,
-  Get,
   Param,
   Post,
   Request,
@@ -101,7 +100,10 @@ export class StudiesController {
       this.studiesService.findOne(studyId),
     ])
 
-    if (await this.studiesService.isTeacher(study, req.user)) {
+    if (
+      (await this.studiesService.isTeacher(study, req.user)) &&
+      (await this.testsService.hasAccess(test, req.user))
+    ) {
       return await this.studiesService.addTest(study, test)
     }
 

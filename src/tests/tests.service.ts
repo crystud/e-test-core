@@ -5,6 +5,7 @@ import { Test } from './test.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { Subject } from '../subjects/subject.entity'
 import { UsersService } from '../users/users.service'
+import { College } from '../colleges/college.entity'
 
 @Injectable()
 export class TestsService {
@@ -41,7 +42,7 @@ export class TestsService {
       where: {
         id,
       },
-      relations: ['levels', 'creator', 'results'],
+      relations: ['creator', 'subject', 'colleges'],
     })
 
     if (!test) {
@@ -57,7 +58,20 @@ export class TestsService {
     return test
   }
 
-  hasAccess(test: Test, user: User) {
+  isShared(test: Test, college: College): boolean {
+    return test.colleges.some(value => value.id === college.id)
+  }
+
+  async shareToCollage(test: Test, college: College): Promise<Test> {
+    if (this.isShared(test, college)) {
+      test.colleges.push(college)
+      await test.save()
+    }
+
+    return test
+  }
+
+  hasAccess(test: Test, user: User): boolean {
     return this.usersService.isAdmin(user) || this.isCreator(test, user)
   }
 

@@ -19,6 +19,8 @@ import { Test } from './test.entity'
 import { CreateTestDto } from './dto/createTest.dto'
 import { TestsService } from './tests.service'
 import { SubjectsService } from '../subjects/subjects.service'
+import { ShareToCollegeDto } from './dto/shareToCollege.dto'
+import { CollegesService } from '../colleges/colleges.service'
 
 @ApiTags('tests')
 @Controller('tests')
@@ -26,6 +28,7 @@ export class TestsController {
   constructor(
     private readonly testsService: TestsService,
     private readonly subjectsService: SubjectsService,
+    private readonly collegesService: CollegesService,
   ) {}
 
   @ApiBearerAuth()
@@ -54,6 +57,29 @@ export class TestsController {
 
     if (this.testsService.hasAccess(test, req.user)) {
       return test
+    }
+
+    throw new ForbiddenException()
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':test/share/college')
+  async shareToCollege(
+    @Param('test') testId: number,
+    @Body() shareToCollegeDto: ShareToCollegeDto,
+    @Request() req,
+  ): Promise<Test> {
+    const [test, college] = await Promise.all([
+      this.testsService.findOne(testId),
+      this.collegesService.findOne(testId),
+    ])
+
+    if (this.testsService.hasAccess(test, req.user)) {
+      return await this.testsService.shareToCollage(test, college)
     }
 
     throw new ForbiddenException()
