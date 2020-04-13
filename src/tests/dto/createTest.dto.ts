@@ -14,7 +14,7 @@ export class CreateTestDto {
 
   @ApiProperty({ default: false, required: false })
   @IsBoolean()
-  isPublic? = false
+  isPublic: boolean
 
   @ApiProperty()
   @IsInt()

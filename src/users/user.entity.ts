@@ -16,6 +16,7 @@ import { Group } from '../groups/group.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
 import { Test } from '../tests/test.entity'
+import { Topic } from '../tests/topic.entity'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -92,6 +93,13 @@ export class User extends BaseEntity {
     subject => subject.creator,
   )
   createSubjectRequests: Subject[]
+
+  @Transform(transformToId)
+  @OneToMany(
+    () => Topic,
+    topic => topic.creator,
+  )
+  createTopicRequests: Subject[]
 
   @Transform(transformToId)
   @ManyToMany(

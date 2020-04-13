@@ -69,7 +69,7 @@ export class College extends BaseEntity {
   )
   subjects: Subject[]
 
-  @Exclude()
+  @Transform(transformToId)
   @ManyToMany(
     () => Test,
     test => test.colleges,

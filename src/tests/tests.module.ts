@@ -12,6 +12,7 @@ import { UsersModule } from '../users/users.module'
     CollegesModule,
     forwardRef(() => GroupsModule),
     forwardRef(() => StudiesModule),
+    forwardRef(() => CollegesModule),
     SubjectsModule,
     UsersModule,
   ],
