@@ -3,7 +3,6 @@ import {
   ClassSerializerInterceptor,
   Controller,
   ForbiddenException,
-  Get,
   Param,
   Post,
   Request,
@@ -22,6 +21,8 @@ import { CollegesService } from '../colleges/colleges.service'
 import { SubjectsService } from '../subjects/subjects.service'
 import { AddTeacherDto } from './dto/addTeacher.dto'
 import { UsersService } from '../users/users.service'
+import { AddTestDto } from './dto/addTest.dto'
+import { TestsService } from '../tests/tests.service'
 
 @ApiTags('studies')
 @Controller('studies')
@@ -31,6 +32,7 @@ export class StudiesController {
     private readonly collegesService: CollegesService,
     private readonly subjectsService: SubjectsService,
     private readonly usersService: UsersService,
+    private readonly testsService: TestsService,
   ) {}
 
   @ApiBearerAuth()
@@ -87,12 +89,22 @@ export class StudiesController {
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  async findOne(@Param('id') studyId: number, @Request() req): Promise<Study> {
-    const study = await this.studiesService.findOne(studyId)
+  @Post(':id/test')
+  async addTest(
+    @Body() addTestDto: AddTestDto,
+    @Param('id') studyId,
+    @Request() req,
+  ): Promise<Study> {
+    const [test, study] = await Promise.all([
+      this.testsService.findOne(addTestDto.test),
+      this.studiesService.findOne(studyId),
+    ])
 
-    if (await this.collegesService.hasAccess(study.college, req.user)) {
-      return study
+    if (
+      (await this.studiesService.isTeacher(study, req.user)) &&
+      (await this.testsService.hasAccess(test, req.user))
+    ) {
+      return await this.studiesService.addTest(study, test)
     }
 
     throw new ForbiddenException()

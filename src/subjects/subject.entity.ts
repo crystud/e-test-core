@@ -13,6 +13,8 @@ import { College } from '../colleges/college.entity'
 import { Exclude, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Study } from '../studies/study.entity'
+import { Test } from '../tests/test.entity'
+import { Topic } from '../tests/topic.entity'
 
 @Entity('subjects')
 export class Subject extends BaseEntity {
@@ -40,7 +42,6 @@ export class Subject extends BaseEntity {
     () => User,
     user => user.teachSubjects,
   )
-  @JoinTable()
   teachers: User[]
 
   @Transform(transformToId)
@@ -51,10 +52,24 @@ export class Subject extends BaseEntity {
   @JoinTable()
   colleges: College[]
 
+  @Transform(transformToId)
+  @OneToMany(
+    () => Test,
+    test => test.subject,
+  )
+  tests: Test[]
+
   @Exclude()
   @OneToMany(
     () => Study,
     study => study.subject,
   )
   studies: Study[]
+
+  @Exclude()
+  @OneToMany(
+    () => Topic,
+    topic => topic.subject,
+  )
+  topics: Topic[]
 }

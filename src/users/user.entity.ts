@@ -4,7 +4,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToOne,
   OneToMany,
   ManyToMany,
   JoinTable,
@@ -16,6 +15,8 @@ import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
+import { Test } from '../tests/test.entity'
+import { Topic } from '../tests/topic.entity'
 
 export enum UserRolesType {
   ADMIN = 'admin',
@@ -57,7 +58,7 @@ export class User extends BaseEntity {
   createAt: Date
 
   @Exclude()
-  @OneToOne(
+  @OneToMany(
     () => Token,
     token => token.user,
   )
@@ -94,10 +95,18 @@ export class User extends BaseEntity {
   createSubjectRequests: Subject[]
 
   @Transform(transformToId)
+  @OneToMany(
+    () => Topic,
+    topic => topic.creator,
+  )
+  createTopicRequests: Subject[]
+
+  @Transform(transformToId)
   @ManyToMany(
     () => Subject,
     subject => subject.teachers,
   )
+  @JoinTable()
   teachSubjects: Subject[]
 
   @Transform(transformToId)
@@ -105,5 +114,13 @@ export class User extends BaseEntity {
     () => Subject,
     subject => subject.teachers,
   )
+  @JoinTable()
   studies: Study[]
+
+  @Transform(transformToId)
+  @OneToMany(
+    () => Test,
+    test => test.creator,
+  )
+  tests: Test[]
 }

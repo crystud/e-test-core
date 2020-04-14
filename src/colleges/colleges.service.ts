@@ -99,6 +99,7 @@ export class CollegesService {
   }
 
   async addEditor(college: College, user: User): Promise<College> {
+    global.console.log(college)
     college.editors.push(user)
 
     await college.save()

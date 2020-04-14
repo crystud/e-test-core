@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { User } from './user.entity'
+import { User, UserRolesType } from './user.entity'
 import { hash } from 'bcryptjs'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
@@ -64,5 +64,9 @@ export class UsersService {
     }).save()
 
     return classToClass<User>(user)
+  }
+
+  isAdmin(user: User): boolean {
+    return user.roles.includes(UserRolesType.ADMIN)
   }
 }

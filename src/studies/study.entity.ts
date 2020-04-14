@@ -13,6 +13,7 @@ import { User } from '../users/user.entity'
 import { Speciality } from '../specialties/speciality.entity'
 import { Expose, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
+import { Test } from '../tests/test.entity'
 
 @Entity('study')
 @Index(['subject', 'college'], { unique: true })
@@ -25,7 +26,6 @@ export class Study extends BaseEntity {
     () => User,
     user => user.studies,
   )
-  @JoinTable()
   teachers: User[]
 
   @Transform(transformToId)
@@ -49,6 +49,12 @@ export class Study extends BaseEntity {
   )
   @JoinTable()
   specialties: Speciality[]
+
+  @ManyToMany(
+    () => Test,
+    test => test.studies,
+  )
+  tests: Test[]
 
   @Expose()
   get subjectName(): string {

@@ -4,6 +4,7 @@ import { Subject } from '../subjects/subject.entity'
 import { College } from '../colleges/college.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { User } from '../users/user.entity'
+import { Test } from '../tests/test.entity'
 
 @Injectable()
 export class StudiesService {
@@ -49,12 +50,12 @@ export class StudiesService {
     return study
   }
 
-  public isTeacherInStudy(study: Study, teacher: User): boolean {
+  public isTeacher(study: Study, teacher: User): boolean {
     return study.teachers.some(value => value.id == teacher.id)
   }
 
   async addTeacher(study: Study, teacher: User): Promise<Study> {
-    if (this.isTeacherInStudy(study, teacher)) {
+    if (this.isTeacher(study, teacher)) {
       throw new BadRequestExceptionError({
         property: 'teacherId',
         value: teacher.id,
@@ -63,6 +64,28 @@ export class StudiesService {
         },
       })
     }
+
+    return study
+  }
+
+  hasTest(study: Study, test: Test): boolean {
+    return study.tests.some(value => value.id === test.id)
+  }
+
+  async addTest(study: Study, test: Test): Promise<Study> {
+    if (this.hasTest(study, test)) {
+      throw new BadRequestExceptionError({
+        property: 'testId',
+        value: test.id,
+        constraints: {
+          isNotExist: 'Cannon add test which already is in the study',
+        },
+      })
+    }
+
+    study.tests.push(test)
+
+    await study.save()
 
     return study
   }

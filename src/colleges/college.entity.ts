@@ -2,7 +2,6 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -14,6 +13,7 @@ import { transformToId } from '../tools/transformers/transformToId'
 import { Speciality } from '../specialties/speciality.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
+import { Test } from '../tests/test.entity'
 
 @Entity('colleges')
 export class College extends BaseEntity {
@@ -60,7 +60,6 @@ export class College extends BaseEntity {
     () => User,
     user => user.editableColleges,
   )
-  @JoinTable()
   editors: User[]
 
   @Exclude()
@@ -69,6 +68,13 @@ export class College extends BaseEntity {
     subject => subject.colleges,
   )
   subjects: Subject[]
+
+  @Transform(transformToId)
+  @ManyToMany(
+    () => Test,
+    test => test.colleges,
+  )
+  tests: Test[]
 
   @Transform(transformToId)
   @OneToMany(
