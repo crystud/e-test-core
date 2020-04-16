@@ -13,7 +13,6 @@ import {
 import { GroupsService } from './groups.service'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
-import { UserRolesType } from '../users/user.entity'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Group } from './group.entity'
@@ -21,6 +20,7 @@ import { CreateGroupDto } from './dto/createGroup.dto'
 import { SpecialtiesService } from '../specialties/specialties.service'
 import { CollegesService } from '../colleges/colleges.service'
 import { UsersService } from '../users/users.service'
+import { UserRolesType } from '../enums/userRolesType'
 
 @ApiTags('groups')
 @Controller('groups')

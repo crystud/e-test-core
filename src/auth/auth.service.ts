@@ -6,6 +6,7 @@ import { Token } from './token.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
 import { compare } from 'bcryptjs'
+import { AccessLevelType } from '../enums/accessLevelType'
 
 @Injectable()
 export class AuthService {
@@ -40,7 +41,11 @@ export class AuthService {
       })
     }
 
-    return await this.createTokens(classToClass(user))
+    return await this.createTokens(
+      classToClass(user, {
+        groups: [AccessLevelType.TOKEN],
+      }),
+    )
   }
 
   private async generateJWT(user: User): Promise<string> {
@@ -71,7 +76,9 @@ export class AuthService {
     refreshToken.active = false
     await refreshToken.save()
 
-    const user = classToClass(refreshToken.user)
+    const user = classToClass(refreshToken.user, {
+      groups: [AccessLevelType.TOKEN],
+    })
 
     return await this.createTokens(user)
   }

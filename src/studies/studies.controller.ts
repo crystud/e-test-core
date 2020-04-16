@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
-import { UserRolesType } from '../users/user.entity'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { CreateStudyDto } from './dto/createStudy.dto'
@@ -23,6 +22,7 @@ import { AddTeacherDto } from './dto/addTeacher.dto'
 import { UsersService } from '../users/users.service'
 import { AddTestDto } from './dto/addTest.dto'
 import { TestsService } from '../tests/tests.service'
+import { UserRolesType } from '../enums/userRolesType'
 
 @ApiTags('studies')
 @Controller('studies')

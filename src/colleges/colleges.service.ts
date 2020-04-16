@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { CreateCollegeDto } from './dto/createCollege.dto'
 import { College } from './college.entity'
-import { User, UserRolesType } from '../users/user.entity'
+import { User } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
 import { Like } from 'typeorm'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { Subject } from '../subjects/subject.entity'
+import { UserRolesType } from '../enums/userRolesType'
 
 @Injectable()
 export class CollegesService {
@@ -148,7 +149,7 @@ export class CollegesService {
   async hasAccess(college: College, user: User): Promise<boolean> {
     if (user.roles.includes(UserRolesType.ADMIN)) return true
 
-    return this.isEditor(college, user) || this.isCreator(college, user)
+    return (await this.isEditor(college, user)) || this.isCreator(college, user)
   }
 
   public hasSubject(college: College, subject: Subject): boolean {

@@ -1,14 +1,14 @@
 import {
   BaseEntity,
   Column,
-  Entity,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToMany,
-  ManyToMany,
+  Entity,
   JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Transform } from 'class-transformer'
+import { Exclude, Expose, Transform } from 'class-transformer'
 import { Token } from '../auth/token.entity'
 import { College } from '../colleges/college.entity'
 import { transformToId } from '../tools/transformers/transformToId'
@@ -17,36 +17,38 @@ import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
 import { Test } from '../tests/test.entity'
 import { Topic } from '../tests/topic.entity'
+import { UserRolesType } from '../enums/userRolesType'
+import { AccessLevelType } from '../enums/accessLevelType'
 
-export enum UserRolesType {
-  ADMIN = 'admin',
-  USER = 'user',
-  GHOST = 'ghost',
-}
-
+@Exclude()
 @Entity('users')
 export class User extends BaseEntity {
+  @Expose()
   @PrimaryGeneratedColumn()
   id: number
 
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
   @Column()
   firstName: string
 
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
   @Column()
   lastName: string
 
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
   @Column()
   patronymic: string
 
-  @Exclude()
   @Column()
   password: string
 
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.TOKEN] })
   @Column({
     unique: true,
   })
   email: string
 
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
   @Column({
     type: 'set',
     enum: UserRolesType,
@@ -54,10 +56,10 @@ export class User extends BaseEntity {
   })
   roles: UserRolesType[]
 
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.TOKEN] })
   @CreateDateColumn()
   createAt: Date
 
-  @Exclude()
   @OneToMany(
     () => Token,
     token => token.user,
@@ -65,6 +67,7 @@ export class User extends BaseEntity {
   tokens: Token[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @ManyToMany(
     () => College,
     college => college.editors,
@@ -73,6 +76,7 @@ export class User extends BaseEntity {
   editableColleges: College[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @ManyToMany(
     () => Group,
     group => group.students,
@@ -81,6 +85,7 @@ export class User extends BaseEntity {
   groups: Group[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @OneToMany(
     () => College,
     college => college.creator,
@@ -88,6 +93,7 @@ export class User extends BaseEntity {
   ownColleges: College[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @OneToMany(
     () => Subject,
     subject => subject.creator,
@@ -95,6 +101,7 @@ export class User extends BaseEntity {
   createSubjectRequests: Subject[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @OneToMany(
     () => Topic,
     topic => topic.creator,
@@ -102,6 +109,7 @@ export class User extends BaseEntity {
   createTopicRequests: Subject[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @ManyToMany(
     () => Subject,
     subject => subject.teachers,
@@ -110,6 +118,7 @@ export class User extends BaseEntity {
   teachSubjects: Subject[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @ManyToMany(
     () => Subject,
     subject => subject.teachers,
@@ -118,6 +127,7 @@ export class User extends BaseEntity {
   studies: Study[]
 
   @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
   @OneToMany(
     () => Test,
     test => test.creator,
