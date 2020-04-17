@@ -1,4 +1,8 @@
 export enum AccessLevelType {
   TOKEN = 'token',
-  OWN = 'own',
+  TEACHER = 'teacher',
+  STUDENT = 'student',
+  SHARER = 'sharer',
+  EDITOR = 'editor',
+  OWNER = 'owner',
 }

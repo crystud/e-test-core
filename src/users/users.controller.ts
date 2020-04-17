@@ -13,7 +13,12 @@ import { RegisterUserDto } from './dto/registerUser.dto'
 import { UsersService } from './users.service'
 import { AuthService } from '../auth/auth.service'
 import { TokensInterface } from '../auth/interfaces/tokens.interface'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { User } from './user.entity'
 import { RolesGuard } from '../auth/roles.guard'
@@ -32,6 +37,9 @@ export class UsersController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Post()
+  @ApiCreatedResponse({
+    description: 'Creates user account and return tokens.',
+  })
   async register(
     @Body() registerUserDto: RegisterUserDto,
   ): Promise<TokensInterface> {
@@ -45,8 +53,13 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @ApiOkResponse({
+    type: User,
+    description: 'Find user by id.',
+  })
   async findOne(@Param('id') userId: number, @Request() req): Promise<User> {
     const user = await this.usersService.findOne(userId)
+
     return classToClass(user, {
       groups: req.user.roles,
     })
@@ -57,10 +70,15 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get('me')
+  @ApiOkResponse({
+    type: User,
+    description: 'Find info about you.',
+  })
   async findMe(@Request() req): Promise<User> {
     const user = await this.usersService.findOne(req.user.id)
+
     return classToClass(user, {
-      groups: [...req.user.roles, AccessLevelType.OWN],
+      groups: [...req.user.roles, AccessLevelType.OWNER],
     })
   }
 }

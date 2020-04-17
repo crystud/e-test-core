@@ -19,23 +19,28 @@ import { Test } from '../tests/test.entity'
 import { Topic } from '../tests/topic.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 
 @Exclude()
 @Entity('users')
 export class User extends BaseEntity {
   @Expose()
   @PrimaryGeneratedColumn()
+  @ApiModelProperty()
   id: number
 
   @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @ApiModelProperty()
   @Column()
   firstName: string
 
   @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @ApiModelProperty()
   @Column()
   lastName: string
 
   @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @ApiModelProperty()
   @Column()
   patronymic: string
 
@@ -43,12 +48,14 @@ export class User extends BaseEntity {
   password: string
 
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.TOKEN] })
+  @ApiModelProperty()
   @Column({
     unique: true,
   })
   email: string
 
   @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @ApiModelProperty()
   @Column({
     type: 'set',
     enum: UserRolesType,
@@ -57,6 +64,7 @@ export class User extends BaseEntity {
   roles: UserRolesType[]
 
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.TOKEN] })
+  @ApiModelProperty()
   @CreateDateColumn()
   createAt: Date
 
@@ -68,6 +76,7 @@ export class User extends BaseEntity {
 
   @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({ type: [Number] })
   @ManyToMany(
     () => College,
     college => college.editors,
@@ -77,6 +86,7 @@ export class User extends BaseEntity {
 
   @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({ type: [Number] })
   @ManyToMany(
     () => Group,
     group => group.students,
@@ -86,6 +96,7 @@ export class User extends BaseEntity {
 
   @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => College,
     college => college.creator,
@@ -93,7 +104,8 @@ export class User extends BaseEntity {
   ownColleges: College[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.OWN] })
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.OWNER] })
+  @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => Subject,
     subject => subject.creator,
@@ -101,7 +113,8 @@ export class User extends BaseEntity {
   createSubjectRequests: Subject[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWN] })
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => Topic,
     topic => topic.creator,
@@ -110,6 +123,7 @@ export class User extends BaseEntity {
 
   @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({ type: [Number] })
   @ManyToMany(
     () => Subject,
     subject => subject.teachers,
@@ -119,6 +133,7 @@ export class User extends BaseEntity {
 
   @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({ type: [Number] })
   @ManyToMany(
     () => Subject,
     subject => subject.teachers,
@@ -127,7 +142,8 @@ export class User extends BaseEntity {
   studies: Study[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWN] })
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => Test,
     test => test.creator,
