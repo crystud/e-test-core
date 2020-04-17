@@ -16,12 +16,12 @@ import { CreateCollegeDto } from './dto/createCollege.dto'
 import { CollegesService } from './colleges.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
-import { UserRolesType } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
 import { RolesGuard } from '../auth/roles.guard'
 import { UsersService } from '../users/users.service'
 import { College } from './college.entity'
 import { SubjectsService } from '../subjects/subjects.service'
+import { UserRolesType } from '../enums/userRolesType'
 
 @ApiTags('colleges')
 @Controller('colleges')

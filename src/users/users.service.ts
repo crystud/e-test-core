@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { User, UserRolesType } from './user.entity'
+import { User } from './user.entity'
 import { hash } from 'bcryptjs'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
+import { UserRolesType } from '../enums/userRolesType'
 
 @Injectable()
 export class UsersService {

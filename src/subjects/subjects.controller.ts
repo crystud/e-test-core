@@ -13,12 +13,12 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { SubjectsService } from './subjects.service'
 import { Roles } from '../auth/decorators/roles.decorator'
-import { UserRolesType } from '../users/user.entity'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Subject } from './subject.entity'
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { FilterSubjectDto } from './dto/filterSubject.dto'
+import { UserRolesType } from '../enums/userRolesType'
 
 @ApiTags('subjects')
 @Controller('subjects')
