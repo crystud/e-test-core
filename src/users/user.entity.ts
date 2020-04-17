@@ -47,7 +47,7 @@ export class User extends BaseEntity {
   @Column()
   password: string
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.TOKEN] })
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
   @ApiModelProperty()
   @Column({
     unique: true,
@@ -104,7 +104,7 @@ export class User extends BaseEntity {
   ownColleges: College[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.OWNER] })
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => Subject,
@@ -132,7 +132,7 @@ export class User extends BaseEntity {
   teachSubjects: Subject[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @ManyToMany(
     () => Subject,

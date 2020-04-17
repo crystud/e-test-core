@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   ForbiddenException,
   Get,
@@ -9,7 +8,6 @@ import {
   Query,
   Request,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -38,7 +36,6 @@ export class CollegesController {
   ) {}
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -65,7 +62,6 @@ export class CollegesController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -83,7 +79,6 @@ export class CollegesController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -101,7 +96,6 @@ export class CollegesController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -122,7 +116,6 @@ export class CollegesController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -140,7 +133,6 @@ export class CollegesController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -158,7 +150,6 @@ export class CollegesController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
