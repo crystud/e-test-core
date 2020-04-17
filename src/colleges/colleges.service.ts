@@ -39,7 +39,14 @@ export class CollegesService {
       where: {
         id,
       },
-      relations: ['creator', 'editors', 'specialties', 'subjects', 'studies'],
+      relations: [
+        'creator',
+        'editors',
+        'specialties',
+        'subjects',
+        'studies',
+        'tests',
+      ],
     })
 
     if (!college) {
@@ -73,7 +80,14 @@ export class CollegesService {
       where: {
         ...filter,
       },
-      relations: ['creator', 'editors', 'specialties', 'subjects', 'studies'],
+      relations: [
+        'creator',
+        'editors',
+        'specialties',
+        'subjects',
+        'studies',
+        'tests',
+      ],
     })
   }
 

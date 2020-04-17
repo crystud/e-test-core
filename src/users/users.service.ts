@@ -15,6 +15,9 @@ export class UsersService {
         'groups',
         'teachSubjects',
         'studies',
+        'createSubjectRequests',
+        'createTopicRequests',
+        'tests',
       ],
     })
 
