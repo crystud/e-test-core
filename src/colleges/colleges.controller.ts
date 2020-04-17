@@ -11,7 +11,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { CreateCollegeDto } from './dto/createCollege.dto'
 import { CollegesService } from './colleges.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
@@ -20,8 +25,9 @@ import { FilterCollegeDto } from './dto/filterCollege.dto'
 import { RolesGuard } from '../auth/roles.guard'
 import { UsersService } from '../users/users.service'
 import { College } from './college.entity'
-import { SubjectsService } from '../subjects/subjects.service'
 import { UserRolesType } from '../enums/userRolesType'
+import { classToClass } from 'class-transformer'
+import { AccessLevelType } from '../enums/accessLevelType'
 
 @ApiTags('colleges')
 @Controller('colleges')
@@ -29,7 +35,6 @@ export class CollegesController {
   constructor(
     private readonly collegesService: CollegesService,
     private readonly usersService: UsersService,
-    private readonly subjectsService: SubjectsService,
   ) {}
 
   @ApiBearerAuth()
@@ -38,16 +43,25 @@ export class CollegesController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
+  @ApiCreatedResponse({
+    type: College,
+    description: 'Creates new college.',
+  })
   async create(
     @Body() createCollegeDto: CreateCollegeDto,
     @Request() req,
   ): Promise<College> {
-    const college = await this.collegesService.create(
-      createCollegeDto,
-      req.user,
-    )
+    let college = await this.collegesService.create(createCollegeDto, req.user)
 
-    return await this.collegesService.addEditor(college, req.user)
+    college = await this.collegesService.addEditor(college, req.user)
+
+    return classToClass(college, {
+      groups: [
+        ...req.user.roles,
+        AccessLevelType.OWNER,
+        AccessLevelType.EDITOR,
+      ],
+    })
   }
 
   @ApiBearerAuth()
@@ -56,8 +70,16 @@ export class CollegesController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post('confirm/:id')
-  async confirm(@Param('id') id: number): Promise<College> {
-    return await this.collegesService.confirm(id)
+  @ApiCreatedResponse({
+    type: College,
+    description: 'Confirm college creation.',
+  })
+  async confirm(@Param('id') id: number, @Request() req): Promise<College> {
+    const college = await this.collegesService.confirm(id)
+
+    return classToClass(college, {
+      groups: [...req.user.roles],
+    })
   }
 
   @ApiBearerAuth()
@@ -66,10 +88,19 @@ export class CollegesController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get()
+  @ApiOkResponse({
+    type: [College],
+    description: 'Find colleges list by filter',
+  })
   async findAll(
     @Query() filterCollegeDto: FilterCollegeDto,
+    @Request() req,
   ): Promise<College[]> {
-    return await this.collegesService.findAll(filterCollegeDto)
+    const colleges = await this.collegesService.findAll(filterCollegeDto)
+
+    return classToClass(colleges, {
+      groups: [...req.user.roles],
+    })
   }
 
   @ApiBearerAuth()
@@ -78,8 +109,16 @@ export class CollegesController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get('own')
+  @ApiOkResponse({
+    type: [College],
+    description: 'Find colleges list where you are the owner',
+  })
   async findOwn(@Request() req): Promise<College[]> {
-    return await this.collegesService.findOwn(req.user)
+    const colleges = await this.collegesService.findOwn(req.user)
+
+    return classToClass(colleges, {
+      groups: [...req.user.roles, AccessLevelType.OWNER],
+    })
   }
 
   @ApiBearerAuth()
@@ -88,8 +127,16 @@ export class CollegesController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get('editable')
+  @ApiOkResponse({
+    type: [College],
+    description: 'Find colleges list where you are the editor',
+  })
   async findEditable(@Request() req): Promise<College[]> {
-    return await this.collegesService.findEditable(req.user)
+    const colleges = await this.collegesService.findEditable(req.user)
+
+    return classToClass(colleges, {
+      groups: [...req.user.roles, AccessLevelType.EDITOR],
+    })
   }
 
   @ApiBearerAuth()
@@ -98,17 +145,25 @@ export class CollegesController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post(':college/editor/:user')
+  @ApiCreatedResponse({
+    type: College,
+    description: 'Add new editor to the college',
+  })
   async addEditor(
     @Param('college') collegeId: number,
     @Param('user') userId: number,
     @Request() req,
   ): Promise<College> {
-    const college = await this.collegesService.findOne(collegeId)
+    let college = await this.collegesService.findOne(collegeId)
 
-    if (await this.collegesService.isEditor(college, req.user)) {
+    if (await this.collegesService.isCreator(college, req.user)) {
       const user = await this.usersService.findOne(userId)
 
-      return await this.collegesService.addEditor(college, user)
+      college = await this.collegesService.addEditor(college, user)
+
+      return classToClass(college, {
+        groups: [...req.user.roles, AccessLevelType.OWNER],
+      })
     }
 
     throw new ForbiddenException()
