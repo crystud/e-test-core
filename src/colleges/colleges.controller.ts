@@ -66,6 +66,24 @@ export class CollegesController {
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  @ApiOkResponse({
+    type: College,
+    description: 'Find the college by id.',
+  })
+  async findOne(@Param('id') id: number, @Request() req): Promise<College> {
+    const college = await this.collegesService.findOne(id)
+
+    return classToClass(college, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
