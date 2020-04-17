@@ -93,7 +93,7 @@ export class User extends BaseEntity {
   ownColleges: College[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.OWN] })
   @OneToMany(
     () => Subject,
     subject => subject.creator,
@@ -101,7 +101,7 @@ export class User extends BaseEntity {
   createSubjectRequests: Subject[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWN] })
   @OneToMany(
     () => Topic,
     topic => topic.creator,
@@ -127,7 +127,7 @@ export class User extends BaseEntity {
   studies: Study[]
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWN] })
   @OneToMany(
     () => Test,
     test => test.creator,
