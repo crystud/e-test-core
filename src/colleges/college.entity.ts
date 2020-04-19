@@ -83,6 +83,8 @@ export class College extends BaseEntity {
       UserRolesType.ADMIN,
       AccessLevelType.OWNER,
       AccessLevelType.EDITOR,
+      AccessLevelType.TEACHER,
+      AccessLevelType.STUDENT,
     ],
   })
   @ApiModelProperty({ type: [Number] })

@@ -3,7 +3,7 @@ import { CreateCollegeDto } from './dto/createCollege.dto'
 import { College } from './college.entity'
 import { User } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
-import { Like } from 'typeorm'
+import { getRepository, Like } from 'typeorm'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { Subject } from '../subjects/subject.entity'
 import { UserRolesType } from '../enums/userRolesType'
@@ -184,5 +184,16 @@ export class CollegesService {
     await college.save()
 
     return college
+  }
+
+  async isStudent(college: College, student: User): Promise<boolean> {
+    const isStudent = await College.createQueryBuilder('college')
+      .leftJoinAndSelect('college.specialties', 'specialties')
+      .leftJoinAndSelect('specialties.groups', 'groups')
+      .leftJoinAndSelect('groups.students', 'students')
+      .where('students.id = :studentID', { studentID: student.id })
+      .getCount()
+
+    return Boolean(isStudent)
   }
 }
