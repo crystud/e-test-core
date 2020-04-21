@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   ForbiddenException,
+  Get,
   Param,
   Post,
   Request,
@@ -105,6 +106,23 @@ export class StudiesController {
       (await this.testsService.hasAccess(test, req.user))
     ) {
       return await this.studiesService.addTest(study, test)
+    }
+
+    throw new ForbiddenException()
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Param('id') studyId, @Request() req): Promise<Study> {
+    const study = await this.studiesService.findOne(studyId)
+    const college = await this.collegesService.findOne(study.college.id)
+
+    if (await this.collegesService.hasAccess(college, req.user)) {
+      return study
     }
 
     throw new ForbiddenException()
