@@ -73,8 +73,13 @@ export class CollegesController {
   async findOne(@Param('id') id: number, @Request() req): Promise<College> {
     const college = await this.collegesService.findOne(id)
 
+    const accesses = await this.collegesService.accessRelations(
+      college,
+      req.user,
+    )
+
     return classToClass(college, {
-      groups: [...req.user.roles],
+      groups: [...req.user.roles, ...accesses],
     })
   }
 

@@ -7,6 +7,7 @@ import { Like } from 'typeorm'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { Subject } from '../subjects/subject.entity'
 import { UserRolesType } from '../enums/userRolesType'
+import { AccessLevelType } from '../enums/accessLevelType'
 
 @Injectable()
 export class CollegesService {
@@ -137,29 +138,6 @@ export class CollegesService {
     return editableColleges
   }
 
-  async isCreator(college: College, user: User): Promise<boolean> {
-    const ownCollege = await College.findOne({
-      where: {
-        id: college.id,
-        creator: user,
-      },
-    })
-
-    return !!ownCollege
-  }
-
-  async isEditor(college: College, user: User): Promise<boolean> {
-    const editableCollege = await College.findOne({
-      relations: ['editors'],
-      where: {
-        id: college.id,
-        'editors.id': user,
-      },
-    })
-
-    return !!editableCollege
-  }
-
   async hasAccess(college: College, user: User): Promise<boolean> {
     if (user.roles.includes(UserRolesType.ADMIN)) return true
 
@@ -184,5 +162,58 @@ export class CollegesService {
     await college.save()
 
     return college
+  }
+
+  async isStudent(college: College, student: User): Promise<boolean> {
+    const isStudent = await College.createQueryBuilder('college')
+      .leftJoinAndSelect('college.specialties', 'specialties')
+      .leftJoinAndSelect('specialties.groups', 'groups')
+      .leftJoinAndSelect('groups.students', 'students')
+      .where('students.id = :studentID', { studentID: student.id })
+      .getCount()
+
+    return Boolean(isStudent)
+  }
+
+  async isCreator(college: College, user: User): Promise<boolean> {
+    const ownCollege = await College.findOne({
+      where: {
+        id: college.id,
+        creator: user,
+      },
+    })
+
+    return !!ownCollege
+  }
+
+  async isEditor(college: College, user: User): Promise<boolean> {
+    const editableCollege = await College.findOne({
+      relations: ['editors'],
+      where: {
+        id: college.id,
+        'editors.id': user,
+      },
+    })
+
+    return !!editableCollege
+  }
+
+  async accessRelations(
+    college: College,
+    user: User,
+  ): Promise<AccessLevelType[]> {
+    const levels: AccessLevelType[] = []
+
+    const [isStudent, isCreator, isEditor] = await Promise.all([
+      this.isStudent(college, user),
+      this.isCreator(college, user),
+      this.isEditor(college, user),
+    ])
+
+    if (isStudent) levels.push(AccessLevelType.STUDENT)
+    if (isCreator) levels.push(AccessLevelType.OWNER)
+    if (isEditor) levels.push(AccessLevelType.EDITOR)
+
+    return levels
   }
 }

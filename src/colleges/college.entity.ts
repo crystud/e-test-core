@@ -57,7 +57,13 @@ export class College extends BaseEntity {
   EDBO?: number
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.OWNER,
+      AccessLevelType.EDITOR,
+    ],
+  })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
     () => User,
@@ -83,6 +89,8 @@ export class College extends BaseEntity {
       UserRolesType.ADMIN,
       AccessLevelType.OWNER,
       AccessLevelType.EDITOR,
+      AccessLevelType.TEACHER,
+      AccessLevelType.STUDENT,
     ],
   })
   @ApiModelProperty({ type: [Number] })
