@@ -13,7 +13,6 @@ import { Exclude, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Subject } from '../subjects/subject.entity'
 import { College } from '../colleges/college.entity'
-import { Topic } from './topic.entity'
 
 @Entity('tests')
 export class Test extends BaseEntity {
@@ -46,16 +45,6 @@ export class Test extends BaseEntity {
     },
   )
   subject: Subject
-
-  @Transform(transformToId)
-  @ManyToOne(
-    () => Topic,
-    topic => topic.tests,
-    {
-      nullable: false,
-    },
-  )
-  topic: Topic
 
   @Transform(transformToId)
   @ManyToOne(

@@ -4,6 +4,8 @@ import { hash } from 'bcryptjs'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
 import { UserRolesType } from '../enums/userRolesType'
+import { FilterUserDto } from './dto/filterUser.dto'
+import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
 
 @Injectable()
 export class UsersService {
@@ -32,6 +34,26 @@ export class UsersService {
     }
 
     return user
+  }
+
+  async findAll(filterUserDto: FilterUserDto, like = true): Promise<User[]> {
+    const filter = like ? dbStringLikeBuilder(filterUserDto) : filterUserDto
+
+    return await User.find({
+      where: {
+        ...filter,
+      },
+      relations: [
+        'ownColleges',
+        'editableColleges',
+        'groups',
+        'teachSubjects',
+        'studies',
+        'createSubjectRequests',
+        'createTopicRequests',
+        'tests',
+      ],
+    })
   }
 
   async createUser({
