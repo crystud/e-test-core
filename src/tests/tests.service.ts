@@ -42,7 +42,7 @@ export class TestsService {
       where: {
         id,
       },
-      relations: ['creator', 'subject', 'colleges'],
+      relations: ['creator', 'subject', 'colleges', 'levels'],
     })
 
     if (!test) {
