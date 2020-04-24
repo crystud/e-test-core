@@ -8,7 +8,7 @@ import { GroupsModule } from './groups/groups.module'
 import { SubjectsModule } from './subjects/subjects.module'
 import { StudiesModule } from './studies/studies.module'
 import { TestsModule } from './tests/tests.module'
-import { CategoriesModule } from './categories/categories.module'
+import { TopicsModule } from './topics/topics.module'
 
 @Module({
   imports: [
@@ -31,7 +31,7 @@ import { CategoriesModule } from './categories/categories.module'
     SubjectsModule,
     StudiesModule,
     TestsModule,
-    CategoriesModule,
+    TopicsModule,
   ],
 })
 export class AppModule {}

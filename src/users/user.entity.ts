@@ -16,10 +16,10 @@ import { Group } from '../groups/group.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
 import { Test } from '../tests/test.entity'
-import { Topic } from '../tests/topic.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
+import { Topic } from '../topics/topics.entity'
 
 @Exclude()
 @Entity('users')
