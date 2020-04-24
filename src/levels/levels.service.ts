@@ -32,7 +32,7 @@ export class LevelsService {
       where: {
         id,
       },
-      relations: ['test'],
+      relations: ['test', 'tasks'],
     })
 
     if (!level) {
