@@ -5,14 +5,18 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Study } from '../studies/study.entity'
 import { User } from '../users/user.entity'
-import { Exclude, Transform } from 'class-transformer'
+import { Exclude, Expose, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Subject } from '../subjects/subject.entity'
 import { College } from '../colleges/college.entity'
+import { Level } from '../levels/level.entity'
+import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
+import { UserRolesType } from '../enums/userRolesType'
 
 @Entity('tests')
 export class Test extends BaseEntity {
@@ -63,4 +67,15 @@ export class Test extends BaseEntity {
   )
   @JoinTable()
   colleges: College[]
+
+  @Transform(transformToId)
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  @ApiModelProperty({ type: Number })
+  @OneToMany(
+    () => Level,
+    level => level.test,
+  )
+  levels: Level[]
 }
