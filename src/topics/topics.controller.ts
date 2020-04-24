@@ -1,5 +1,18 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common'
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common'
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
@@ -24,7 +37,7 @@ export class TopicsController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
-  @ApiOkResponse({
+  @ApiCreatedResponse({
     type: Topic,
     description: 'Create new topic',
   })
@@ -42,6 +55,25 @@ export class TopicsController {
 
     return classToClass(topic, {
       groups: [...req.user.roles, AccessLevelType.OWNER],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  @ApiOkResponse({
+    type: Topic,
+    description: 'Find topic by id',
+  })
+  async findOne(@Param('id') topicId: number, @Request() req): Promise<Topic> {
+    const topic = await this.topicsService.findOne(topicId)
+
+    const accesses = await this.topicsService.accessRelations(topic, req.user)
+
+    return classToClass(topic, {
+      groups: [...req.user.roles, ...accesses],
     })
   }
 }

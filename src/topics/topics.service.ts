@@ -4,6 +4,7 @@ import { User } from '../users/user.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Topic } from './topics.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
+import { AccessLevelType } from '../enums/accessLevelType'
 
 @Injectable()
 export class TopicsService {
@@ -52,5 +53,19 @@ export class TopicsService {
     }
 
     return topic
+  }
+
+  async isCreator(topic: Topic, user: User): Promise<boolean> {
+    return topic.creator.id === user.id
+  }
+
+  async accessRelations(topic: Topic, user: User): Promise<AccessLevelType[]> {
+    const levels: AccessLevelType[] = []
+
+    const [isCreator] = await Promise.all([this.isCreator(topic, user)])
+
+    if (isCreator) levels.push(AccessLevelType.OWNER)
+
+    return levels
   }
 }
