@@ -1,13 +1,12 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   Post,
+  Query,
   Request,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -25,6 +24,7 @@ import { TopicsService } from './topics.service'
 import { SubjectsService } from '../subjects/subjects.service'
 import { classToClass } from 'class-transformer'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { FilterTopicDto } from './dto/filterTopic.dto'
 
 @ApiTags('topics')
 @Controller('topics')
@@ -93,6 +93,26 @@ export class TopicsController {
     topic = await this.topicsService.confirm(topic)
 
     return classToClass(topic, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  @ApiOkResponse({
+    type: [Topic],
+    description: 'Find topics list by filter',
+  })
+  async findAll(
+    @Query() filterTopicDto: FilterTopicDto,
+    @Request() req,
+  ): Promise<Topic[]> {
+    const colleges = await this.topicsService.findAll(filterTopicDto)
+
+    return classToClass(colleges, {
       groups: [...req.user.roles],
     })
   }

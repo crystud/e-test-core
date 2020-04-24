@@ -5,6 +5,8 @@ import { Subject } from '../subjects/subject.entity'
 import { Topic } from './topics.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { FilterTopicDto } from './dto/filterTopic.dto'
+import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
 
 @Injectable()
 export class TopicsService {
@@ -74,5 +76,16 @@ export class TopicsService {
     await topic.save()
 
     return await this.findOne(topic.id)
+  }
+
+  async findAll(filterTopicDto: FilterTopicDto, like = true): Promise<Topic[]> {
+    const filter = like ? dbStringLikeBuilder(filterTopicDto) : filterTopicDto
+
+    return await Topic.find({
+      where: {
+        ...filter,
+      },
+      relations: ['subject', 'creator'],
+    })
   }
 }
