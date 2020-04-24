@@ -46,7 +46,7 @@ export class TopicsService {
 
     if (!topic) {
       throw new BadRequestExceptionError({
-        property: 'id',
+        property: 'topicId',
         value: id,
         constraints: {
           isNotExist: 'topic is not exist',
