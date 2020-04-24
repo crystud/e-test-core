@@ -68,4 +68,11 @@ export class TopicsService {
 
     return levels
   }
+
+  async confirm(topic: Topic): Promise<Topic> {
+    topic.confirmed = true
+    await topic.save()
+
+    return await this.findOne(topic.id)
+  }
 }

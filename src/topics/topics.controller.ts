@@ -1,11 +1,13 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   Post,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -74,6 +76,24 @@ export class TopicsController {
 
     return classToClass(topic, {
       groups: [...req.user.roles, ...accesses],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/confirm')
+  @ApiCreatedResponse({
+    type: Topic,
+    description: 'Confirm topic creating',
+  })
+  async confirm(@Param('id') topicId: number, @Request() req): Promise<Topic> {
+    let topic = await this.topicsService.findOne(topicId)
+    topic = await this.topicsService.confirm(topic)
+
+    return classToClass(topic, {
+      groups: [...req.user.roles],
     })
   }
 }

@@ -12,6 +12,7 @@ import { AccessLevelType } from '../enums/accessLevelType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { User } from '../users/user.entity'
 import { Subject } from '../subjects/subject.entity'
+
 @Exclude()
 @Entity('topics')
 export class Topic extends BaseEntity {
