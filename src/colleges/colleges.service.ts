@@ -3,11 +3,11 @@ import { CreateCollegeDto } from './dto/createCollege.dto'
 import { College } from './college.entity'
 import { User } from '../users/user.entity'
 import { FilterCollegeDto } from './dto/filterCollege.dto'
-import { Like } from 'typeorm'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { Subject } from '../subjects/subject.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
 
 @Injectable()
 export class CollegesService {
@@ -23,6 +23,7 @@ export class CollegesService {
 
       return await this.findOne(college.id)
     } catch (e) {
+      global.console.log(e)
       if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
         throw new BadRequestExceptionError({
           property: 'field',
@@ -67,15 +68,9 @@ export class CollegesService {
     filterCollegeDto: FilterCollegeDto,
     like = true,
   ): Promise<College[]> {
-    const filter: { [k: string]: any } = {}
-
-    for (const filterItem in filterCollegeDto) {
-      if (like && typeof filterCollegeDto[filterItem] === 'string') {
-        filter[filterItem] = Like(`%${filterCollegeDto[filterItem]}%`)
-      } else {
-        filter[filterItem] = filterCollegeDto[filterItem]
-      }
-    }
+    const filter = like
+      ? dbStringLikeBuilder(filterCollegeDto)
+      : filterCollegeDto
 
     return await College.find({
       where: {
@@ -115,7 +110,6 @@ export class CollegesService {
   }
 
   async addEditor(college: College, user: User): Promise<College> {
-    global.console.log(college)
     college.editors.push(user)
 
     await college.save()

@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { Subject } from './subject.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
-import { Like } from 'typeorm'
 import { FilterSubjectDto } from './dto/filterSubject.dto'
 import { User } from '../users/user.entity'
+import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
 
 @Injectable()
 export class SubjectsService {
@@ -37,7 +37,7 @@ export class SubjectsService {
       where: {
         id,
       },
-      relations: ['teachers', 'colleges'],
+      relations: ['teachers', 'colleges', 'topics', 'creator'],
     })
 
     if (!subject) {
@@ -57,27 +57,15 @@ export class SubjectsService {
     filterSubjectDto: FilterSubjectDto,
     like = true,
   ): Promise<Subject[]> {
-    // TODO: refactor
-    const filter: { [k: string]: any } = {}
-
-    for (const filterItem in filterSubjectDto) {
-      if (
-        like &&
-        typeof filterSubjectDto[filterItem] === 'string' &&
-        (filterSubjectDto[filterItem] != 'false' ||
-          filterSubjectDto[filterItem] != 'true')
-      ) {
-        filter[filterItem] = Like(`%${filterSubjectDto[filterItem]}%`)
-      } else {
-        filter[filterItem] = filterSubjectDto[filterItem]
-      }
-    }
+    const filter = like
+      ? dbStringLikeBuilder(filterSubjectDto)
+      : filterSubjectDto
 
     return await Subject.find({
       where: {
         ...filter,
       },
-      relations: ['teachers', 'colleges'],
+      relations: ['teachers', 'colleges', 'topics', 'creator'],
     })
   }
 
