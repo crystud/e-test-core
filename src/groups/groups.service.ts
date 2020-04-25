@@ -89,7 +89,7 @@ export class GroupsService {
     group.students.push(user)
     await group.save()
 
-    return this.findOne(group.id)
+    return await this.findOne(group.id)
   }
 
   isStudent(group: Group, user: User): boolean {
