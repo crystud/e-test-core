@@ -2,6 +2,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
@@ -10,6 +11,7 @@ import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-prop
 import { UserRolesType } from '../enums/userRolesType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Topic } from '../topics/topics.entity'
+import { Level } from '../levels/level.entity'
 
 @Exclude()
 @Entity('tasks')
@@ -42,4 +44,10 @@ export class Task extends BaseEntity {
     },
   )
   topic: Topic
+
+  @ManyToMany(
+    () => Level,
+    level => level.tasks,
+  )
+  levels: Level[]
 }

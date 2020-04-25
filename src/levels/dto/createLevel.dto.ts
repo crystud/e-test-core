@@ -13,4 +13,9 @@ export class CreateLevelDto {
   @ApiProperty()
   @IsInt()
   test: number
+
+  @ApiProperty()
+  @IsInt()
+  @Min(0)
+  countOfTask: number
 }
