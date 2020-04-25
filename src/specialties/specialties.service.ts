@@ -41,7 +41,7 @@ export class SpecialtiesService {
 
     if (!speciality) {
       throw new BadRequestExceptionError({
-        property: 'id',
+        property: 'specialityId',
         value: id,
         constraints: {
           isNotExist: 'speciality is not exist',

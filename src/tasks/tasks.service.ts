@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common'
-import { CreateLevelDto } from './dto/createLevel.dto'
-import { Test } from '../tests/test.entity'
-import { Level } from './level.entity'
+import { CreateTaskDto } from './dto/createTask.dto'
+import { Task } from './task.entity'
+import { Topic } from '../topics/topics.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 
 @Injectable()
-export class LevelsService {
-  async create(createLevelDto: CreateLevelDto, test: Test): Promise<Level> {
+export class TasksService {
+  async create(createTaskDto: CreateTaskDto, topic: Topic): Promise<Task> {
     try {
-      const level = await Level.create({
-        ...createLevelDto,
-        test,
+      const task = await Task.create({
+        ...createTaskDto,
+        topic,
       }).save()
 
-      return await this.findOne(level.id)
+      return await this.findOne(task.id)
     } catch (e) {
       if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
         throw new BadRequestExceptionError({
@@ -27,24 +27,24 @@ export class LevelsService {
     }
   }
 
-  async findOne(id: number): Promise<Level> {
-    const level = await Level.findOne({
+  async findOne(id: number): Promise<Task> {
+    const task = await Task.findOne({
       where: {
         id,
       },
-      relations: ['test', 'tasks'],
+      relations: ['topic'],
     })
 
-    if (!level) {
+    if (!task) {
       throw new BadRequestExceptionError({
-        property: 'levelId',
+        property: 'taskId',
         value: id,
         constraints: {
-          isNotExist: 'level is not exist',
+          isNotExist: 'task is not exist',
         },
       })
     }
 
-    return level
+    return task
   }
 }

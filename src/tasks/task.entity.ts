@@ -9,11 +9,11 @@ import { Exclude, Expose, Transform } from 'class-transformer'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { transformToId } from '../tools/transformers/transformToId'
-import { Test } from '../tests/test.entity'
+import { Topic } from '../topics/topics.entity'
 
 @Exclude()
-@Entity('levels')
-export class Level extends BaseEntity {
+@Entity('tasks')
+export class Task extends BaseEntity {
   @Expose()
   @ApiModelProperty()
   @PrimaryGeneratedColumn()
@@ -22,12 +22,12 @@ export class Level extends BaseEntity {
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty()
   @Column()
-  title: string
+  ask: string
 
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty()
-  @Column({ default: 1, type: 'float' })
-  difficult: number
+  @Column()
+  description: string
 
   @Transform(transformToId)
   @Expose({
@@ -35,11 +35,11 @@ export class Level extends BaseEntity {
   })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
-    () => Test,
-    test => test.levels,
+    () => Topic,
+    topic => topic.tasks,
     {
       nullable: false,
     },
   )
-  test: Test
+  topic: Topic
 }

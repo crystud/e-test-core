@@ -7,7 +7,12 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
@@ -53,7 +58,7 @@ export class LevelsController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     type: Level,
     description: 'Find level by id',
   })

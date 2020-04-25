@@ -4,6 +4,7 @@ import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
@@ -12,6 +13,7 @@ import { AccessLevelType } from '../enums/accessLevelType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { User } from '../users/user.entity'
 import { Subject } from '../subjects/subject.entity'
+import { Task } from '../tasks/task.entity'
 
 @Exclude()
 @Entity('topics')
@@ -58,4 +60,15 @@ export class Topic extends BaseEntity {
     },
   )
   subject: Subject
+
+  @Transform(transformToId)
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  @ApiModelProperty({ type: [Number] })
+  @OneToMany(
+    () => Task,
+    task => task.topic,
+  )
+  tasks: Task[]
 }
