@@ -1,5 +1,18 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common'
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common'
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
@@ -39,6 +52,22 @@ export class TasksController {
 
     return classToClass(task, {
       groups: [...req.user.roles, AccessLevelType.OWNER],
+    })
+  }
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  @ApiOkResponse({
+    type: Task,
+    description: 'Find the task by id',
+  })
+  async findOne(@Param('id') taskId: number, @Request() req): Promise<Task> {
+    const task = await this.tasksService.findOne(taskId)
+
+    return classToClass(task, {
+      groups: [...req.user.roles],
     })
   }
 }
