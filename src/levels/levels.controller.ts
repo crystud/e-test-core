@@ -90,8 +90,13 @@ export class LevelsController {
 
     const test = await this.testsService.findOne(level.test.id)
 
-    if (await this.testsService.hasAccess(test, req.user))
-      return await this.levelsService.addTask(level, task)
+    if (await this.testsService.hasAccess(test, req.user)) {
+      const addedTask = await this.levelsService.addTask(level, task)
+
+      return classToClass(addedTask, {
+        groups: [...req.user.roles],
+      })
+    }
 
     throw new ForbiddenException()
   }

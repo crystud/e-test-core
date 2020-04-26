@@ -21,6 +21,7 @@ import { SubjectsService } from '../subjects/subjects.service'
 import { ShareToCollegeDto } from './dto/shareToCollege.dto'
 import { CollegesService } from '../colleges/colleges.service'
 import { UserRolesType } from '../enums/userRolesType'
+import { classToClass } from 'class-transformer'
 
 @ApiTags('tests')
 @Controller('tests')
@@ -43,11 +44,18 @@ export class TestsController {
   ): Promise<Test> {
     const subject = await this.subjectsService.findOne(createTestDto.subject)
 
-    return await this.testsService.create(createTestDto, subject, req.user)
+    const test = await this.testsService.create(
+      createTestDto,
+      subject,
+      req.user,
+    )
+
+    return classToClass(test, {
+      groups: [...req.user.roles],
+    })
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -56,7 +64,15 @@ export class TestsController {
     const test = await this.testsService.findOne(id)
 
     if (this.testsService.hasAccess(test, req.user)) {
-      return test
+      global.console.log(
+        classToClass(test.levels, {
+          groups: [...req.user.roles],
+        }),
+      )
+
+      return classToClass(test, {
+        groups: [...req.user.roles],
+      })
     }
 
     throw new ForbiddenException()
@@ -79,7 +95,11 @@ export class TestsController {
     ])
 
     if (this.testsService.hasAccess(test, req.user)) {
-      return await this.testsService.shareToCollage(test, college)
+      const shaderedTest = await this.testsService.shareToCollage(test, college)
+
+      return classToClass(shaderedTest, {
+        groups: [...req.user.roles],
+      })
     }
 
     throw new ForbiddenException()

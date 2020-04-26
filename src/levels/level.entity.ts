@@ -63,15 +63,15 @@ export class Level extends BaseEntity {
   @JoinTable()
   tasks: Task[]
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
   @ApiModelProperty({
     type: Boolean,
     description:
       "Count of task is higher or equal equal then const 'countOfTask'. You cannot start testing without implementation this condition",
   })
-  get complited(): boolean {
-    return this.tasks.length >= this.countOfTask
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  get complitedasdasd(): boolean {
+    return true // this.tasks.length >= this.countOfTask
   }
 }

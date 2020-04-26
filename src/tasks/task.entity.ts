@@ -12,6 +12,7 @@ import { UserRolesType } from '../enums/userRolesType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Topic } from '../topics/topics.entity'
 import { Level } from '../levels/level.entity'
+import { TaskTypes } from '../enums/TaskTypes.enum'
 
 @Exclude()
 @Entity('tasks')
@@ -30,6 +31,11 @@ export class Task extends BaseEntity {
   @ApiModelProperty()
   @Column()
   description: string
+
+  @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty()
+  @Column()
+  type: TaskTypes
 
   @Transform(transformToId)
   @Expose({
