@@ -64,12 +64,6 @@ export class TestsController {
     const test = await this.testsService.findOne(id)
 
     if (this.testsService.hasAccess(test, req.user)) {
-      global.console.log(
-        classToClass(test.levels, {
-          groups: [...req.user.roles],
-        }),
-      )
-
       return classToClass(test, {
         groups: [...req.user.roles],
       })
