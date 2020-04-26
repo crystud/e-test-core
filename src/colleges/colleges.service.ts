@@ -23,7 +23,6 @@ export class CollegesService {
 
       return await this.findOne(college.id)
     } catch (e) {
-      global.console.log(e)
       if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
         throw new BadRequestExceptionError({
           property: 'field',

@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
@@ -8,9 +7,8 @@ import {
   Query,
   Request,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { SubjectsService } from './subjects.service'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/roles.guard'
@@ -19,6 +17,7 @@ import { Subject } from './subject.entity'
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { FilterSubjectDto } from './dto/filterSubject.dto'
 import { UserRolesType } from '../enums/userRolesType'
+import { classToClass } from 'class-transformer'
 
 @ApiTags('subjects')
 @Controller('subjects')
@@ -26,7 +25,6 @@ export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -35,28 +33,62 @@ export class SubjectsController {
     @Body() createSubjectDto: CreateSubjectDto,
     @Request() req,
   ): Promise<Subject> {
-    return await this.subjectsService.create(createSubjectDto, req.user)
+    const subject = await this.subjectsService.create(
+      createSubjectDto,
+      req.user,
+    )
+
+    return classToClass(subject, {
+      groups: [...req.user.roles],
+    })
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
     @Query() filterSubjectDto: FilterSubjectDto,
+    @Request() req,
   ): Promise<Subject[]> {
-    return await this.subjectsService.findAll(filterSubjectDto)
+    const subjects = await this.subjectsService.findAll(filterSubjectDto)
+
+    return classToClass(subjects, {
+      groups: [...req.user.roles],
+    })
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post('confirm/:id')
-  async confirm(@Param('id') id: number): Promise<Subject> {
-    return await this.subjectsService.confirm(id)
+  async confirm(@Param('id') id: number, @Request() req): Promise<Subject> {
+    const subject = await this.subjectsService.confirm(id)
+
+    return classToClass(subject, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  @ApiOkResponse({
+    type: Subject,
+    description: 'Find the subject by id.',
+  })
+  async findOne(
+    @Param('id') subjectId: number,
+    @Request() req,
+  ): Promise<Subject> {
+    const subject = await this.subjectsService.findOne(subjectId)
+
+    return classToClass(subject, {
+      groups: [...req.user.roles],
+    })
   }
 }

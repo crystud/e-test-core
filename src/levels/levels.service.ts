@@ -3,6 +3,7 @@ import { CreateLevelDto } from './dto/createLevel.dto'
 import { Test } from '../tests/test.entity'
 import { Level } from './level.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
+import { Task } from '../tasks/task.entity'
 
 @Injectable()
 export class LevelsService {
@@ -44,6 +45,13 @@ export class LevelsService {
         },
       })
     }
+
+    return level
+  }
+
+  async addTask(level: Level, task: Task): Promise<Level> {
+    level.tasks.push(task)
+    await level.save()
 
     return level
   }

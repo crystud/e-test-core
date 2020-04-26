@@ -6,11 +6,16 @@ export class CreateLevelDto {
   @IsNotEmpty()
   title: string
 
-  @ApiProperty()
+  @ApiProperty({ default: 1 })
   @Min(0)
   difficult: number
 
   @ApiProperty()
   @IsInt()
   test: number
+
+  @ApiProperty({ default: 1 })
+  @IsInt()
+  @Min(0)
+  countOfTask: number
 }

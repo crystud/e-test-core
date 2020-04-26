@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Post,
@@ -22,6 +23,7 @@ import { LevelsService } from './levels.service'
 import { TestsService } from '../tests/tests.service'
 import { CreateLevelDto } from './dto/createLevel.dto'
 import { classToClass } from 'class-transformer'
+import { TasksService } from '../tasks/tasks.service'
 
 @ApiTags('levels')
 @Controller('levels')
@@ -29,6 +31,7 @@ export class LevelsController {
   constructor(
     private readonly levelsService: LevelsService,
     private readonly testsService: TestsService,
+    private readonly tasksService: TasksService,
   ) {}
 
   @ApiBearerAuth()
@@ -68,5 +71,33 @@ export class LevelsController {
     return classToClass(level, {
       groups: [...req.user.roles],
     })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':levelId/task/:taskId')
+  async addTask(
+    @Param('levelId') levelId: number,
+    @Param('taskId') taskId: number,
+    @Request() req,
+  ): Promise<Level> {
+    const [level, task] = await Promise.all([
+      this.levelsService.findOne(levelId),
+      this.tasksService.findOne(taskId),
+    ])
+
+    const test = await this.testsService.findOne(level.test.id)
+
+    if (await this.testsService.hasAccess(test, req.user)) {
+      const addedTask = await this.levelsService.addTask(level, task)
+
+      return classToClass(addedTask, {
+        groups: [...req.user.roles],
+      })
+    }
+
+    throw new ForbiddenException()
   }
 }

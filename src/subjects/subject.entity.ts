@@ -10,23 +10,33 @@ import {
 } from 'typeorm'
 import { User } from '../users/user.entity'
 import { College } from '../colleges/college.entity'
-import { Exclude, Transform } from 'class-transformer'
+import { Exclude, Expose, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Study } from '../studies/study.entity'
 import { Topic } from '../topics/topics.entity'
 import { Test } from '../tests/test.entity'
+import { UserRolesType } from '../enums/userRolesType'
+import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 
+@Exclude()
 @Entity('subjects')
 export class Subject extends BaseEntity {
+  @Expose()
   @PrimaryGeneratedColumn()
   id: number
 
+  @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty()
   @Column({ unique: true })
   name: string
 
+  @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty()
   @Column({ default: false })
   confirmed: boolean
 
+  @Expose({ groups: [UserRolesType.ADMIN] })
+  @ApiModelProperty({ type: Number })
   @Transform(transformToId)
   @ManyToOne(
     () => User,
@@ -37,6 +47,8 @@ export class Subject extends BaseEntity {
   )
   creator: User
 
+  @Expose({ groups: [UserRolesType.ADMIN] })
+  @ApiModelProperty({ type: [Number] })
   @Transform(transformToId)
   @ManyToMany(
     () => User,
@@ -44,6 +56,8 @@ export class Subject extends BaseEntity {
   )
   teachers: User[]
 
+  @Expose({ groups: [UserRolesType.ADMIN] })
+  @ApiModelProperty({ type: [Number] })
   @Transform(transformToId)
   @ManyToMany(
     () => College,
@@ -52,6 +66,8 @@ export class Subject extends BaseEntity {
   @JoinTable()
   colleges: College[]
 
+  @Expose({ groups: [UserRolesType.ADMIN] })
+  @ApiModelProperty({ type: [Number] })
   @Exclude()
   @OneToMany(
     () => Study,
@@ -59,6 +75,8 @@ export class Subject extends BaseEntity {
   )
   studies: Study[]
 
+  @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({ type: [Number] })
   @Transform(transformToId)
   @OneToMany(
     () => Topic,
@@ -66,6 +84,8 @@ export class Subject extends BaseEntity {
   )
   topics: Topic[]
 
+  @Expose({ groups: [UserRolesType.ADMIN] })
+  @ApiModelProperty({ type: [Number] })
   @Exclude()
   @OneToMany(
     () => Test,
