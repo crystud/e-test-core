@@ -15,7 +15,7 @@ export class CreateTaskDto {
   @IsEnum(TaskTypes)
   type: TaskTypes
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   ignoreCase?: boolean
 
   @ApiProperty()

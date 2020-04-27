@@ -32,7 +32,7 @@ export class TasksService {
       where: {
         id,
       },
-      relations: ['topic'],
+      relations: ['topic', 'answers'],
     })
 
     if (!task) {

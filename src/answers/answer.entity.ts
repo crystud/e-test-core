@@ -32,6 +32,18 @@ export class Answer extends BaseEntity {
   @Column()
   text: string
 
+  @Expose({
+    groups: [
+      UserRolesType.USER,
+      TaskTypes.TEXT_INPUT,
+      TaskTypes.MULTY_CHOICE,
+      TaskTypes.SINGLE_CHOICE,
+    ],
+  })
+  @ApiModelProperty()
+  @Column({ type: 'smallint' })
+  score: number
+
   @Expose({ groups: [UserRolesType.USER, TaskTypes.NUMBERING] })
   @ApiModelProperty({
     description: `Position of answer for ${TaskTypes.NUMBERING}`,
