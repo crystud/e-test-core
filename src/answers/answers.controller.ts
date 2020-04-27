@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
@@ -50,6 +58,26 @@ export class AnswersController {
     }
 
     const answer = await this.answersService.create(createAnswerDto, task)
+
+    return classToClass(answer, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  @ApiCreatedResponse({
+    type: Answer,
+    description: 'Find the answer by id.',
+  })
+  async findOne(
+    @Param('id') answerId: number,
+    @Request() req,
+  ): Promise<Answer> {
+    const answer = await this.answersService.findOne(answerId)
 
     return classToClass(answer, {
       groups: [...req.user.roles],
