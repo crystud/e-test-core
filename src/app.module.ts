@@ -11,6 +11,7 @@ import { TestsModule } from './tests/tests.module'
 import { TopicsModule } from './topics/topics.module'
 import { LevelsModule } from './levels/levels.module'
 import { TasksModule } from './tasks/tasks.module'
+import { AnswersModule } from './answers/answers.module'
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { TasksModule } from './tasks/tasks.module'
     TopicsModule,
     LevelsModule,
     TasksModule,
+    AnswersModule,
   ],
 })
 export class AppModule {}
