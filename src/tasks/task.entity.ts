@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Exclude, Expose, Transform } from 'class-transformer'
@@ -13,6 +14,7 @@ import { transformToId } from '../tools/transformers/transformToId'
 import { Topic } from '../topics/topics.entity'
 import { Level } from '../levels/level.entity'
 import { TaskTypes } from '../enums/TaskTypes.enum'
+import { Answer } from '../answers/answer.entity'
 
 @Exclude()
 @Entity('tasks')
@@ -26,6 +28,13 @@ export class Task extends BaseEntity {
   @ApiModelProperty()
   @Column()
   ask: string
+
+  @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({
+    description: `Ignore when type isn't ${TaskTypes.TEXT_INPUT}`,
+  })
+  @Column({ default: false })
+  ignoreCase: boolean
 
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty()
@@ -51,9 +60,21 @@ export class Task extends BaseEntity {
   )
   topic: Topic
 
+  @Exclude()
   @ManyToMany(
     () => Level,
     level => level.tasks,
   )
   levels: Level[]
+
+  @Transform(transformToId)
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  @ApiModelProperty({ type: [Number] })
+  @OneToMany(
+    () => Answer,
+    answer => answer.task,
+  )
+  answers: Answer[]
 }

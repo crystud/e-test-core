@@ -15,6 +15,9 @@ export class CreateTaskDto {
   @IsEnum(TaskTypes)
   type: TaskTypes
 
+  @ApiProperty({ required: false })
+  ignoreCase?: boolean
+
   @ApiProperty()
   @IsInt()
   topic: number
