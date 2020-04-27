@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt, IsNotEmpty, IsEnum } from 'class-validator'
+import { IsInt, IsNotEmpty, IsEnum, IsBoolean, IsEmpty } from 'class-validator'
 import { TaskTypes } from '../../enums/TaskTypes.enum'
 
 export class CreateTaskDto {
@@ -14,6 +14,9 @@ export class CreateTaskDto {
   @ApiProperty({ enum: TaskTypes })
   @IsEnum(TaskTypes)
   type: TaskTypes
+
+  @ApiProperty()
+  ignoreCase?: boolean
 
   @ApiProperty()
   @IsInt()

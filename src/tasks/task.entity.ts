@@ -28,6 +28,13 @@ export class Task extends BaseEntity {
   ask: string
 
   @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({
+    description: `Ignore when type isn't ${TaskTypes.TEXT_INPUT}`,
+  })
+  @Column({ default: false })
+  ignoreCase: boolean
+
+  @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty()
   @Column()
   description: string
