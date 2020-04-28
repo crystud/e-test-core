@@ -15,8 +15,8 @@ import { Expose, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Test } from '../tests/test.entity'
 
-@Entity('study')
-@Index(['subject', 'college'], { unique: true })
+@Entity('studies')
+// @Index(['subject', 'college'], { unique: true })
 export class Study extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
@@ -50,6 +50,7 @@ export class Study extends BaseEntity {
   @JoinTable()
   specialties: Speciality[]
 
+  @Transform(transformToId)
   @ManyToMany(
     () => Test,
     test => test.studies,

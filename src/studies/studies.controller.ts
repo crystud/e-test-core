@@ -117,7 +117,7 @@ export class StudiesController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findOne(@Param('id') studyId, @Request() req): Promise<Study> {
+  async findOne(@Param('id') studyId: number, @Request() req): Promise<Study> {
     const study = await this.studiesService.findOne(studyId)
     const college = await this.collegesService.findOne(study.college.id)
 

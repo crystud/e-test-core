@@ -16,6 +16,7 @@ export class UsersService {
         'editableColleges',
         'groups',
         'groups.speciality',
+        'permissions',
         'teachSubjects',
         'studies',
         'createSubjectRequests',
