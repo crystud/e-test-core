@@ -2,11 +2,18 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
+  Param,
   Post,
   Request,
   UseGuards,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
@@ -55,5 +62,25 @@ export class PermissionsController {
     }
 
     throw new ForbiddenException()
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  @ApiOkResponse({
+    type: Permission,
+    description: 'Find the permission by id.',
+  })
+  async findOne(
+    @Param('id') permissionId: number,
+    @Request() req,
+  ): Promise<Permission> {
+    const permission = await this.permissionsService.findOne(permissionId)
+
+    return classToClass(permission, {
+      groups: [...req.user.roles],
+    })
   }
 }

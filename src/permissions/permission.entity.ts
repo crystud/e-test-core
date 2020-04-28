@@ -12,6 +12,8 @@ import { User } from '../users/user.entity'
 import { Test } from '../tests/test.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { transformToId } from '../tools/transformers/transformToId'
+import { Group } from '../groups/group.entity'
+import moment = require('moment')
 
 @Exclude()
 @Entity('permissions')
@@ -57,4 +59,9 @@ export class Permission extends BaseEntity {
   })
   @Column({ type: 'datetime' })
   endTime: Date
+
+  @Expose({ groups: [UserRolesType.USER] })
+  get active(): boolean {
+    return moment().isBetween(this.startTime, this.endTime)
+  }
 }
