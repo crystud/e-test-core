@@ -20,6 +20,7 @@ import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Topic } from '../topics/topics.entity'
+import { Permission } from '../permissions/permission.entity'
 
 @Exclude()
 @Entity('users')
@@ -135,8 +136,8 @@ export class User extends BaseEntity {
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @ManyToMany(
-    () => Subject,
-    subject => subject.teachers,
+    () => Study,
+    study => study.teachers,
   )
   @JoinTable()
   studies: Study[]
@@ -149,4 +150,13 @@ export class User extends BaseEntity {
     test => test.creator,
   )
   tests: Test[]
+
+  @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @ApiModelProperty({ type: [Number] })
+  @OneToMany(
+    () => Permission,
+    permission => permission.allower,
+  )
+  permissions: Permission[]
 }

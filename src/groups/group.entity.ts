@@ -8,11 +8,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
-import { Expose, Transform } from 'class-transformer'
+import { Exclude, Expose, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Speciality } from '../specialties/speciality.entity'
 import * as moment from 'moment'
 import { now } from 'moment'
+import { Permission } from '../permissions/permission.entity'
 
 @Entity('groups')
 export class Group extends BaseEntity {
@@ -49,6 +50,13 @@ export class Group extends BaseEntity {
   )
   students: User[]
 
+  @Exclude()
+  @ManyToMany(
+    () => Permission,
+    permission => permission.groups,
+  )
+  permissions: Permission[]
+
   @Expose()
   get course(): number {
     return Math.abs(
@@ -57,7 +65,9 @@ export class Group extends BaseEntity {
   }
 
   @Expose()
-  get name(): string {
-    return `${this.speciality.symbol}-${this.course}${this.number}`
+  get name(): string | null {
+    return this.speciality
+      ? `${this.speciality.symbol}-${this.course}${this.number}`
+      : null
   }
 }

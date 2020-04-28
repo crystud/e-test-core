@@ -95,4 +95,10 @@ export class GroupsService {
   isStudent(group: Group, user: User): boolean {
     return group.students.some(student => student.id === user.id)
   }
+
+  async findByIds(ids: number[]): Promise<Group[]> {
+    return await Group.findByIds(ids, {
+      relations: ['speciality', 'students'],
+    })
+  }
 }

@@ -12,6 +12,7 @@ import { TopicsModule } from './topics/topics.module'
 import { LevelsModule } from './levels/levels.module'
 import { TasksModule } from './tasks/tasks.module'
 import { AnswersModule } from './answers/answers.module'
+import { PermissionsModule } from './permissions/permissions.module'
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AnswersModule } from './answers/answers.module'
     LevelsModule,
     TasksModule,
     AnswersModule,
+    PermissionsModule,
   ],
 })
 export class AppModule {}

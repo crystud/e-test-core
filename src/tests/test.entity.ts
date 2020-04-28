@@ -17,6 +17,7 @@ import { College } from '../colleges/college.entity'
 import { Level } from '../levels/level.entity'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { UserRolesType } from '../enums/userRolesType'
+import { Permission } from '../permissions/permission.entity'
 
 @Entity('tests')
 export class Test extends BaseEntity {
@@ -78,4 +79,11 @@ export class Test extends BaseEntity {
     level => level.test,
   )
   levels: Level[]
+
+  @Exclude()
+  @OneToMany(
+    () => Permission,
+    permission => permission.test,
+  )
+  permissions: Permission[]
 }
