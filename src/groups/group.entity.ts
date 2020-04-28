@@ -13,6 +13,7 @@ import { transformToId } from '../tools/transformers/transformToId'
 import { Speciality } from '../specialties/speciality.entity'
 import * as moment from 'moment'
 import { now } from 'moment'
+import { Permission } from '../permissions/permission.entity'
 
 @Entity('groups')
 export class Group extends BaseEntity {
@@ -48,6 +49,13 @@ export class Group extends BaseEntity {
     user => user.groups,
   )
   students: User[]
+
+  @Transform(transformToId)
+  @ManyToMany(
+    () => Permission,
+    permission => permission.groups,
+  )
+  permissions: Permission[]
 
   @Expose()
   get course(): number {

@@ -24,6 +24,7 @@ import { PermissionsService } from './permissions.service'
 import { TestsService } from '../tests/tests.service'
 import { classToClass } from 'class-transformer'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { GroupsService } from '../groups/groups.service'
 
 @ApiTags('permissions')
 @Controller('permissions')
@@ -31,6 +32,7 @@ export class PermissionsController {
   constructor(
     private readonly permissionsService: PermissionsService,
     private readonly testsService: TestsService,
+    private readonly groupsService: GroupsService,
   ) {}
 
   @ApiBearerAuth()
@@ -46,7 +48,11 @@ export class PermissionsController {
     @Body() createPermissionDto: CreatePermissionDto,
     @Request() req,
   ): Promise<Permission> {
-    const test = await this.testsService.findOne(createPermissionDto.testId)
+    const [test, groups] = await Promise.all([
+      this.testsService.findOne(createPermissionDto.testId),
+      this.groupsService.findByIds(createPermissionDto.groups),
+    ])
+
     const user = req.user
 
     if (await this.testsService.hasAccess(test, user)) {
@@ -54,6 +60,7 @@ export class PermissionsController {
         createPermissionDto,
         test,
         user,
+        groups,
       )
 
       return classToClass(permission, {

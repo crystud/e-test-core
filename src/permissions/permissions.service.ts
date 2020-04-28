@@ -5,6 +5,7 @@ import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptio
 import { CreatePermissionDto } from './dto/createPermission.dto'
 import { Test } from '../tests/test.entity'
 import { User } from '../users/user.entity'
+import { Group } from '../groups/group.entity'
 
 @Injectable()
 export class PermissionsService {
@@ -12,12 +13,14 @@ export class PermissionsService {
     createPermissionDto: CreatePermissionDto,
     test: Test,
     allower: User,
+    groups: Group[],
   ): Promise<Permission> {
     try {
       const permission = await Permission.create({
         ...createPermissionDto,
         test,
         allower,
+        groups,
       }).save()
 
       return await this.findOne(permission.id)
@@ -39,7 +42,7 @@ export class PermissionsService {
       where: {
         id,
       },
-      relations: ['allower', 'test'],
+      relations: ['allower', 'test', 'groups'],
     })
 
     if (!permission) {

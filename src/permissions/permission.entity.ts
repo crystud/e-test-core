@@ -3,6 +3,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
@@ -40,6 +42,19 @@ export class Permission extends BaseEntity {
     test => test.permissions,
   )
   test: Test
+
+  @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.USER] })
+  @ApiModelProperty({
+    type: [Number],
+    description: 'Groups which can start testing',
+  })
+  @ManyToMany(
+    () => Group,
+    group => group.permissions,
+  )
+  @JoinTable()
+  groups: Group[]
 
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty()

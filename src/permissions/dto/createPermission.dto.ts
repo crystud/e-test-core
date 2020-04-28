@@ -7,6 +7,11 @@ export class CreatePermissionDto {
   @Min(0)
   testId: number
 
+  @ApiProperty({ type: [Number], default: [] })
+  @IsInt({ each: true })
+  @Min(0, { each: true })
+  groups: number[]
+
   @ApiProperty()
   startTime: Date
 
