@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
-import { Expose, Transform } from 'class-transformer'
+import { Exclude, Expose, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Speciality } from '../specialties/speciality.entity'
 import * as moment from 'moment'
@@ -50,7 +50,7 @@ export class Group extends BaseEntity {
   )
   students: User[]
 
-  @Transform(transformToId)
+  @Exclude()
   @ManyToMany(
     () => Permission,
     permission => permission.groups,

@@ -13,7 +13,7 @@ export class GroupsService {
       where: {
         id,
       },
-      relations: ['speciality', 'students', 'permissions'],
+      relations: ['speciality', 'students'],
     })
 
     if (!group) {
@@ -98,7 +98,7 @@ export class GroupsService {
 
   async findByIds(ids: number[]): Promise<Group[]> {
     return await Group.findByIds(ids, {
-      relations: ['speciality', 'students', 'permissions'],
+      relations: ['speciality', 'students'],
     })
   }
 }
