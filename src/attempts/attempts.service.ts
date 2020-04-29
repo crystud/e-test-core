@@ -20,9 +20,8 @@ export class AttemptsService {
       levels = [...levels, request]
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [tasks] = await Promise.all(levels)
 
-    // global.console.log(tasks)
+    global.console.log(tasks)
   }
 }
