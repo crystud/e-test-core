@@ -21,6 +21,14 @@ export class Ticket extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.TEACHER,
+    ],
+  })
+  @ApiModelProperty()
   @Column()
   title: string
 
