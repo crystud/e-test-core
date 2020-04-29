@@ -21,6 +21,9 @@ export class Ticket extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
+  @Column()
+  title: string
+
   @Expose({
     groups: [
       UserRolesType.ADMIN,

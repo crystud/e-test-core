@@ -64,7 +64,7 @@ export class PermissionsController {
       )
 
       return classToClass(permission, {
-        groups: [...user.roles, AccessLevelType.OWNER],
+        groups: [...user.roles, AccessLevelType.ALLOWER],
       })
     }
 
@@ -86,8 +86,13 @@ export class PermissionsController {
   ): Promise<Permission> {
     const permission = await this.permissionsService.findOne(permissionId)
 
+    const accesses = await this.permissionsService.accessRelations(
+      permission,
+      req.user,
+    )
+
     return classToClass(permission, {
-      groups: [...req.user.roles],
+      groups: [...req.user.roles, ...accesses],
     })
   }
 }

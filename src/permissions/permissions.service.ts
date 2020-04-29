@@ -7,6 +7,8 @@ import { Test } from '../tests/test.entity'
 import { User } from '../users/user.entity'
 import { Group } from '../groups/group.entity'
 
+import { AccessLevelType } from '../enums/accessLevelType'
+
 @Injectable()
 export class PermissionsService {
   async create(
@@ -56,5 +58,37 @@ export class PermissionsService {
     }
 
     return permission
+  }
+
+  async isStudent(permission: Permission, student: User): Promise<boolean> {
+    const isStudent = await Permission.createQueryBuilder('permission')
+      .leftJoinAndSelect('permission.tickets', 'tickets')
+      .leftJoinAndSelect('tickets.student', 'student')
+      .where('permission.id = :permissionID', { permissionID: permission.id })
+      .where('student.id = :studentID', { studentID: student.id })
+      .getCount()
+
+    return Boolean(isStudent)
+  }
+
+  async isAllower(permission: Permission, user: User): Promise<boolean> {
+    return permission.allower.id === user.id
+  }
+
+  async accessRelations(
+    permission: Permission,
+    user: User,
+  ): Promise<AccessLevelType[]> {
+    const levels: AccessLevelType[] = []
+
+    const [isStudent, isAllower] = await Promise.all([
+      this.isStudent(permission, user),
+      this.isAllower(permission, user),
+    ])
+
+    if (isStudent) levels.push(AccessLevelType.STUDENT)
+    if (isAllower) levels.push(AccessLevelType.ALLOWER)
+
+    return levels
   }
 }
