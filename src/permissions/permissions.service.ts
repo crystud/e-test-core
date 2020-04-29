@@ -44,7 +44,7 @@ export class PermissionsService {
       where: {
         id,
       },
-      relations: ['allower', 'test', 'groups'],
+      relations: ['allower', 'test', 'groups', 'tickets'],
     })
 
     if (!permission) {
