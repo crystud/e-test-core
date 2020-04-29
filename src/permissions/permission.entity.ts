@@ -6,6 +6,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Exclude, Expose, Transform } from 'class-transformer'
@@ -15,6 +16,8 @@ import { Test } from '../tests/test.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
+import { Ticket } from '../tickets/ticket.entity'
+import { AccessLevelType } from '../enums/accessLevelType'
 import moment = require('moment')
 
 @Exclude()
@@ -26,7 +29,13 @@ export class Permission extends BaseEntity {
   id: number
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.ALLOWER,
+    ],
+  })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
     () => User,
@@ -35,7 +44,9 @@ export class Permission extends BaseEntity {
   allower: User
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({
+    groups: [UserRolesType.ADMIN, AccessLevelType.ALLOWER],
+  })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
     () => Test,
@@ -44,7 +55,13 @@ export class Permission extends BaseEntity {
   test: Test
 
   @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.ALLOWER,
+    ],
+  })
   @ApiModelProperty({
     type: [Number],
     description: 'Groups which can start testing',
@@ -56,27 +73,64 @@ export class Permission extends BaseEntity {
   @JoinTable()
   groups: Group[]
 
-  @Expose({ groups: [UserRolesType.USER] })
+  @Transform(transformToId)
+  @Expose({
+    groups: [UserRolesType.ADMIN, AccessLevelType.ALLOWER],
+  })
+  @ApiModelProperty({
+    type: [Number],
+  })
+  @OneToMany(
+    () => Ticket,
+    ticket => ticket.permission,
+  )
+  tickets: Ticket[]
+
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.ALLOWER,
+    ],
+  })
   @ApiModelProperty()
   @CreateDateColumn()
   createAt: Date
 
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.ALLOWER,
+    ],
+  })
   @ApiModelProperty({
     description: 'Time when students can start passing the test',
   })
   @Column({ type: 'datetime' })
   startTime: Date
 
-  @Expose({ groups: [UserRolesType.USER] })
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.ALLOWER,
+    ],
+  })
   @ApiModelProperty({
     description: 'Time when students already cannot start passing the test',
   })
   @Column({ type: 'datetime' })
   endTime: Date
 
-  @Expose({ groups: [UserRolesType.USER] })
-  get active(): boolean {
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.ALLOWER,
+    ],
+  })
+  get actived(): boolean {
     return moment().isBetween(this.startTime, this.endTime)
   }
 }

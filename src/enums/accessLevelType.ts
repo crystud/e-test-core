@@ -3,6 +3,7 @@ export enum AccessLevelType {
   TEACHER = 'teacher',
   STUDENT = 'student',
   SHARER = 'sharer',
+  ALLOWER = 'allower',
   EDITOR = 'editor',
   OWNER = 'owner',
 }

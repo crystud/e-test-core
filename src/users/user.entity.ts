@@ -21,6 +21,7 @@ import { AccessLevelType } from '../enums/accessLevelType'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Topic } from '../topics/topics.entity'
 import { Permission } from '../permissions/permission.entity'
+import { Ticket } from '../tickets/ticket.entity'
 
 @Exclude()
 @Entity('users')
@@ -159,4 +160,13 @@ export class User extends BaseEntity {
     permission => permission.allower,
   )
   permissions: Permission[]
+
+  @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @ApiModelProperty({ type: [Number] })
+  @OneToMany(
+    () => Ticket,
+    ticket => ticket.student,
+  )
+  tickets: Ticket[]
 }
