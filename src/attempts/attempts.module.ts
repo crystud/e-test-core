@@ -3,6 +3,7 @@ import { AttemptsService } from './attempts.service'
 import { AttemptsController } from './attempts.controller'
 
 @Module({
+  exports: [AttemptsService],
   providers: [AttemptsService],
   controllers: [AttemptsController],
 })

@@ -12,6 +12,7 @@ import { User } from '../users/user.entity'
 import { transformToId } from '../tools/transformers/transformToId'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { Attempt } from '../attempts/attempt.entity'
 
 @Exclude()
 @Entity('tickets')
@@ -60,6 +61,21 @@ export class Ticket extends BaseEntity {
     user => user.tickets,
   )
   student: User
+
+  @Transform(transformToId)
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.TEACHER,
+    ],
+  })
+  @ApiModelProperty({ type: [Number] })
+  @ManyToOne(
+    () => Attempt,
+    attempt => attempt.ticket,
+  )
+  attempts: Attempt[]
 
   @Expose({
     groups: [

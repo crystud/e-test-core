@@ -44,7 +44,12 @@ export class TicketsService {
       where: {
         id,
       },
-      relations: ['student', 'permission'],
+      relations: [
+        'student',
+        'permission',
+        'permission.test',
+        'permission.test.levels',
+      ],
     })
 
     if (!ticket) {

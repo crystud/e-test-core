@@ -77,4 +77,15 @@ export class Task extends BaseEntity {
     answer => answer.task,
   )
   answers: Answer[]
+
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  @ApiModelProperty({ type: Number })
+  get maxScore(): number {
+    let sum = 0
+    this.answers.forEach(answers => (sum += Number(answers.correct)))
+
+    return sum
+  }
 }

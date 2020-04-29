@@ -41,8 +41,8 @@ export class Answer extends BaseEntity {
     ],
   })
   @ApiModelProperty()
-  @Column({ type: 'smallint' })
-  score: number
+  @Column()
+  correct: boolean
 
   @Expose({ groups: [UserRolesType.USER, TaskTypes.NUMBERING] })
   @ApiModelProperty({

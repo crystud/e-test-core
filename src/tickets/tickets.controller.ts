@@ -22,11 +22,15 @@ import { TicketsService } from './tickets.service'
 import { Ticket } from './ticket.entity'
 import { classToClass } from 'class-transformer'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { AttemptsService } from '../attempts/attempts.service'
 
 @ApiTags('tickets')
 @Controller('tickets')
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly attemptsService: AttemptsService,
+  ) {}
 
   @ApiBearerAuth()
   @Roles(UserRolesType.USER)
@@ -67,6 +71,8 @@ export class TicketsController {
 
     if (accesses.includes(AccessLevelType.STUDENT)) {
       ticket = await this.ticketsService.use(ticket)
+
+      await this.attemptsService.create(ticket)
 
       return classToClass(ticket, {
         groups: [...user.roles, ...accesses],

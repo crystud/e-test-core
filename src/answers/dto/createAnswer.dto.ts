@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt, Min } from 'class-validator'
+import { IsBoolean, IsInt, Min } from 'class-validator'
 
 export class CreateAnswerDto {
   @ApiProperty()
@@ -8,9 +8,9 @@ export class CreateAnswerDto {
   @ApiProperty({ required: false, default: -1 })
   position?: number
 
-  @ApiProperty({ default: 1 })
-  @IsInt()
-  score: number
+  @ApiProperty()
+  @IsBoolean()
+  correct: boolean
 
   @ApiProperty()
   @IsInt()
