@@ -25,6 +25,7 @@ import { TestsService } from '../tests/tests.service'
 import { classToClass } from 'class-transformer'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { GroupsService } from '../groups/groups.service'
+import { TicketsService } from '../tickets/tickets.service'
 
 @ApiTags('permissions')
 @Controller('permissions')
@@ -33,6 +34,7 @@ export class PermissionsController {
     private readonly permissionsService: PermissionsService,
     private readonly testsService: TestsService,
     private readonly groupsService: GroupsService,
+    private readonly ticketsService: TicketsService,
   ) {}
 
   @ApiBearerAuth()
@@ -56,15 +58,26 @@ export class PermissionsController {
     const user = req.user
 
     if (await this.testsService.hasAccess(test, user)) {
-      const permission = await this.permissionsService.create(
+      let permission = await this.permissionsService.create(
         createPermissionDto,
         test,
         user,
         groups,
       )
 
+      let users = []
+      groups.forEach(group => (users = [...users, ...group.students]))
+
+      await this.ticketsService.createMany(
+        `${permission.test.title} (${permission.allower.fullName})`,
+        permission,
+        users,
+      )
+
+      permission = await this.permissionsService.findOne(permission.id)
+
       return classToClass(permission, {
-        groups: [...user.roles, AccessLevelType.OWNER],
+        groups: [...user.roles, AccessLevelType.ALLOWER],
       })
     }
 
@@ -86,8 +99,13 @@ export class PermissionsController {
   ): Promise<Permission> {
     const permission = await this.permissionsService.findOne(permissionId)
 
+    const accesses = await this.permissionsService.accessRelations(
+      permission,
+      req.user,
+    )
+
     return classToClass(permission, {
-      groups: [...req.user.roles],
+      groups: [...req.user.roles, ...accesses],
     })
   }
 }

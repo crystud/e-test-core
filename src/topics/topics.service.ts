@@ -41,7 +41,7 @@ export class TopicsService {
       where: {
         id,
       },
-      relations: ['subject', 'creator'],
+      relations: ['subject', 'creator', 'tasks'],
     })
 
     if (!topic) {
