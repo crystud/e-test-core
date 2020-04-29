@@ -91,4 +91,31 @@ export class TicketsService {
 
     return levels
   }
+
+  async use(ticket: Ticket): Promise<Ticket> {
+    if (!ticket.permission.actived)
+      throw new BadRequestExceptionError({
+        value: ticket.id,
+        property: 'ticketId',
+        constraints: {
+          isNotActived: 'Time of ticket activity has already ended',
+        },
+      })
+
+    if (ticket.used) {
+      throw new BadRequestExceptionError({
+        value: ticket.id,
+        property: 'ticketId',
+        constraints: {
+          isNotActived: "Ticket's already used",
+        },
+      })
+    }
+
+    ticket.used = true
+    ticket.usedTime = new Date()
+    await ticket.save()
+
+    return ticket
+  }
 }
