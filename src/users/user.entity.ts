@@ -169,4 +169,11 @@ export class User extends BaseEntity {
     ticket => ticket.student,
   )
   tickets: Ticket[]
+
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName} ${this.patronymic}`
+  }
 }

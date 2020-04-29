@@ -2,9 +2,64 @@ import { Injectable } from '@nestjs/common'
 import { User } from '../users/user.entity'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { Ticket } from './ticket.entity'
+import { Permission } from '../permissions/permission.entity'
+import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 
 @Injectable()
 export class TicketsService {
+  async create(
+    title: string,
+    permission: Permission,
+    student: User,
+  ): Promise<Ticket> {
+    const ticket = await Ticket.create({
+      title,
+      permission,
+      student,
+    }).save()
+
+    return this.findOne(ticket.id)
+  }
+
+  async createMany(
+    title: string,
+    permission: Permission,
+    students: User[],
+  ): Promise<boolean> {
+    const tickets = students.map(student =>
+      Ticket.create({ title, permission, student }),
+    )
+
+    try {
+      await Ticket.save(tickets)
+
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
+  async findOne(id: number): Promise<Ticket> {
+    const ticket = await Ticket.findOne({
+      where: {
+        id,
+      },
+      relations: ['student', 'permission'],
+    })
+
+    if (!ticket) {
+      throw new BadRequestExceptionError({
+        property: 'ticketId',
+        value: id,
+        constraints: {
+          isNotExist: 'ticket is not exist',
+        },
+      })
+    }
+
+    return ticket
+  }
+
   async isStudent(ticket: Ticket, user: User): Promise<boolean> {
     return ticket.student.id === user.id
   }

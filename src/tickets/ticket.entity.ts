@@ -72,6 +72,6 @@ export class Ticket extends BaseEntity {
     ],
   })
   @ApiModelProperty()
-  @Column({ type: 'datetime' })
-  usedTime: Date
+  @Column({ type: 'datetime', default: null })
+  usedTime: Date | null
 }
