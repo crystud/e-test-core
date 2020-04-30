@@ -74,6 +74,8 @@ export class TicketsController {
 
       await this.attemptsService.create(ticket)
 
+      ticket = await this.ticketsService.findOne(ticket.id)
+
       return classToClass(ticket, {
         groups: [...user.roles, ...accesses],
       })

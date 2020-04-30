@@ -10,22 +10,41 @@ import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.buil
 @Injectable()
 export class UsersService {
   async findOne(id: number): Promise<User> {
-    const user = await User.findOne(id, {
-      relations: [
-        'ownColleges',
-        'editableColleges',
-        'groups',
-        'groups.speciality',
-        'permissions',
-        'teachSubjects',
-        'studies',
-        'createSubjectRequests',
-        'createTopicRequests',
-        'tests',
-        'tickets',
-        'attempts',
-      ],
-    })
+    const user = await User.createQueryBuilder('user')
+      .leftJoinAndSelect('user.editableColleges', 'editableColleges')
+      .leftJoinAndSelect('user.groups', 'groups')
+      .leftJoinAndSelect('user.ownColleges', 'ownColleges')
+      .leftJoinAndSelect('user.createSubjectRequests', 'createSubjectRequests')
+      .leftJoinAndSelect('user.createTopicRequests', 'createTopicRequests')
+      .leftJoinAndSelect('user.teachSubjects', 'teachSubjects')
+      .leftJoinAndSelect('user.studies', 'studies')
+      .leftJoinAndSelect('user.tests', 'tests')
+      .leftJoinAndSelect('user.permissions', 'permissions')
+      .leftJoinAndSelect('user.tickets', 'tickets')
+      .leftJoinAndSelect('user.results', 'results')
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'user.firstName',
+        'user.email',
+        'user.roles',
+        'user.createAt',
+        'editableColleges.id',
+        'groups.id',
+        'ownColleges.id',
+        'createSubjectRequests.id',
+        'createTopicRequests.id',
+        'teachSubjects.id',
+        'studies.id',
+        'tests.id',
+        'permissions.id',
+        'tickets.id',
+        'results.id',
+      ])
+      .where('user.id = :userId', { userId: id })
+      .getOne()
 
     if (!user) {
       throw new BadRequestExceptionError({

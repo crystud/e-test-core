@@ -10,6 +10,11 @@ import { shuffle } from 'lodash'
 
 import { User } from '../users/user.entity'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { CompleteAttemptDto } from './dto/completeAttempt.dto'
+import { TaskTypes } from '../enums/TaskTypes.enum'
+import { ResultAnswer } from '../results/resultAnswer.entity'
+import { Result } from '../results/result.entity'
+import { AnswerCheckResult } from './interfaces/answerCheckResult.interface'
 
 @Injectable()
 export class AttemptsService {
@@ -31,7 +36,7 @@ export class AttemptsService {
         .leftJoinAndSelect('task.answers', 'answers')
         .where('levels.id = :levelsID', { levelsID: level.id })
         .orderBy('RAND()')
-        .limit(countOfTask)
+        .take(countOfTask)
         .getMany()
 
       tasks.forEach(task => {
@@ -66,7 +71,9 @@ export class AttemptsService {
 
     attemptAnswers = shuffle<AttemptAnswer>(attemptAnswers)
 
-    attemptAnswers = await AttemptAnswer.save(attemptAnswers)
+    attempt.maxScore = maxScore
+
+    await Promise.all([attempt.save(), AttemptAnswer.save(attemptAnswers)])
 
     return await this.findOne(attempt.id)
   }
@@ -76,7 +83,7 @@ export class AttemptsService {
       where: {
         id,
       },
-      relations: ['ticket', 'student', 'tasks'],
+      relations: ['ticket', 'student', 'tasks', 'result'],
     })
 
     if (!attempt) {
@@ -124,7 +131,14 @@ export class AttemptsService {
       where: {
         attempt,
       },
-      relations: ['task', 'level', 'attempt', 'attemptAnswers'],
+      relations: [
+        'task',
+        'task.answers',
+        'level',
+        'attempt',
+        'attemptAnswers',
+        'attemptAnswers.answer',
+      ],
     })
   }
 
@@ -177,5 +191,222 @@ export class AttemptsService {
     }
 
     return attemptAnswer
+  }
+
+  private checkSingleChoice(
+    answers: number[],
+    attemptAnswers: AttemptAnswer[],
+  ): AnswerCheckResult {
+    const [answer] = answers
+
+    if (answer === undefined || typeof answers === 'string')
+      return { correct: [], inrcorect: [] }
+
+    const result: AnswerCheckResult = {
+      correct: [],
+      inrcorect: [],
+    }
+
+    const attemptAnswer = attemptAnswers.find(value => value.id === answer)
+
+    if (!attemptAnswer) {
+      return result
+    }
+
+    attemptAnswer.answer.correct
+      ? result.correct.push(attemptAnswer.answer.text)
+      : result.inrcorect.push(attemptAnswer.answer.text)
+
+    return result
+  }
+
+  private checkMultyChoice(
+    answers: number[],
+    attemptAnswers: AttemptAnswer[],
+  ): AnswerCheckResult {
+    const result: AnswerCheckResult = {
+      correct: [],
+      inrcorect: [],
+    }
+
+    attemptAnswers
+      .filter(value => value.answer.correct)
+      .forEach(value => {
+        if (answers.includes(value.id)) {
+          result.correct.push(value.answer.text)
+        }
+      })
+
+    attemptAnswers
+      .filter(value => !value.answer.correct)
+      .forEach(value => {
+        if (answers.includes(value.id)) {
+          result.inrcorect.push(value.answer.text)
+        }
+      })
+
+    return result
+  }
+
+  private checkTextInput(
+    answer: string,
+    attemptAnswers: AttemptAnswer[],
+    ignoreCase: boolean,
+  ): AnswerCheckResult {
+    const result: AnswerCheckResult = {
+      correct: [],
+      inrcorect: [],
+    }
+
+    if (ignoreCase) answer = answer.toLowerCase()
+
+    let text
+
+    const isCorrect = attemptAnswers.some(value => {
+      text = value.answer.text
+
+      if (ignoreCase) {
+        text = text.toLowerCase()
+      }
+
+      return text === answer
+    })
+
+    isCorrect ? result.correct.push(answer) : result.inrcorect.push(answer)
+
+    return result
+  }
+
+  async complete(
+    completeAttemptDto: CompleteAttemptDto,
+    attempt: Attempt,
+  ): Promise<Result> {
+    // TODO: refactor structure
+    const resultTasks = completeAttemptDto.tasks
+    const tasks = await this.findTasks(attempt)
+
+    if (resultTasks.length !== tasks.length)
+      throw new BadRequestExceptionError({
+        property: 'tasks.length',
+        value: tasks.length,
+        constraints: {
+          countOfTasks: 'You must sand all answers',
+        },
+      })
+
+    const reportResult = await Result.create({
+      resultScore: 0,
+      persents: 0,
+      attempt,
+      student: attempt.student,
+    }).save()
+
+    const reportResultAnswers: ResultAnswer[] = []
+    let fullScore = 0
+
+    resultTasks.forEach((resultTask, index) => {
+      const resultAnswers = resultTask.answers
+      const attemptTask = tasks[index]
+      const task = attemptTask.task
+      let result: AnswerCheckResult
+
+      let taskScore = 0
+
+      switch (task.type) {
+        case TaskTypes.SINGLE_CHOICE:
+          if (typeof resultAnswers === 'string') break
+
+          result = this.checkSingleChoice(
+            resultAnswers,
+            attemptTask.attemptAnswers,
+          )
+
+          taskScore = result.correct.length * attemptTask.level.difficult
+
+          break
+
+        case TaskTypes.MULTY_CHOICE:
+          if (typeof resultAnswers === 'string') {
+            result = {
+              correct: [],
+              inrcorect: task.answers
+                .filter(answer => !answer.correct)
+                .map(answer => answer.text),
+            }
+
+            taskScore =
+              -1 * result.inrcorect.length * attemptTask.level.difficult
+
+            break
+          }
+
+          result = this.checkMultyChoice(
+            resultAnswers,
+            attemptTask.attemptAnswers,
+          )
+
+          taskScore =
+            (result.correct.length - result.inrcorect.length) *
+            attemptTask.level.difficult
+
+          break
+
+        case TaskTypes.TEXT_INPUT:
+          if (typeof resultAnswers !== 'string') {
+            result = {
+              correct: [],
+              inrcorect: [],
+            }
+
+            taskScore = 0
+
+            break
+          }
+
+          result = this.checkTextInput(
+            resultAnswers,
+            attemptTask.attemptAnswers,
+            attemptTask.task.ignoreCase,
+          )
+
+          taskScore = result.correct.length * attemptTask.level.difficult
+
+          break
+      }
+
+      reportResultAnswers.push(
+        ResultAnswer.create({
+          retrievedScore: taskScore,
+          correctAnswers: result.correct,
+          incorrectAnswers: result.inrcorect,
+          result: reportResult,
+          possibleScore: task.maxScore,
+        }),
+      )
+
+      fullScore += taskScore
+
+      global.console.log(
+        `Кількість балів за завдання ${index}: ${taskScore} з ${task.maxScore} можливих`,
+      )
+    })
+
+    global.console.log(
+      `${fullScore}/${attempt.maxScore} (${(fullScore / attempt.maxScore) *
+        100}%)`,
+    )
+
+    reportResult.persents = (fullScore / attempt.maxScore) * 100
+    reportResult.resultScore = fullScore
+
+    attempt.endTime = new Date()
+
+    const [report] = await Promise.all([
+      reportResult.save(),
+      ResultAnswer.save(reportResultAnswers),
+      attempt.save(),
+    ])
+
+    return report
   }
 }

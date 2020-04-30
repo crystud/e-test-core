@@ -23,6 +23,7 @@ import { Topic } from '../topics/topics.entity'
 import { Permission } from '../permissions/permission.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { Attempt } from '../attempts/attempt.entity'
+import { Result } from '../results/result.entity'
 
 @Exclude()
 @Entity('users')
@@ -152,6 +153,15 @@ export class User extends BaseEntity {
     test => test.creator,
   )
   tests: Test[]
+
+  @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @ApiModelProperty({ type: [Number] })
+  @OneToMany(
+    () => Result,
+    result => result.student,
+  )
+  results: Result[]
 
   @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })

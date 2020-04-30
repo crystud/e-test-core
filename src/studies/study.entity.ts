@@ -1,6 +1,7 @@
 import {
   BaseEntity,
   Entity,
+  Index,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -17,7 +18,7 @@ import { Test } from '../tests/test.entity'
 import { Permission } from '../permissions/permission.entity'
 
 @Entity('studies')
-// @Index(['subject', 'college'], { unique: true })
+@Index(['subject', 'college'], { unique: true })
 export class Study extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number

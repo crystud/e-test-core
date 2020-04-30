@@ -5,6 +5,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Exclude, Expose, Transform } from 'class-transformer'
@@ -13,6 +14,7 @@ import { UserRolesType } from '../enums/userRolesType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Test } from '../tests/test.entity'
 import { Task } from '../tasks/task.entity'
+import { AttemptTask } from '../attempts/attemptTask.entity'
 
 @Exclude()
 @Entity('levels')
@@ -62,6 +64,13 @@ export class Level extends BaseEntity {
   )
   @JoinTable()
   tasks: Task[]
+
+  @Exclude()
+  @OneToMany(
+    () => AttemptTask,
+    attempt => attempt.level,
+  )
+  attempltsTasks: AttemptTask[]
 
   @ApiModelProperty({
     type: Boolean,

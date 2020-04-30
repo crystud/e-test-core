@@ -40,17 +40,29 @@ export class TicketsService {
   }
 
   async findOne(id: number): Promise<Ticket> {
-    const ticket = await Ticket.findOne({
-      where: {
-        id,
-      },
-      relations: [
-        'student',
-        'permission',
-        'permission.test',
-        'permission.test.levels',
-      ],
-    })
+    const ticket = await Ticket.createQueryBuilder('ticket')
+      .leftJoinAndSelect('ticket.permission', 'permission')
+      .leftJoinAndSelect('permission.test', 'test')
+      .leftJoinAndSelect('test.levels', 'levels')
+      .leftJoinAndSelect('ticket.student', 'student')
+      .leftJoinAndSelect('ticket.attempts', 'attempts')
+      .select([
+        'ticket.id',
+        'ticket.title',
+        'ticket.used',
+        'ticket.usedTime',
+        'test.id',
+        'levels.id',
+        'levels.difficult',
+        'permission.id',
+        'permission.createAt',
+        'permission.startTime',
+        'permission.endTime',
+        'student.id',
+        'attempts.id',
+      ])
+      .where('ticket.id = :ticketId', { ticketId: id })
+      .getOne()
 
     if (!ticket) {
       throw new BadRequestExceptionError({

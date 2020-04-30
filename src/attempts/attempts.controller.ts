@@ -1,8 +1,10 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
+  Post,
   Request,
   UseGuards,
   UseInterceptors,
@@ -17,6 +19,9 @@ import { Attempt } from './attempt.entity'
 import { classToClass } from 'class-transformer'
 import { AttemptAnswer } from './attemptAnswer.entity'
 import { AttemptTask } from './attemptTask.entity'
+import { CompleteAttemptDto } from './dto/completeAttempt.dto'
+import { Result } from '../results/result.entity'
+import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 
 @Controller('attempts')
 export class AttemptsController {
@@ -77,5 +82,41 @@ export class AttemptsController {
     const attemptTask = await this.attemptsService.findTask(taskId)
 
     return await this.attemptsService.findAnswers(attemptTask)
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':attemptId/complete')
+  @ApiOkResponse({
+    type: Result,
+    description: 'Complete attempt and make result',
+  })
+  async complete(
+    @Param('attemptId') attemptId: number,
+    @Body() completeAttemptDto: CompleteAttemptDto,
+    @Request() req,
+  ): Promise<Result> {
+    const attempt = await this.attemptsService.findOne(attemptId)
+
+    if (attempt.result) {
+      throw new BadRequestExceptionError({
+        value: attemptId,
+        property: 'attemptId',
+        constraints: {
+          alreadyEnded: 'This attempt already complete',
+        },
+      })
+    }
+
+    const result = await this.attemptsService.complete(
+      completeAttemptDto,
+      attempt,
+    )
+
+    return classToClass(result, {
+      groups: [...req.user.roles],
+    })
   }
 }

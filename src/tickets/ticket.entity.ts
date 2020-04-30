@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Exclude, Expose, Transform } from 'class-transformer'
@@ -71,7 +72,7 @@ export class Ticket extends BaseEntity {
     ],
   })
   @ApiModelProperty({ type: [Number] })
-  @ManyToOne(
+  @OneToMany(
     () => Attempt,
     attempt => attempt.ticket,
   )

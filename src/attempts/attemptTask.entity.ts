@@ -22,16 +22,19 @@ export class AttemptTask extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
+  @ApiModelProperty({ type: String })
   @Expose()
   get ask(): string | null {
     return this.task?.ask ? this.task.ask : null
   }
 
+  @ApiModelProperty({ type: String })
   @Expose()
   get description(): string | null {
     return this.task?.description ? this.task.description : null
   }
 
+  @ApiModelProperty({ type: String })
   @Expose()
   get type(): TaskTypes | null {
     return this.task?.type ? this.task.type : null
@@ -46,8 +49,8 @@ export class AttemptTask extends BaseEntity {
 
   @Exclude()
   @ManyToOne(
-    () => Task,
-    task => task.attempt_tasks,
+    () => Level,
+    level => level.attempltsTasks,
   )
   level: Level
 
@@ -62,6 +65,7 @@ export class AttemptTask extends BaseEntity {
 
   @Transform(transformToId)
   @Expose()
+  @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => AttemptAnswer,
     attemptAnswer => attemptAnswer.attemptTask,

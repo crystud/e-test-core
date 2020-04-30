@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Exclude, Expose, Transform } from 'class-transformer'
@@ -14,6 +15,7 @@ import { AccessLevelType } from '../enums/accessLevelType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { AttemptTask } from './attemptTask.entity'
 import { User } from '../users/user.entity'
+import { Result } from '../results/result.entity'
 
 @Exclude()
 @Entity('attempts')
@@ -42,17 +44,6 @@ export class Attempt extends BaseEntity {
     ],
   })
   @ApiModelProperty()
-  @Column({ type: 'float', default: null })
-  resultScore: number | null
-
-  @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
-  })
-  @ApiModelProperty()
   @Column({ default: null })
   endTime: Date | null
 
@@ -70,6 +61,21 @@ export class Attempt extends BaseEntity {
     ticket => ticket.attempts,
   )
   ticket: Ticket
+
+  @Transform(transformToId)
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.TEACHER,
+    ],
+  })
+  @ApiModelProperty({ type: Number })
+  @OneToOne(
+    () => Result,
+    result => result.attempt,
+  )
+  result: Result
 
   @Transform(transformToId)
   @Expose({
