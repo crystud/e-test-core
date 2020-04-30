@@ -8,6 +8,7 @@ import { User } from '../users/user.entity'
 import { Group } from '../groups/group.entity'
 
 import { AccessLevelType } from '../enums/accessLevelType'
+import { Study } from '../studies/study.entity'
 
 @Injectable()
 export class PermissionsService {
@@ -16,6 +17,7 @@ export class PermissionsService {
     test: Test,
     allower: User,
     groups: Group[],
+    study: Study,
   ): Promise<Permission> {
     try {
       const permission = await Permission.create({
@@ -23,6 +25,7 @@ export class PermissionsService {
         test,
         allower,
         groups,
+        study,
       }).save()
 
       return await this.findOne(permission.id)
@@ -44,7 +47,7 @@ export class PermissionsService {
       where: {
         id,
       },
-      relations: ['allower', 'test', 'groups', 'tickets'],
+      relations: ['allower', 'test', 'groups', 'tickets', 'study'],
     })
 
     if (!permission) {

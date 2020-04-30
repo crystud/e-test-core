@@ -7,7 +7,7 @@ import { AttemptAnswer } from './attemptAnswer.entity'
 import { Attempt } from './attempt.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { shuffle } from 'lodash'
-import { College } from '../colleges/college.entity'
+
 import { User } from '../users/user.entity'
 import { AccessLevelType } from '../enums/accessLevelType'
 
