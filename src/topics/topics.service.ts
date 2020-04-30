@@ -85,7 +85,7 @@ export class TopicsService {
       where: {
         ...filter,
       },
-      relations: ['subject', 'creator'],
+      relations: ['subject', 'creator', 'tasks'],
     })
   }
 }

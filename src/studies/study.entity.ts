@@ -58,6 +58,6 @@ export class Study extends BaseEntity {
 
   @Expose()
   get subjectName(): string | null {
-    return this.subject.name ? this.subject.name : null
+    return this.subject?.name ? this.subject.name : null
   }
 }

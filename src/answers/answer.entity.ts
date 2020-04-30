@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Exclude, Expose, Transform } from 'class-transformer'
@@ -11,6 +12,7 @@ import { Task } from '../tasks/task.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { transformToId } from '../tools/transformers/transformToId'
 import { TaskTypes } from '../enums/TaskTypes.enum'
+import { AttemptAnswer } from '../attempts/attemptAnswer.entity'
 
 @Exclude()
 @Entity('answers')
@@ -66,4 +68,11 @@ export class Answer extends BaseEntity {
     task => task.answers,
   )
   task: Task
+
+  @Exclude()
+  @OneToMany(
+    () => AttemptAnswer,
+    attemptAnswer => attemptAnswer.answer,
+  )
+  attemptAnswers: AttemptAnswer
 }

@@ -162,6 +162,7 @@ export class CollegesService {
       .leftJoinAndSelect('college.specialties', 'specialties')
       .leftJoinAndSelect('specialties.groups', 'groups')
       .leftJoinAndSelect('groups.students', 'students')
+      .where('college.id = :collegeID', { collegeID: college.id })
       .where('students.id = :studentID', { studentID: student.id })
       .getCount()
 

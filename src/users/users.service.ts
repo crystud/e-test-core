@@ -23,6 +23,7 @@ export class UsersService {
         'createTopicRequests',
         'tests',
         'tickets',
+        'attempts',
       ],
     })
 
@@ -57,6 +58,7 @@ export class UsersService {
         'createTopicRequests',
         'tests',
         'tickets',
+        'attempts',
       ],
     })
   }

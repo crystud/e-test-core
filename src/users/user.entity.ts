@@ -22,6 +22,7 @@ import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-prop
 import { Topic } from '../topics/topics.entity'
 import { Permission } from '../permissions/permission.entity'
 import { Ticket } from '../tickets/ticket.entity'
+import { Attempt } from '../attempts/attempt.entity'
 
 @Exclude()
 @Entity('users')
@@ -169,6 +170,15 @@ export class User extends BaseEntity {
     ticket => ticket.student,
   )
   tickets: Ticket[]
+
+  @Transform(transformToId)
+  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @ApiModelProperty({ type: [Number], description: 'Active testing' })
+  @OneToMany(
+    () => Attempt,
+    attempt => attempt.student,
+  )
+  attempts: Attempt[]
 
   @Expose({
     groups: [UserRolesType.USER],

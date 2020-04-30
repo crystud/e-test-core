@@ -70,7 +70,7 @@ export class StudiesController {
   @Post(':id/teacher')
   async addTeacher(
     @Body() addTeacherDto: AddTeacherDto,
-    @Param('id') studyId,
+    @Param('id') studyId: number,
     @Request() req,
   ): Promise<Study> {
     const [teacher, study] = await Promise.all([
@@ -93,7 +93,7 @@ export class StudiesController {
   @Post(':id/test')
   async addTest(
     @Body() addTestDto: AddTestDto,
-    @Param('id') studyId,
+    @Param('id') studyId: number,
     @Request() req,
   ): Promise<Study> {
     const [test, study] = await Promise.all([
