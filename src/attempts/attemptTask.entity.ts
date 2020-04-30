@@ -51,6 +51,7 @@ export class AttemptTask extends BaseEntity {
   )
   level: Level
 
+  @Transform(transformToId)
   @Expose()
   @ApiModelProperty({ type: Number })
   @ManyToOne(

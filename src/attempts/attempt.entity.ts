@@ -56,6 +56,7 @@ export class Attempt extends BaseEntity {
   @Column({ default: null })
   endTime: Date | null
 
+  @Transform(transformToId)
   @Expose({
     groups: [
       UserRolesType.ADMIN,
@@ -70,6 +71,7 @@ export class Attempt extends BaseEntity {
   )
   ticket: Ticket
 
+  @Transform(transformToId)
   @Expose({
     groups: [
       UserRolesType.ADMIN,

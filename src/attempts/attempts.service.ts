@@ -96,6 +96,7 @@ export class AttemptsService {
     return attempt.student.id === user.id
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async isTeacher(attempt: Attempt, user: User): Promise<boolean> {
     // TODO: refactor
     return false
@@ -116,5 +117,65 @@ export class AttemptsService {
     if (isTeacher) levels.push(AccessLevelType.TEACHER)
 
     return levels
+  }
+
+  async findTasks(attempt: Attempt): Promise<AttemptTask[]> {
+    return await AttemptTask.find({
+      where: {
+        attempt,
+      },
+      relations: ['task', 'level', 'attempt', 'attemptAnswers'],
+    })
+  }
+
+  async findTask(id: number): Promise<AttemptTask> {
+    const attemptTask = await AttemptTask.findOne({
+      where: {
+        id,
+      },
+      relations: ['task', 'level', 'attempt', 'attemptAnswers'],
+    })
+
+    if (!attemptTask) {
+      throw new BadRequestExceptionError({
+        property: 'attemptTaskId',
+        value: id,
+        constraints: {
+          isNotExist: 'attemptTask is not exist',
+        },
+      })
+    }
+
+    return attemptTask
+  }
+
+  async findAnswers(attemptTask: AttemptTask): Promise<AttemptAnswer[]> {
+    return await AttemptAnswer.find({
+      where: {
+        attemptTask,
+      },
+      relations: ['answer', 'attemptTask'],
+    })
+  }
+
+  async findAnswer(id: number): Promise<AttemptAnswer> {
+    const attemptAnswer = await AttemptAnswer.findOne({
+      where: {
+        id,
+      },
+      relations: ['answer', 'attemptTask'],
+    })
+
+    if (!attemptAnswer) {
+      throw new BadRequestExceptionError({
+        property: 'attemptAnswerId',
+        value: id,
+        constraints: {
+          isNotExist: 'attemptAnswer is not exist',
+        },
+      })
+    }
+
+    return attemptAnswer
   }
 }
