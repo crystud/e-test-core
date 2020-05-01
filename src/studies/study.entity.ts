@@ -1,9 +1,11 @@
 import {
   BaseEntity,
   Entity,
+  Index,
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Subject } from '../subjects/subject.entity'
@@ -13,9 +15,10 @@ import { Speciality } from '../specialties/speciality.entity'
 import { Expose, Transform } from 'class-transformer'
 import { transformToId } from '../tools/transformers/transformToId'
 import { Test } from '../tests/test.entity'
+import { Permission } from '../permissions/permission.entity'
 
 @Entity('studies')
-// @Index(['subject', 'college'], { unique: true })
+@Index(['subject', 'college'], { unique: true })
 export class Study extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
@@ -56,8 +59,15 @@ export class Study extends BaseEntity {
   )
   tests: Test[]
 
+  @Transform(transformToId)
+  @OneToMany(
+    () => Permission,
+    permission => permission.study,
+  )
+  permissions: Permission[]
+
   @Expose()
-  get subjectName(): string {
-    return this.subject.name
+  get subjectName(): string | null {
+    return this.subject?.name ? this.subject.name : null
   }
 }

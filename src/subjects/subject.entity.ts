@@ -47,7 +47,7 @@ export class Subject extends BaseEntity {
   )
   creator: User
 
-  @Expose({ groups: [UserRolesType.ADMIN] })
+  @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @Transform(transformToId)
   @ManyToMany(

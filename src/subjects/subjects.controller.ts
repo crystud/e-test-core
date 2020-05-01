@@ -18,11 +18,15 @@ import { CreateSubjectDto } from './dto/createSubject.dto'
 import { FilterSubjectDto } from './dto/filterSubject.dto'
 import { UserRolesType } from '../enums/userRolesType'
 import { classToClass } from 'class-transformer'
+import { TopicsService } from '../topics/topics.service'
 
 @ApiTags('subjects')
 @Controller('subjects')
 export class SubjectsController {
-  constructor(private readonly subjectsService: SubjectsService) {}
+  constructor(
+    private readonly subjectsService: SubjectsService,
+    private readonly topicsService: TopicsService,
+  ) {}
 
   @ApiBearerAuth()
   @Roles(UserRolesType.USER)
@@ -37,6 +41,17 @@ export class SubjectsController {
       createSubjectDto,
       req.user,
     )
+
+    const topic = await this.topicsService.create(
+      {
+        subject: subject.id,
+        name: 'Без теми',
+      },
+      req.user,
+      subject,
+    )
+
+    await this.topicsService.confirm(topic)
 
     return classToClass(subject, {
       groups: [...req.user.roles],

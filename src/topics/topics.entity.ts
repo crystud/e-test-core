@@ -25,7 +25,7 @@ export class Topic extends BaseEntity {
 
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty()
-  @Column({ unique: true })
+  @Column()
   name: string
 
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })

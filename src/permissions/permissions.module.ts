@@ -4,9 +4,10 @@ import { PermissionsController } from './permissions.controller'
 import { TestsModule } from '../tests/tests.module'
 import { GroupsModule } from '../groups/groups.module'
 import { TicketsModule } from '../tickets/tickets.module'
+import { StudiesModule } from '../studies/studies.module'
 
 @Module({
-  imports: [TestsModule, GroupsModule, TicketsModule],
+  imports: [TestsModule, GroupsModule, TicketsModule, StudiesModule],
   exports: [PermissionsService],
   providers: [PermissionsService],
   controllers: [PermissionsController],

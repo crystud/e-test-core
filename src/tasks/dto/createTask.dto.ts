@@ -7,9 +7,8 @@ export class CreateTaskDto {
   @IsNotEmpty()
   ask: string
 
-  @ApiProperty()
-  @IsNotEmpty()
-  description: string
+  @ApiProperty({ required: false })
+  description?: string
 
   @ApiProperty({ enum: TaskTypes })
   @IsEnum(TaskTypes)

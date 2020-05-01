@@ -34,7 +34,7 @@ export class StudiesService {
       where: {
         id,
       },
-      relations: ['college', 'specialties', 'subject', 'teachers'],
+      relations: ['college', 'specialties', 'subject', 'teachers', 'tests'],
     })
 
     if (!study) {
@@ -64,6 +64,17 @@ export class StudiesService {
         },
       })
     }
+
+    study.teachers.push(teacher)
+
+    // TODO: refactor
+    if (
+      !teacher.teachSubjects.some(subject => subject.id === study.subject.id)
+    ) {
+      teacher.teachSubjects.push(study.subject)
+      await teacher.save()
+    }
+    await study.save()
 
     return study
   }

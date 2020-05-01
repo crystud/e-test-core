@@ -18,6 +18,7 @@ import { transformToId } from '../tools/transformers/transformToId'
 import { Group } from '../groups/group.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { Study } from '../studies/study.entity'
 import moment = require('moment')
 
 @Exclude()
@@ -68,6 +69,23 @@ export class Permission extends BaseEntity {
   )
   @JoinTable()
   groups: Group[]
+
+  @Transform(transformToId)
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.ALLOWER,
+      AccessLevelType.STUDENT,
+    ],
+  })
+  @ApiModelProperty({
+    type: Number,
+  })
+  @ManyToOne(
+    () => Study,
+    study => study.permissions,
+  )
+  study: Study
 
   @Transform(transformToId)
   @Expose({

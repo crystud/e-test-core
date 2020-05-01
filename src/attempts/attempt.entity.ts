@@ -4,20 +4,22 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Exclude, Expose, Transform } from 'class-transformer'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { Permission } from '../permissions/permission.entity'
-import { User } from '../users/user.entity'
-import { transformToId } from '../tools/transformers/transformToId'
+import { Ticket } from '../tickets/ticket.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
-import { Attempt } from '../attempts/attempt.entity'
+import { transformToId } from '../tools/transformers/transformToId'
+import { AttemptTask } from './attemptTask.entity'
+import { User } from '../users/user.entity'
+import { Result } from '../results/result.entity'
 
 @Exclude()
-@Entity('tickets')
-export class Ticket extends BaseEntity {
+@Entity('attempts')
+export class Attempt extends BaseEntity {
   @Expose()
   @ApiModelProperty()
   @PrimaryGeneratedColumn()
@@ -31,9 +33,21 @@ export class Ticket extends BaseEntity {
     ],
   })
   @ApiModelProperty()
-  @Column()
-  title: string
+  @Column({ type: 'float' })
+  maxScore: number
 
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.TEACHER,
+    ],
+  })
+  @ApiModelProperty()
+  @Column({ default: null })
+  endTime: Date | null
+
+  @Transform(transformToId)
   @Expose({
     groups: [
       UserRolesType.ADMIN,
@@ -43,10 +57,25 @@ export class Ticket extends BaseEntity {
   })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
-    () => Permission,
-    permission => permission.tickets,
+    () => Ticket,
+    ticket => ticket.attempts,
   )
-  permission: Permission
+  ticket: Ticket
+
+  @Transform(transformToId)
+  @Expose({
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.TEACHER,
+    ],
+  })
+  @ApiModelProperty({ type: Number })
+  @OneToOne(
+    () => Result,
+    result => result.attempt,
+  )
+  result: Result
 
   @Transform(transformToId)
   @Expose({
@@ -59,7 +88,7 @@ export class Ticket extends BaseEntity {
   @ApiModelProperty({ type: Number })
   @ManyToOne(
     () => User,
-    user => user.tickets,
+    user => user.attempts,
   )
   student: User
 
@@ -73,30 +102,8 @@ export class Ticket extends BaseEntity {
   })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
-    () => Attempt,
-    attempt => attempt.ticket,
+    () => AttemptTask,
+    attemptTask => attemptTask.attempt,
   )
-  attempts: Attempt[]
-
-  @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
-  })
-  @ApiModelProperty()
-  @Column({ default: false })
-  used: boolean
-
-  @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
-  })
-  @ApiModelProperty()
-  @Column({ type: 'datetime', default: null })
-  usedTime: Date | null
+  tasks: AttemptTask[]
 }

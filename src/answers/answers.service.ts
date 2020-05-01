@@ -32,7 +32,7 @@ export class AnswersService {
       where: {
         id,
       },
-      relations: ['task'],
+      relations: ['task', 'task.answers'],
     })
 
     if (!answer) {

@@ -26,6 +26,7 @@ import { classToClass } from 'class-transformer'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { GroupsService } from '../groups/groups.service'
 import { TicketsService } from '../tickets/tickets.service'
+import { StudiesService } from '../studies/studies.service'
 
 @ApiTags('permissions')
 @Controller('permissions')
@@ -35,6 +36,7 @@ export class PermissionsController {
     private readonly testsService: TestsService,
     private readonly groupsService: GroupsService,
     private readonly ticketsService: TicketsService,
+    private readonly studiesService: StudiesService,
   ) {}
 
   @ApiBearerAuth()
@@ -50,9 +52,10 @@ export class PermissionsController {
     @Body() createPermissionDto: CreatePermissionDto,
     @Request() req,
   ): Promise<Permission> {
-    const [test, groups] = await Promise.all([
+    const [test, groups, study] = await Promise.all([
       this.testsService.findOne(createPermissionDto.testId),
       this.groupsService.findByIds(createPermissionDto.groups),
+      this.studiesService.findOne(createPermissionDto.study),
     ])
 
     const user = req.user
@@ -63,6 +66,7 @@ export class PermissionsController {
         test,
         user,
         groups,
+        study,
       )
 
       let users = []

@@ -15,6 +15,7 @@ import { Topic } from '../topics/topics.entity'
 import { Level } from '../levels/level.entity'
 import { TaskTypes } from '../enums/TaskTypes.enum'
 import { Answer } from '../answers/answer.entity'
+import { AttemptTask } from '../attempts/attemptTask.entity'
 
 @Exclude()
 @Entity('tasks')
@@ -38,7 +39,7 @@ export class Task extends BaseEntity {
 
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty()
-  @Column()
+  @Column({ default: '' })
   description: string
 
   @Expose({ groups: [UserRolesType.USER] })
@@ -77,4 +78,24 @@ export class Task extends BaseEntity {
     answer => answer.task,
   )
   answers: Answer[]
+
+  @Exclude()
+  @OneToMany(
+    () => AttemptTask,
+    attemptTask => attemptTask.task,
+  )
+  attempt_tasks: AttemptTask[]
+
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  @ApiModelProperty({ type: Number })
+  get maxScore(): number | null {
+    if (!this.answers) return null
+
+    let sum = 0
+    this.answers.forEach(answers => (sum += Number(answers.correct)))
+
+    return sum
+  }
 }
