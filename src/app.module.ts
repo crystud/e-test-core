@@ -16,25 +16,29 @@ import { PermissionsModule } from './permissions/permissions.module'
 import { TicketsModule } from './tickets/tickets.module'
 import { AttemptsModule } from './attempts/attempts.module'
 import { ResultsModule } from './results/results.module'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import configuration from './config/configuration'
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: process.env.DB_PASSWORD || 'root',
-      database: 'eTest',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
-      cache: true,
-    }),
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('database.host'),
+        port: configService.get<number>('database.port'),
+        username: configService.get<string>('database.username'),
+        password: configService.get<string>('database.password'),
+        database: configService.get<string>('database.name'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true,
+        cache: true,
+      }),
+      inject: [ConfigService],
     }),
     UsersModule,
     AuthModule,
