@@ -55,17 +55,17 @@ export class Group extends BaseEntity {
   )
   permissions: Permission[]
 
-  @Expose()
-  get course(): number {
+  @Expose({ name: 'course' })
+  get _course(): number {
     return Math.abs(
       Math.round(moment(this.startEducation).diff(now(), 'years', true)),
     )
   }
 
-  @Expose()
-  get name(): string | null {
+  @Expose({ name: 'name' })
+  get _name(): string | null {
     return this.speciality
-      ? `${this.speciality.symbol}-${this.course}${this.number}`
+      ? `${this.speciality.symbol}-${this._course}${this.number}`
       : null
   }
 }

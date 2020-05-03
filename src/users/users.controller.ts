@@ -7,7 +7,6 @@ import {
   Post,
   Query,
   Request,
-  SerializeOptions,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -30,6 +29,7 @@ import { classToClass } from 'class-transformer'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { FilterUserDto } from './dto/filterUser.dto'
 import { Group } from '../groups/group.entity'
+import { College } from '../colleges/college.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -87,10 +87,6 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
-  @SerializeOptions({
-    strategy: 'exposeAll',
-  })
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -99,7 +95,27 @@ export class UsersController {
     type: [Group],
   })
   async findOwnGroups(@Request() req): Promise<Group[]> {
-    return await this.usersService.findOwnGroups(req.user.id)
+    const groups = await this.usersService.findGroups(req.user.id)
+
+    return classToClass(groups, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/ownColleges')
+  @ApiOkResponse({
+    type: [College],
+  })
+  async findOwnOwnColleges(@Request() req): Promise<College[]> {
+    const colleges = await this.usersService.findOwnColleges(req.user.id)
+
+    return classToClass(colleges, {
+      groups: [...req.user.roles],
+    })
   }
 
   @ApiBearerAuth()

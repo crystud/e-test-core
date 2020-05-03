@@ -7,6 +7,7 @@ import { UserRolesType } from '../enums/userRolesType'
 import { FilterUserDto } from './dto/filterUser.dto'
 import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
 import { Group } from '../groups/group.entity'
+import { College } from '../colleges/college.entity'
 
 @Injectable()
 export class UsersService {
@@ -123,8 +124,8 @@ export class UsersService {
     return user.roles.includes(UserRolesType.ADMIN)
   }
 
-  async findOwnGroups(userID: number): Promise<Group[]> {
-    const test = await User.createQueryBuilder('user')
+  async findGroups(userID: number): Promise<Group[]> {
+    const user = await User.createQueryBuilder('user')
       .leftJoinAndSelect('user.groups', 'groups')
       .leftJoinAndSelect('groups.speciality', 'speciality')
       .select([
@@ -139,6 +140,26 @@ export class UsersService {
       .where('user.id = :userId', { userId: userID })
       .getOne()
 
-    return test.groups
+    return user.groups
+  }
+
+  async findOwnColleges(userID: number): Promise<College[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoinAndSelect('user.ownColleges', 'ownColleges')
+      .leftJoinAndSelect('ownColleges.specialties', 'specialties')
+      .select([
+        'user.id',
+        'ownColleges.name',
+        'ownColleges.address',
+        'ownColleges.confirmed',
+        'ownColleges.email',
+        'ownColleges.site',
+        'ownColleges.EDBO',
+        'specialties.id',
+      ])
+      .where('user.id = :userId', { userId: userID })
+      .getOne()
+
+    return user.ownColleges
   }
 }
