@@ -9,6 +9,7 @@ import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.buil
 import { Group } from '../groups/group.entity'
 import { College } from '../colleges/college.entity'
 import { Ticket } from '../tickets/ticket.entity'
+import { Result } from '../results/result.entity'
 
 @Injectable()
 export class UsersService {
@@ -103,7 +104,7 @@ export class UsersService {
     return user.roles.includes(UserRolesType.ADMIN)
   }
 
-  async findGroups(userID: number): Promise<Group[]> {
+  async findGroups(userId: number): Promise<Group[]> {
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.groups', 'groups')
       .leftJoin('groups.speciality', 'speciality')
@@ -116,13 +117,13 @@ export class UsersService {
         'groups.number',
         'speciality.symbol',
       ])
-      .where('user.id = :userId', { userId: userID })
+      .where('user.id = :userId', { userId })
       .getOne()
 
     return user.groups
   }
 
-  async findOwnColleges(userID: number): Promise<College[]> {
+  async findOwnColleges(userId: number): Promise<College[]> {
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.ownColleges', 'ownColleges')
       .leftJoin('ownColleges.specialties', 'specialties')
@@ -138,13 +139,13 @@ export class UsersService {
         'specialties.id',
         'creator.id',
       ])
-      .where('user.id = :userId', { userId: userID })
+      .where('user.id = :userId', { userId })
       .getOne()
 
     return user.ownColleges
   }
 
-  async findTickets(userID: number): Promise<Ticket[]> {
+  async findTickets(userId: number): Promise<Ticket[]> {
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.tickets', 'tickets')
       .leftJoin('tickets.student', 'student')
@@ -159,11 +160,33 @@ export class UsersService {
         'student.firstName',
         'student.lastName',
         'student.patronymic',
-        'student.patronymic',
       ])
-      .where('user.id = :userId', { userId: userID })
+      .where('user.id = :userId', { userId })
       .getOne()
 
     return user.tickets
+  }
+
+  async findResults(userId: number): Promise<Result[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.results', 'results')
+      .leftJoin('results.attempt', 'attempt')
+      .leftJoin('results.student', 'student')
+      .select([
+        'user.id',
+        'results.id',
+        'results.resultScore',
+        'results.persents',
+        'attempt.maxScore',
+        'attempt.endTime',
+        'student.id',
+        'student.firstName',
+        'student.lastName',
+        'student.patronymic',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOne()
+
+    return user.results
   }
 }

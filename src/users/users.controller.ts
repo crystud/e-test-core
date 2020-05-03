@@ -31,6 +31,7 @@ import { FilterUserDto } from './dto/filterUser.dto'
 import { Group } from '../groups/group.entity'
 import { College } from '../colleges/college.entity'
 import { Ticket } from '../tickets/ticket.entity'
+import { Result } from '../results/result.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -114,6 +115,22 @@ export class UsersController {
     const colleges = await this.usersService.findTickets(req.user.id)
 
     return classToClass(colleges, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/results')
+  @ApiOkResponse({
+    type: [Result],
+  })
+  async findOwnResults(@Request() req): Promise<Result[]> {
+    const results = await this.usersService.findResults(req.user.id)
+
+    return classToClass(results, {
       groups: [...req.user.roles],
     })
   }
