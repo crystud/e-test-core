@@ -10,8 +10,8 @@ import {
 } from 'typeorm'
 import { Study } from '../studies/study.entity'
 import { User } from '../users/user.entity'
-import { Exclude, Expose, Transform } from 'class-transformer'
-import { transformToId } from '../tools/transformers/transformToId'
+import { Expose } from 'class-transformer'
+
 import { Subject } from '../subjects/subject.entity'
 import { College } from '../colleges/college.entity'
 import { Level } from '../levels/level.entity'
@@ -33,7 +33,6 @@ export class Test extends BaseEntity {
   @Column()
   isPublic: boolean
 
-  @Exclude()
   @ManyToMany(
     () => Study,
     study => study.tests,
@@ -41,7 +40,6 @@ export class Test extends BaseEntity {
   @JoinTable()
   studies: Study[]
 
-  @Transform(transformToId)
   @ManyToOne(
     () => Subject,
     subject => subject.tests,
@@ -51,7 +49,6 @@ export class Test extends BaseEntity {
   )
   subject: Subject
 
-  @Transform(transformToId)
   @ManyToOne(
     () => User,
     user => user.tests,
@@ -61,7 +58,6 @@ export class Test extends BaseEntity {
   )
   creator: User
 
-  @Transform(transformToId)
   @ManyToMany(
     () => College,
     college => college.tests,
@@ -69,7 +65,6 @@ export class Test extends BaseEntity {
   @JoinTable()
   colleges: College[]
 
-  @Transform(transformToId)
   @Expose({
     groups: [UserRolesType.USER],
   })
@@ -80,7 +75,6 @@ export class Test extends BaseEntity {
   )
   levels: Level[]
 
-  @Exclude()
   @OneToMany(
     () => Permission,
     permission => permission.test,

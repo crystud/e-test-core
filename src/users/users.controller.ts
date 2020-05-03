@@ -35,6 +35,7 @@ import { Result } from '../results/result.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Permission } from '../permissions/permission.entity'
 import { Attempt } from '../attempts/attempt.entity'
+import { Test } from '../tests/test.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -198,6 +199,22 @@ export class UsersController {
     const attempts = await this.usersService.findAttempts(req.user.id)
 
     return classToClass(attempts, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/tests')
+  @ApiOkResponse({
+    type: [Test],
+  })
+  async findOwnTests(@Request() req): Promise<Test[]> {
+    const tests = await this.usersService.findTests(req.user.id)
+
+    return classToClass(tests, {
       groups: [...req.user.roles],
     })
   }
