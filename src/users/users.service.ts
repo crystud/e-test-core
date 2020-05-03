@@ -53,18 +53,15 @@ export class UsersService {
       where: {
         ...filter,
       },
-      relations: [
-        'ownColleges',
-        'editableColleges',
-        'groups',
-        'groups.speciality',
-        'teachSubjects',
-        'studies',
-        'createSubjectRequests',
-        'createTopicRequests',
-        'tests',
-        'tickets',
-        'attempts',
+      select: [
+        'id',
+        'firstName',
+        'lastName',
+        'patronymic',
+        'firstName',
+        'email',
+        'roles',
+        'createAt',
       ],
     })
   }
