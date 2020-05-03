@@ -11,6 +11,7 @@ import { College } from '../colleges/college.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { Result } from '../results/result.entity'
 import { Subject } from '../subjects/subject.entity'
+import { Permission } from '../permissions/permission.entity'
 
 @Injectable()
 export class UsersService {
@@ -226,5 +227,30 @@ export class UsersService {
       .getOne()
 
     return user.teachSubjects
+  }
+
+  async findPermissions(userId: number): Promise<Permission[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.permissions', 'permissions')
+      .leftJoin('permissions.groups', 'groups')
+      .leftJoin('permissions.study', 'study')
+      .leftJoin('permissions.tickets', 'tickets')
+      .select([
+        'user.id',
+        'permissions.id',
+        'permissions.startTime',
+        'permissions.endTime',
+        'permissions.createAt',
+        'permissions.createAt',
+        'groups.id',
+        'study.id',
+        'study.id',
+        'tickets.id',
+        'tickets.used',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOne()
+
+    return user.permissions
   }
 }

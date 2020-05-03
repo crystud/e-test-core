@@ -12,8 +12,8 @@ import { Subject } from '../subjects/subject.entity'
 import { College } from '../colleges/college.entity'
 import { User } from '../users/user.entity'
 import { Speciality } from '../specialties/speciality.entity'
-import { Expose, Transform } from 'class-transformer'
-import { transformToId } from '../tools/transformers/transformToId'
+import { Expose } from 'class-transformer'
+
 import { Test } from '../tests/test.entity'
 import { Permission } from '../permissions/permission.entity'
 
@@ -23,28 +23,24 @@ export class Study extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Transform(transformToId)
   @ManyToMany(
     () => User,
     user => user.studies,
   )
   teachers: User[]
 
-  @Transform(transformToId)
   @ManyToOne(
     () => Subject,
     subject => subject.studies,
   )
   subject: Subject
 
-  @Transform(transformToId)
   @ManyToOne(
     () => College,
     college => college.studies,
   )
   college: College
 
-  @Transform(transformToId)
   @ManyToMany(
     () => Speciality,
     speciality => speciality.studies,
@@ -52,22 +48,20 @@ export class Study extends BaseEntity {
   @JoinTable()
   specialties: Speciality[]
 
-  @Transform(transformToId)
   @ManyToMany(
     () => Test,
     test => test.studies,
   )
   tests: Test[]
 
-  @Transform(transformToId)
   @OneToMany(
     () => Permission,
     permission => permission.study,
   )
   permissions: Permission[]
 
-  @Expose()
-  get subjectName(): string | null {
+  @Expose({ name: 'subjectName' })
+  get _subjectName(): string | null {
     return this.subject?.name ? this.subject.name : null
   }
 }

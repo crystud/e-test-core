@@ -67,7 +67,7 @@ export class User extends BaseEntity {
   })
   roles: UserRolesType[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.TOKEN] })
+  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
   @ApiModelProperty()
   @CreateDateColumn()
   createAt: Date
@@ -129,7 +129,7 @@ export class User extends BaseEntity {
   @JoinTable()
   teachSubjects: Subject[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @ManyToMany(
     () => Study,
@@ -138,7 +138,7 @@ export class User extends BaseEntity {
   @JoinTable()
   studies: Study[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => Test,
@@ -146,7 +146,7 @@ export class User extends BaseEntity {
   )
   tests: Test[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => Result,
@@ -154,7 +154,7 @@ export class User extends BaseEntity {
   )
   results: Result[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => Permission,
@@ -169,7 +169,7 @@ export class User extends BaseEntity {
   )
   tickets: Ticket[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
+  @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number], description: 'Active testing' })
   @OneToMany(
     () => Attempt,

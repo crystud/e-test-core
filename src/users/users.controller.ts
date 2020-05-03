@@ -33,6 +33,7 @@ import { College } from '../colleges/college.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { Result } from '../results/result.entity'
 import { Subject } from '../subjects/subject.entity'
+import { Permission } from '../permissions/permission.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -162,6 +163,22 @@ export class UsersController {
   })
   async findOwnTeachSubjects(@Request() req): Promise<Subject[]> {
     const subjects = await this.usersService.findSubjects(req.user.id)
+
+    return classToClass(subjects, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/permissions')
+  @ApiOkResponse({
+    type: [Permission],
+  })
+  async findOwnPermissions(@Request() req): Promise<Permission[]> {
+    const subjects = await this.usersService.findPermissions(req.user.id)
 
     return classToClass(subjects, {
       groups: [...req.user.roles],
