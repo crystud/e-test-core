@@ -12,6 +12,7 @@ import { Ticket } from '../tickets/ticket.entity'
 import { Result } from '../results/result.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Permission } from '../permissions/permission.entity'
+import { Attempt } from '../attempts/attempt.entity'
 
 @Injectable()
 export class UsersService {
@@ -252,5 +253,27 @@ export class UsersService {
       .getOne()
 
     return user.permissions
+  }
+
+  async findAttempts(userId: number): Promise<Attempt[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.attempts', 'attempts')
+      .leftJoin('attempts.result', 'result')
+      .leftJoin('attempts.ticket', 'ticket')
+      .select([
+        'user.id',
+        'attempts.id',
+        'attempts.maxScore',
+        'attempts.endTime',
+        'result.id',
+        'result.resultScore',
+        'ticket.persents',
+        'ticket.title',
+        'ticket.usedTime',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOne()
+
+    return user.attempts
   }
 }

@@ -34,6 +34,7 @@ import { Ticket } from '../tickets/ticket.entity'
 import { Result } from '../results/result.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Permission } from '../permissions/permission.entity'
+import { Attempt } from '../attempts/attempt.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -178,9 +179,25 @@ export class UsersController {
     type: [Permission],
   })
   async findOwnPermissions(@Request() req): Promise<Permission[]> {
-    const subjects = await this.usersService.findPermissions(req.user.id)
+    const permissions = await this.usersService.findPermissions(req.user.id)
 
-    return classToClass(subjects, {
+    return classToClass(permissions, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/attempts')
+  @ApiOkResponse({
+    type: [Attempt],
+  })
+  async findOwnAttempts(@Request() req): Promise<Attempt[]> {
+    const attempts = await this.usersService.findAttempts(req.user.id)
+
+    return classToClass(attempts, {
       groups: [...req.user.roles],
     })
   }
