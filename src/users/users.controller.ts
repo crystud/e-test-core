@@ -32,6 +32,7 @@ import { Group } from '../groups/group.entity'
 import { College } from '../colleges/college.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { Result } from '../results/result.entity'
+import { Subject } from '../subjects/subject.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -131,6 +132,22 @@ export class UsersController {
     const results = await this.usersService.findResults(req.user.id)
 
     return classToClass(results, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/subjects')
+  @ApiOkResponse({
+    type: [Subject],
+  })
+  async findOwnTeachSubjects(@Request() req): Promise<Subject[]> {
+    const subjects = await this.usersService.findSubjects(req.user.id)
+
+    return classToClass(subjects, {
       groups: [...req.user.roles],
     })
   }

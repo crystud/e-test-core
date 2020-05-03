@@ -10,6 +10,7 @@ import { Group } from '../groups/group.entity'
 import { College } from '../colleges/college.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { Result } from '../results/result.entity'
+import { Subject } from '../subjects/subject.entity'
 
 @Injectable()
 export class UsersService {
@@ -188,5 +189,20 @@ export class UsersService {
       .getOne()
 
     return user.results
+  }
+
+  async findSubjects(userId: number): Promise<Subject[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.teachSubjects', 'teachSubjects')
+      .select([
+        'user.id',
+        'teachSubjects.id',
+        'teachSubjects.name',
+        'teachSubjects.confirmed',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOne()
+
+    return user.teachSubjects
   }
 }
