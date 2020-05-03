@@ -36,6 +36,7 @@ import { Subject } from '../subjects/subject.entity'
 import { Permission } from '../permissions/permission.entity'
 import { Attempt } from '../attempts/attempt.entity'
 import { Test } from '../tests/test.entity'
+import { Study } from '../studies/study.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -215,6 +216,22 @@ export class UsersController {
     const tests = await this.usersService.findTests(req.user.id)
 
     return classToClass(tests, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/studies')
+  @ApiOkResponse({
+    type: [Study],
+  })
+  async findOwnUsers(@Request() req): Promise<Study[]> {
+    const studies = await this.usersService.findStudies(req.user.id)
+
+    return classToClass(studies, {
       groups: [...req.user.roles],
     })
   }

@@ -12,7 +12,6 @@ import { Subject } from '../subjects/subject.entity'
 import { College } from '../colleges/college.entity'
 import { User } from '../users/user.entity'
 import { Speciality } from '../specialties/speciality.entity'
-import { Expose } from 'class-transformer'
 
 import { Test } from '../tests/test.entity'
 import { Permission } from '../permissions/permission.entity'
@@ -59,9 +58,4 @@ export class Study extends BaseEntity {
     permission => permission.study,
   )
   permissions: Permission[]
-
-  @Expose({ name: 'subjectName' })
-  get _subjectName(): string | null {
-    return this.subject?.name ? this.subject.name : null
-  }
 }

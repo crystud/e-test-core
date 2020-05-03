@@ -14,6 +14,7 @@ import { Subject } from '../subjects/subject.entity'
 import { Permission } from '../permissions/permission.entity'
 import { Attempt } from '../attempts/attempt.entity'
 import { Test } from '../tests/test.entity'
+import { Study } from '../studies/study.entity'
 
 @Injectable()
 export class UsersService {
@@ -299,5 +300,24 @@ export class UsersService {
       .getOne()
 
     return user.tests
+  }
+
+  async findStudies(userId: number): Promise<Study[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.studies', 'studies')
+      .leftJoin('studies.subject', 'subject')
+      .leftJoin('studies.college', 'college')
+      .select([
+        'user.id',
+        'studies.id',
+        'subject.id',
+        'subject.name',
+        'college.id',
+        'college.name',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOne()
+
+    return user.studies
   }
 }
