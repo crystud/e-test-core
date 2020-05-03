@@ -123,7 +123,7 @@ export class UsersService {
     return user.roles.includes(UserRolesType.ADMIN)
   }
 
-  async findGroups(user: User): Promise<Group[]> {
+  async findOwnGroups(userID: number): Promise<Group[]> {
     const test = await User.createQueryBuilder('user')
       .leftJoinAndSelect('user.groups', 'groups')
       .leftJoinAndSelect('groups.speciality', 'speciality')
@@ -136,7 +136,7 @@ export class UsersService {
         'groups.number',
         'speciality.symbol',
       ])
-      .where('user.id = :userId', { userId: user.id })
+      .where('user.id = :userId', { userId: userID })
       .getOne()
 
     return test.groups

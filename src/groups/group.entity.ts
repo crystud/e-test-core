@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
-import { Exclude, Expose, Transform } from 'class-transformer'
-import { transformToId } from '../tools/transformers/transformToId'
+import { Exclude, Expose } from 'class-transformer'
+
 import { Speciality } from '../specialties/speciality.entity'
 import * as moment from 'moment'
 import { now } from 'moment'
@@ -32,7 +32,6 @@ export class Group extends BaseEntity {
   @Column({ type: 'smallint' })
   number: number
 
-  @Transform(transformToId)
   @ManyToOne(
     () => Speciality,
     speciality => speciality.groups,
@@ -43,7 +42,6 @@ export class Group extends BaseEntity {
   @JoinTable()
   speciality: Speciality
 
-  @Transform(transformToId)
   @ManyToMany(
     () => User,
     user => user.groups,

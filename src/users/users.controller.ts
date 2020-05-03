@@ -97,14 +97,9 @@ export class UsersController {
   @Get('me/groups')
   @ApiOkResponse({
     type: [Group],
-    description: 'Find info about you.',
   })
-  async findMyGroups(@Request() req): Promise<Group[]> {
-    const groups = await this.usersService.findGroups(req.user)
-
-    return classToClass(groups, {
-      groups: [...req.user.roles, AccessLevelType.OWNER],
-    })
+  async findOwnGroups(@Request() req): Promise<Group[]> {
+    return await this.usersService.findOwnGroups(req.user.id)
   }
 
   @ApiBearerAuth()
