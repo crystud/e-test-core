@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
@@ -8,6 +15,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { classToClass } from 'class-transformer'
 import { Result } from './result.entity'
 import { ResultsService } from './results.service'
+import { FindByIdsDto } from './dto/findByIds.dto'
 
 @ApiTags('results')
 @Controller('results')
@@ -44,10 +52,10 @@ export class ResultsController {
     description: 'Find the result by id.',
   })
   async findByIds(
-    @Param('ids') resultIds: number[],
+    @Query() findByIdsDto: FindByIdsDto,
     @Request() req,
   ): Promise<Result[]> {
-    const results = await this.resultsService.findByIds(resultIds)
+    const results = await this.resultsService.findByIds(findByIdsDto.ids)
 
     return classToClass(results, {
       groups: [...req.user.roles],

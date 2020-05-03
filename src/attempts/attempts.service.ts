@@ -297,9 +297,10 @@ export class AttemptsService {
     const reportResult = await Result.create({
       resultScore: 0,
       persents: 0,
-      attempt,
       student: attempt.student,
-    }).save()
+    })
+
+    await reportResult.save()
 
     const reportResultAnswers: ResultAnswer[] = []
     let fullScore = 0
@@ -385,21 +386,13 @@ export class AttemptsService {
       )
 
       fullScore += taskScore
-
-      global.console.log(
-        `Кількість балів за завдання ${index}: ${taskScore} з ${task.maxScore} можливих`,
-      )
     })
-
-    global.console.log(
-      `${fullScore}/${attempt.maxScore} (${(fullScore / attempt.maxScore) *
-        100}%)`,
-    )
 
     reportResult.persents = (fullScore / attempt.maxScore) * 100
     reportResult.resultScore = fullScore
 
     attempt.endTime = new Date()
+    attempt.result = reportResult
 
     const [report] = await Promise.all([
       reportResult.save(),

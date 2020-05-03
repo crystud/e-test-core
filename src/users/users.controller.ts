@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Request,
+  SerializeOptions,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -28,6 +29,7 @@ import { UserRolesType } from '../enums/userRolesType'
 import { classToClass } from 'class-transformer'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { FilterUserDto } from './dto/filterUser.dto'
+import { Group } from '../groups/group.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -80,6 +82,27 @@ export class UsersController {
     const user = await this.usersService.findOne(req.user.id)
 
     return classToClass(user, {
+      groups: [...req.user.roles, AccessLevelType.OWNER],
+    })
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({
+    strategy: 'exposeAll',
+  })
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/groups')
+  @ApiOkResponse({
+    type: [Group],
+    description: 'Find info about you.',
+  })
+  async findMyGroups(@Request() req): Promise<Group[]> {
+    const groups = await this.usersService.findGroups(req.user)
+
+    return classToClass(groups, {
       groups: [...req.user.roles, AccessLevelType.OWNER],
     })
   }

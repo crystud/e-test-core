@@ -16,6 +16,8 @@ import { PermissionsModule } from './permissions/permissions.module'
 import { TicketsModule } from './tickets/tickets.module'
 import { AttemptsModule } from './attempts/attempts.module'
 import { ResultsModule } from './results/results.module'
+import { ConfigModule } from '@nestjs/config'
+import configuration from './config/configuration'
 
 @Module({
   imports: [
@@ -29,6 +31,10 @@ import { ResultsModule } from './results/results.module'
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
       cache: true,
+    }),
+    ConfigModule.forRoot({
+      load: [configuration],
+      isGlobal: true,
     }),
     UsersModule,
     AuthModule,

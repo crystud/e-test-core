@@ -46,12 +46,12 @@ export class Permission extends BaseEntity {
 
   @Transform(transformToId)
   @Expose({
-    groups: [UserRolesType.ADMIN, AccessLevelType.ALLOWER],
+    groups: [
+      UserRolesType.ADMIN,
+      AccessLevelType.STUDENT,
+      AccessLevelType.ALLOWER,
+    ],
   })
-  @ApiModelProperty({ type: Number })
-  @ManyToOne(
-    () => Test,
-    test => test.permissions,
   )
   test: Test
 

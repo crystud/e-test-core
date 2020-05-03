@@ -6,6 +6,7 @@ import { classToClass } from 'class-transformer'
 import { UserRolesType } from '../enums/userRolesType'
 import { FilterUserDto } from './dto/filterUser.dto'
 import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
+import { Group } from '../groups/group.entity'
 
 @Injectable()
 export class UsersService {
@@ -120,5 +121,24 @@ export class UsersService {
 
   isAdmin(user: User): boolean {
     return user.roles.includes(UserRolesType.ADMIN)
+  }
+
+  async findGroups(user: User): Promise<Group[]> {
+    const test = await User.createQueryBuilder('user')
+      .leftJoinAndSelect('user.groups', 'groups')
+      .leftJoinAndSelect('groups.speciality', 'speciality')
+      .select([
+        'user.id',
+        'groups.id',
+        'speciality.id',
+        'groups.startEducation',
+        'groups.endEducation',
+        'groups.number',
+        'speciality.symbol',
+      ])
+      .where('user.id = :userId', { userId: user.id })
+      .getOne()
+
+    return test.groups
   }
 }

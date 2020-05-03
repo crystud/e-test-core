@@ -80,7 +80,7 @@ export class Level extends BaseEntity {
   @Expose({
     groups: [UserRolesType.USER],
   })
-  get completed(): boolean {
-    return this.tasks.length >= this.countOfTask
+  get completed(): boolean | null {
+    return this.tasks ? this.tasks.length >= this.countOfTask : null
   }
 }
