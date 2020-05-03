@@ -320,4 +320,19 @@ export class UsersService {
 
     return user.studies
   }
+
+  async findByIds(userIds: number[]): Promise<User[]> {
+    return await User.findByIds(userIds, {
+      select: [
+        'id',
+        'firstName',
+        'lastName',
+        'patronymic',
+        'firstName',
+        'email',
+        'roles',
+        'createAt',
+      ],
+    })
+  }
 }

@@ -37,6 +37,7 @@ import { Permission } from '../permissions/permission.entity'
 import { Attempt } from '../attempts/attempt.entity'
 import { Test } from '../tests/test.entity'
 import { Study } from '../studies/study.entity'
+import { FindUsersByIdsDto } from './dto/findUsersByIds.dto'
 
 @ApiTags('users')
 @Controller('users')
@@ -250,6 +251,26 @@ export class UsersController {
     @Request() req,
   ): Promise<User[]> {
     const users = await this.usersService.findAll(filterUserDto)
+
+    return classToClass(users, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('/ids')
+  @ApiOkResponse({
+    type: [User],
+    description: 'Find users list by ids',
+  })
+  async findByIds(
+    @Query() findUsersByIdsDto: FindUsersByIdsDto,
+    @Request() req,
+  ): Promise<User[]> {
+    const users = await this.usersService.findByIds(findUsersByIdsDto.ids)
 
     return classToClass(users, {
       groups: [...req.user.roles],
