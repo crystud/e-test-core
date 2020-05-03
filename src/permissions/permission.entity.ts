@@ -52,7 +52,6 @@ export class Permission extends BaseEntity {
       AccessLevelType.ALLOWER,
     ],
   })
-  )
   test: Test
 
   @Transform(transformToId)

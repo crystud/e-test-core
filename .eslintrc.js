@@ -22,5 +22,6 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     'prettier/prettier': 'error',
     'unused-imports/no-unused-imports-ts': 2,
+    'linebreak-style':  ["error", "unix"],
   },
 }
