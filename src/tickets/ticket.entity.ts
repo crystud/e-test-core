@@ -6,13 +6,13 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose, Transform } from 'class-transformer'
+import { Exclude, Expose } from 'class-transformer'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Permission } from '../permissions/permission.entity'
 import { User } from '../users/user.entity'
-import { transformToId } from '../tools/transformers/transformToId'
+
 import { UserRolesType } from '../enums/userRolesType'
-import { AccessLevelType } from '../enums/accessLevelType'
+
 import { Attempt } from '../attempts/attempt.entity'
 
 @Exclude()
@@ -24,22 +24,14 @@ export class Ticket extends BaseEntity {
   id: number
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty()
   @Column()
   title: string
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
@@ -48,13 +40,8 @@ export class Ticket extends BaseEntity {
   )
   permission: Permission
 
-  @Transform(transformToId)
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
@@ -63,13 +50,8 @@ export class Ticket extends BaseEntity {
   )
   student: User
 
-  @Transform(transformToId)
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -79,22 +61,14 @@ export class Ticket extends BaseEntity {
   attempts: Attempt[]
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty()
   @Column({ default: false })
   used: boolean
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.TEACHER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty()
   @Column({ type: 'datetime', default: null })

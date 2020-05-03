@@ -26,10 +26,11 @@ import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { UserRolesType } from '../enums/userRolesType'
 import { classToClass } from 'class-transformer'
-import { AccessLevelType } from '../enums/accessLevelType'
+
 import { FilterUserDto } from './dto/filterUser.dto'
 import { Group } from '../groups/group.entity'
 import { College } from '../colleges/college.entity'
+import { Ticket } from '../tickets/ticket.entity'
 
 @ApiTags('users')
 @Controller('users')
@@ -73,23 +74,6 @@ export class UsersController {
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Get('me')
-  @ApiOkResponse({
-    type: User,
-    description: 'Find info about you.',
-  })
-  async findMe(@Request() req): Promise<User> {
-    const user = await this.usersService.findOne(req.user.id)
-
-    return classToClass(user, {
-      groups: [...req.user.roles, AccessLevelType.OWNER],
-    })
-  }
-
-  @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
   @Get('me/groups')
   @ApiOkResponse({
     type: [Group],
@@ -112,6 +96,22 @@ export class UsersController {
   })
   async findOwnOwnColleges(@Request() req): Promise<College[]> {
     const colleges = await this.usersService.findOwnColleges(req.user.id)
+
+    return classToClass(colleges, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/tickets')
+  @ApiOkResponse({
+    type: [Ticket],
+  })
+  async findOwnTickets(@Request() req): Promise<Ticket[]> {
+    const colleges = await this.usersService.findTickets(req.user.id)
 
     return classToClass(colleges, {
       groups: [...req.user.roles],

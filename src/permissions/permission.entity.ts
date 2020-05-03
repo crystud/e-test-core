@@ -9,12 +9,12 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose, Transform } from 'class-transformer'
+import { Exclude, Expose } from 'class-transformer'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { User } from '../users/user.entity'
 import { Test } from '../tests/test.entity'
 import { UserRolesType } from '../enums/userRolesType'
-import { transformToId } from '../tools/transformers/transformToId'
+
 import { Group } from '../groups/group.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { AccessLevelType } from '../enums/accessLevelType'
@@ -29,13 +29,8 @@ export class Permission extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Transform(transformToId)
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.ALLOWER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({ type: Number })
   @ManyToOne(
@@ -44,17 +39,15 @@ export class Permission extends BaseEntity {
   )
   allower: User
 
-  @Transform(transformToId)
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.ALLOWER,
-    ],
+    groups: [UserRolesType.USER],
   })
+  @ManyToOne(
+    () => Test,
+    test => test.permissions,
+  )
   test: Test
 
-  @Transform(transformToId)
   @Expose({
     groups: [UserRolesType.ADMIN, AccessLevelType.ALLOWER],
   })
@@ -69,13 +62,8 @@ export class Permission extends BaseEntity {
   @JoinTable()
   groups: Group[]
 
-  @Transform(transformToId)
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.ALLOWER,
-      AccessLevelType.STUDENT,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({
     type: Number,
@@ -86,9 +74,8 @@ export class Permission extends BaseEntity {
   )
   study: Study
 
-  @Transform(transformToId)
   @Expose({
-    groups: [UserRolesType.ADMIN, AccessLevelType.ALLOWER],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({
     type: [Number],
@@ -100,22 +87,14 @@ export class Permission extends BaseEntity {
   tickets: Ticket[]
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.ALLOWER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty()
   @CreateDateColumn()
   createAt: Date
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.ALLOWER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({
     description: 'Time when students can start passing the test',
@@ -124,11 +103,7 @@ export class Permission extends BaseEntity {
   startTime: Date
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.ALLOWER,
-    ],
+    groups: [UserRolesType.USER],
   })
   @ApiModelProperty({
     description: 'Time when students already cannot start passing the test',
@@ -137,11 +112,7 @@ export class Permission extends BaseEntity {
   endTime: Date
 
   @Expose({
-    groups: [
-      UserRolesType.ADMIN,
-      AccessLevelType.STUDENT,
-      AccessLevelType.ALLOWER,
-    ],
+    groups: [UserRolesType.USER],
   })
   get actived(): boolean {
     return moment().isBetween(this.startTime, this.endTime)

@@ -73,7 +73,7 @@ export class PermissionsController {
       groups.forEach(group => (users = [...users, ...group.students]))
 
       await this.ticketsService.createMany(
-        `${permission.test.title} (${permission.allower.fullName})`,
+        `${permission.test.title} (${permission.allower.firstName} ${permission.allower.lastName} ${permission.allower.patronymic})`,
         permission,
         users,
       )

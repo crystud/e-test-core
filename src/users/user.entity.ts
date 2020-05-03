@@ -8,10 +8,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose, Transform } from 'class-transformer'
+import { Exclude, Expose } from 'class-transformer'
 import { Token } from '../auth/token.entity'
 import { College } from '../colleges/college.entity'
-import { transformToId } from '../tools/transformers/transformToId'
+
 import { Group } from '../groups/group.entity'
 import { Subject } from '../subjects/subject.entity'
 import { Study } from '../studies/study.entity'
@@ -78,7 +78,6 @@ export class User extends BaseEntity {
   )
   tokens: Token[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @ManyToMany(
@@ -88,7 +87,6 @@ export class User extends BaseEntity {
   @JoinTable()
   editableColleges: College[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @ManyToMany(
@@ -98,7 +96,6 @@ export class User extends BaseEntity {
   @JoinTable()
   groups: Group[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -107,7 +104,6 @@ export class User extends BaseEntity {
   )
   ownColleges: College[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -116,7 +112,6 @@ export class User extends BaseEntity {
   )
   createSubjectRequests: Subject[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -125,7 +120,6 @@ export class User extends BaseEntity {
   )
   createTopicRequests: Subject[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
   @ManyToMany(
@@ -135,7 +129,6 @@ export class User extends BaseEntity {
   @JoinTable()
   teachSubjects: Subject[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @ManyToMany(
@@ -145,7 +138,6 @@ export class User extends BaseEntity {
   @JoinTable()
   studies: Study[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -154,7 +146,6 @@ export class User extends BaseEntity {
   )
   tests: Test[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -163,7 +154,6 @@ export class User extends BaseEntity {
   )
   results: Result[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -172,16 +162,13 @@ export class User extends BaseEntity {
   )
   permissions: Permission[]
 
-  @Transform(transformToId)
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
-  @ApiModelProperty({ type: [Number] })
+  @Expose({ groups: [UserRolesType.USER] })
   @OneToMany(
     () => Ticket,
     ticket => ticket.student,
   )
   tickets: Ticket[]
 
-  @Transform(transformToId)
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number], description: 'Active testing' })
   @OneToMany(
@@ -189,11 +176,4 @@ export class User extends BaseEntity {
     attempt => attempt.student,
   )
   attempts: Attempt[]
-
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName} ${this.patronymic}`
-  }
 }

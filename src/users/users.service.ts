@@ -8,22 +8,12 @@ import { FilterUserDto } from './dto/filterUser.dto'
 import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
 import { Group } from '../groups/group.entity'
 import { College } from '../colleges/college.entity'
+import { Ticket } from '../tickets/ticket.entity'
 
 @Injectable()
 export class UsersService {
   async findOne(id: number): Promise<User> {
     const user = await User.createQueryBuilder('user')
-      .leftJoinAndSelect('user.editableColleges', 'editableColleges')
-      .leftJoinAndSelect('user.groups', 'groups')
-      .leftJoinAndSelect('user.ownColleges', 'ownColleges')
-      .leftJoinAndSelect('user.createSubjectRequests', 'createSubjectRequests')
-      .leftJoinAndSelect('user.createTopicRequests', 'createTopicRequests')
-      .leftJoinAndSelect('user.teachSubjects', 'teachSubjects')
-      .leftJoinAndSelect('user.studies', 'studies')
-      .leftJoinAndSelect('user.tests', 'tests')
-      .leftJoinAndSelect('user.permissions', 'permissions')
-      .leftJoinAndSelect('user.tickets', 'tickets')
-      .leftJoinAndSelect('user.results', 'results')
       .select([
         'user.id',
         'user.firstName',
@@ -33,17 +23,6 @@ export class UsersService {
         'user.email',
         'user.roles',
         'user.createAt',
-        'editableColleges.id',
-        'groups.id',
-        'ownColleges.id',
-        'createSubjectRequests.id',
-        'createTopicRequests.id',
-        'teachSubjects.id',
-        'studies.id',
-        'tests.id',
-        'permissions.id',
-        'tickets.id',
-        'results.id',
       ])
       .where('user.id = :userId', { userId: id })
       .getOne()
@@ -126,8 +105,8 @@ export class UsersService {
 
   async findGroups(userID: number): Promise<Group[]> {
     const user = await User.createQueryBuilder('user')
-      .leftJoinAndSelect('user.groups', 'groups')
-      .leftJoinAndSelect('groups.speciality', 'speciality')
+      .leftJoin('user.groups', 'groups')
+      .leftJoin('groups.speciality', 'speciality')
       .select([
         'user.id',
         'groups.id',
@@ -145,8 +124,9 @@ export class UsersService {
 
   async findOwnColleges(userID: number): Promise<College[]> {
     const user = await User.createQueryBuilder('user')
-      .leftJoinAndSelect('user.ownColleges', 'ownColleges')
-      .leftJoinAndSelect('ownColleges.specialties', 'specialties')
+      .leftJoin('user.ownColleges', 'ownColleges')
+      .leftJoin('ownColleges.specialties', 'specialties')
+      .leftJoin('ownColleges.creator', 'creator')
       .select([
         'user.id',
         'ownColleges.name',
@@ -156,10 +136,34 @@ export class UsersService {
         'ownColleges.site',
         'ownColleges.EDBO',
         'specialties.id',
+        'creator.id',
       ])
       .where('user.id = :userId', { userId: userID })
       .getOne()
 
     return user.ownColleges
+  }
+
+  async findTickets(userID: number): Promise<Ticket[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.tickets', 'tickets')
+      .leftJoin('tickets.student', 'student')
+      .leftJoin('tickets.permission', 'permission')
+      .select([
+        'user.id',
+        'tickets.id',
+        'tickets.title',
+        'tickets.used',
+        'tickets.usedTime',
+        'student.id',
+        'student.firstName',
+        'student.lastName',
+        'student.patronymic',
+        'student.patronymic',
+      ])
+      .where('user.id = :userId', { userId: userID })
+      .getOne()
+
+    return user.tickets
   }
 }
