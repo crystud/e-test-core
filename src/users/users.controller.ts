@@ -108,6 +108,22 @@ export class UsersController {
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
+  @Get('me/editableColleges')
+  @ApiOkResponse({
+    type: [College],
+  })
+  async findOwnEditableColleges(@Request() req): Promise<College[]> {
+    const groups = await this.usersService.findEditableColleges(req.user.id)
+
+    return classToClass(groups, {
+      groups: [...req.user.roles],
+    })
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('me/tickets')
   @ApiOkResponse({
     type: [Ticket],

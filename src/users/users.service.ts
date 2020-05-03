@@ -146,6 +146,28 @@ export class UsersService {
     return user.ownColleges
   }
 
+  async findEditableColleges(userId: number): Promise<College[]> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.editableColleges', 'editableColleges')
+      .leftJoin('editableColleges.specialties', 'specialties')
+      .leftJoin('editableColleges.creator', 'creator')
+      .select([
+        'user.id',
+        'editableColleges.name',
+        'editableColleges.address',
+        'editableColleges.confirmed',
+        'editableColleges.email',
+        'editableColleges.site',
+        'editableColleges.EDBO',
+        'specialties.id',
+        'creator.id',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOne()
+
+    return user.editableColleges
+  }
+
   async findTickets(userId: number): Promise<Ticket[]> {
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.tickets', 'tickets')
