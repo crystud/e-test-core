@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { TokensInterface } from './interfaces/tokens.interface'
 import { User } from '../users/user.entity'
 import { JwtService } from '@nestjs/jwt'
 import { Token } from './token.entity'
-import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
 import { compare } from 'bcryptjs'
 import { AccessLevelType } from '../enums/accessLevelType'
@@ -20,25 +19,13 @@ export class AuthService {
     })
 
     if (!user) {
-      throw new BadRequestExceptionError({
-        property: 'email',
-        value: email,
-        constraints: {
-          isNotExist: 'There`s not user with this email',
-        },
-      })
+      throw new BadRequestException()
     }
 
     const passwordIsCorrect = await compare(password, user.password)
 
     if (!passwordIsCorrect) {
-      throw new BadRequestExceptionError({
-        property: 'password',
-        value: password,
-        constraints: {
-          isNotExist: 'password is incorrect',
-        },
-      })
+      throw new BadRequestException()
     }
 
     return await this.createTokens(
@@ -64,13 +51,7 @@ export class AuthService {
     })
 
     if (!refreshToken) {
-      throw new BadRequestExceptionError({
-        property: 'token',
-        value: token,
-        constraints: {
-          isNotExist: 'token is incorrect',
-        },
-      })
+      throw new BadRequestException()
     }
 
     refreshToken.active = false
