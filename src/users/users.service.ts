@@ -79,7 +79,7 @@ export class UsersService {
       roles:
         this.configService.get<string>('env') === Environments.DEVELOPMENT
           ? [UserRolesType.USER]
-          : null,
+          : [UserRolesType.GHOST],
     }).save()
 
     return classToClass(user, { groups: [...user.roles] })
