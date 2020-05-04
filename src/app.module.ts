@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { SpecialtiesModule } from './specialties/specialties.module'
 import configuration from './config/configuration'
+import { GroupsModule } from './groups/groups.module'
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import configuration from './config/configuration'
     UsersModule,
     AuthModule,
     SpecialtiesModule,
+    GroupsModule,
   ],
 })
 export class AppModule {}
