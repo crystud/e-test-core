@@ -13,13 +13,11 @@ export class GroupsService {
       })
       .getCount()
 
-    const group = await Group.create({
+    return await Group.create({
       ...createGroupDto,
       number: thread + 1,
       speciality: Speciality.create({ id: createGroupDto.speciality }),
     }).save()
-
-    return await this.findOne(group.id)
   }
 
   async findOne(groupsId: number): Promise<Group> {

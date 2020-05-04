@@ -8,6 +8,7 @@ import { SpecialtiesModule } from './specialties/specialties.module'
 import configuration from './config/configuration'
 import { GroupsModule } from './groups/groups.module'
 import { SubjectsModule } from './subject/subjects.module'
+import { TopicsModule } from './topics/topics.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { SubjectsModule } from './subject/subjects.module'
     SpecialtiesModule,
     GroupsModule,
     SubjectsModule,
+    TopicsModule,
   ],
 })
 export class AppModule {}

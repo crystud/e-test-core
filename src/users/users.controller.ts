@@ -63,4 +63,13 @@ export class UsersController {
       groups: req.user.roles,
     })
   }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':id')
+  async makeAdmin(@Param('id') userId: number): Promise<User> {
+    return await this.usersService.makeAdmin(userId)
+  }
 }

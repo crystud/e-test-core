@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { Subject } from './subject.entity'
+import { User } from '../users/user.entity'
 
 @Injectable()
 export class SubjectsService {
@@ -12,6 +13,7 @@ export class SubjectsService {
   async findOne(subjectId: number): Promise<Subject> {
     return await Subject.createQueryBuilder('subject')
       .leftJoin('subject.teachers', 'teachers')
+      .leftJoin('subject.topics', 'topics')
       .select([
         'subject.id',
         'subject.name',
@@ -20,6 +22,8 @@ export class SubjectsService {
         'teachers.lastName',
         'teachers.patronymic',
         'teachers.email',
+        'topics.id',
+        'topics.name',
       ])
       .where('subject.id = :subjectId ', { subjectId })
       .getOne()
@@ -28,6 +32,7 @@ export class SubjectsService {
   async findAll(subjectName: string): Promise<Subject[]> {
     return await Subject.createQueryBuilder('subject')
       .leftJoin('subject.teachers', 'teachers')
+      .leftJoin('subject.topics', 'topics')
       .select([
         'subject.id',
         'subject.name',
@@ -36,10 +41,25 @@ export class SubjectsService {
         'teachers.lastName',
         'teachers.patronymic',
         'teachers.email',
+        'topics.id',
+        'topics.name',
       ])
       .where('subject.name like :name ', {
         name: `%${subjectName}%`,
       })
       .getMany()
+  }
+
+  async addTeacher(subjectId: number, userId: number): Promise<Subject> {
+    const subject = await this.findOne(subjectId)
+
+    if (subject.teachers.some(teacher => teacher.id === Number(userId)))
+      throw new BadRequestException()
+
+    subject.teachers.push(User.create({ id: userId }))
+
+    await subject.save()
+
+    return await this.findOne(subjectId)
   }
 }

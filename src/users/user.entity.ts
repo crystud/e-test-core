@@ -11,7 +11,7 @@ import { Exclude, Expose } from 'class-transformer'
 import { Token } from '../auth/token.entity'
 
 import { UserRolesType } from '../enums/userRolesType'
-import { AccessLevelType } from '../enums/accessLevelType'
+
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Subject } from '../subject/subject.entity'
 
@@ -23,32 +23,33 @@ export class User extends BaseEntity {
   @ApiModelProperty()
   id: number
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @Expose()
   @ApiModelProperty()
   @Column()
   firstName: string
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @Expose()
   @ApiModelProperty()
   @Column()
   lastName: string
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @Expose()
   @ApiModelProperty()
   @Column()
   patronymic: string
 
+  @Exclude()
   @Column()
   password: string
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @Expose()
   @ApiModelProperty()
   @Column({
     unique: true,
   })
   email: string
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @Expose()
   @ApiModelProperty()
   @Column({
     type: 'set',
@@ -57,19 +58,19 @@ export class User extends BaseEntity {
   })
   roles: UserRolesType[]
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
+  @Expose()
   @ApiModelProperty()
   @CreateDateColumn()
   createAt: Date
 
-  @Exclude()
+  @Expose()
   @OneToMany(
     () => Token,
     token => token.user,
   )
   tokens: Token[]
 
-  @Exclude()
+  @Expose()
   @ManyToMany(
     () => Subject,
     subject => subject.teachers,

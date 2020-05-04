@@ -3,18 +3,16 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { User } from '../users/user.entity'
-import { Topic } from '../topics/topic.entity'
+
+import { Subject } from '../subject/subject.entity'
 
 @Exclude()
-@Entity('subject')
-export class Subject extends BaseEntity {
+@Entity('topics')
+export class Topic extends BaseEntity {
   @Expose()
   @PrimaryGeneratedColumn()
   @ApiModelProperty()
@@ -25,17 +23,9 @@ export class Subject extends BaseEntity {
   name: string
 
   @Expose()
-  @ManyToMany(
-    () => User,
-    user => user.subjects,
+  @ManyToOne(
+    () => Subject,
+    subject => subject.topics,
   )
-  @JoinTable({ name: 'teachers' })
-  teachers: User[]
-
-  @Expose()
-  @OneToMany(
-    () => Topic,
-    topic => topic.subject,
-  )
-  topics: User[]
+  subject: Subject
 }

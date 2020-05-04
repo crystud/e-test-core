@@ -15,6 +15,7 @@ export class UsersService {
 
   async findOne(id: number): Promise<User> {
     const user = await User.createQueryBuilder('user')
+      .leftJoin('user.subjects', 'subjects')
       .select([
         'user.id',
         'user.firstName',
@@ -24,6 +25,8 @@ export class UsersService {
         'user.email',
         'user.roles',
         'user.createAt',
+        'subjects.id',
+        'subjects.name',
       ])
       .where('user.id = :userId', { userId: id })
       .getOne()
@@ -102,5 +105,18 @@ export class UsersService {
         'createAt',
       ],
     })
+  }
+
+  async makeAdmin(userId: number): Promise<User> {
+    const user = await this.findOne(userId)
+
+    if (user.roles.includes(UserRolesType.ADMIN))
+      throw new BadRequestException()
+
+    user.roles.push(UserRolesType.ADMIN)
+
+    await user.save()
+
+    return user
   }
 }

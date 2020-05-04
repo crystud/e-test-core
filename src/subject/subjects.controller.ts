@@ -53,4 +53,16 @@ export class SubjectsController {
   ): Promise<Subject[]> {
     return await this.subjectsService.findAll(findAllSpecialityDto.name)
   }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post(':subjectId/teacher/:userId')
+  async addTeacher(
+    @Param('subjectId') subjectId: number,
+    @Param('userId') userId: number,
+  ): Promise<Subject> {
+    return await this.subjectsService.addTeacher(subjectId, userId)
+  }
 }
