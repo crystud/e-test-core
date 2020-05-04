@@ -55,7 +55,7 @@ export class UsersController {
   async register(
     @Body() registerUserDto: RegisterUserDto,
   ): Promise<TokensInterface> {
-    const user = await this.usersService.createUser(registerUserDto)
+    const user = await this.usersService.create(registerUserDto)
 
     return await this.authService.createTokens(user)
   }

@@ -8,8 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { College } from '../colleges/college.entity'
-import { Transform } from 'class-transformer'
-import { transformToId } from '../tools/transformers/transformToId'
+
 import { Group } from '../groups/group.entity'
 import { Study } from '../studies/study.entity'
 
@@ -35,7 +34,6 @@ export class Speciality extends BaseEntity {
   @Column({ unique: true })
   code: number
 
-  @Transform(transformToId)
   @ManyToOne(
     () => College,
     college => college.specialties,
@@ -45,7 +43,6 @@ export class Speciality extends BaseEntity {
   )
   college: College
 
-  @Transform(transformToId)
   @OneToMany(
     () => Group,
     group => group.speciality,
@@ -59,7 +56,6 @@ export class Speciality extends BaseEntity {
   })
   types: SubjectStudyType[]
 
-  @Transform(transformToId)
   @ManyToMany(
     () => Study,
     study => study.specialties,

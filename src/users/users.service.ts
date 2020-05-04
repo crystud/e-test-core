@@ -15,9 +15,13 @@ import { Permission } from '../permissions/permission.entity'
 import { Attempt } from '../attempts/attempt.entity'
 import { Test } from '../tests/test.entity'
 import { Study } from '../studies/study.entity'
+import { ConfigService } from '@nestjs/config'
+import { Environments } from '../config/environments.enum'
 
 @Injectable()
 export class UsersService {
+  constructor(private configService: ConfigService) {}
+
   async findOne(id: number): Promise<User> {
     const user = await User.createQueryBuilder('user')
       .select([
@@ -66,7 +70,7 @@ export class UsersService {
     })
   }
 
-  async createUser({
+  async create({
     firstName,
     lastName,
     patronymic,
@@ -97,9 +101,13 @@ export class UsersService {
       patronymic,
       password: hashPassword,
       email,
+      roles:
+        this.configService.get<string>('env') === Environments.DEVELOPMENT
+          ? [UserRolesType.USER]
+          : null,
     }).save()
 
-    return classToClass<User>(user)
+    return classToClass(user, { groups: [...user.roles] })
   }
 
   isAdmin(user: User): boolean {
@@ -233,6 +241,7 @@ export class UsersService {
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.permissions', 'permissions')
       .leftJoin('permissions.groups', 'groups')
+      .leftJoin('permissions.test', 'test')
       .leftJoin('permissions.study', 'study')
       .leftJoin('permissions.tickets', 'tickets')
       .select([
@@ -244,7 +253,8 @@ export class UsersService {
         'permissions.createAt',
         'groups.id',
         'study.id',
-        'study.id',
+        'test.id',
+        'test.title',
         'tickets.id',
         'tickets.used',
       ])
@@ -281,9 +291,11 @@ export class UsersService {
       .leftJoin('user.tests', 'tests')
       .leftJoin('tests.subject', 'subject')
       .leftJoin('tests.studies', 'studies')
+      .leftJoin('tests.levels', 'levels')
       .leftJoin('tests.colleges', 'colleges')
       .select([
         'user.id',
+        'tests.id',
         'tests.title',
         'tests.description',
         'tests.isPublic',
@@ -292,6 +304,8 @@ export class UsersService {
         'studies.id',
         'colleges.id',
         'colleges.name',
+        'levels.id',
+        'levels.title',
       ])
       .where('user.id = :userId', { userId })
       .getOne()
@@ -303,6 +317,7 @@ export class UsersService {
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.studies', 'studies')
       .leftJoin('studies.subject', 'subject')
+      .leftJoin('studies.specialties', 'specialties')
       .leftJoin('studies.college', 'college')
       .select([
         'user.id',
@@ -311,6 +326,10 @@ export class UsersService {
         'subject.name',
         'college.id',
         'college.name',
+        'specialties.id',
+        'specialties.name',
+        'specialties.code',
+        'specialties.yearOfStudy',
       ])
       .where('user.id = :userId', { userId })
       .getOne()

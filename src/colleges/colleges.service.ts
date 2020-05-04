@@ -47,6 +47,7 @@ export class CollegesService {
         'subjects',
         'studies',
         'tests',
+        'specialties.groups',
       ],
     })
 
