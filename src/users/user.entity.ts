@@ -10,17 +10,13 @@ import {
 } from 'typeorm'
 import { Exclude, Expose } from 'class-transformer'
 import { Token } from '../auth/token.entity'
-import { College } from '../colleges/college.entity'
 
-import { Group } from '../groups/group.entity'
 import { Subject } from '../subjects/subject.entity'
-import { Study } from '../studies/study.entity'
 import { Test } from '../tests/test.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { Topic } from '../topics/topics.entity'
-import { Permission } from '../permissions/permission.entity'
+
 import { Ticket } from '../tickets/ticket.entity'
 import { Attempt } from '../attempts/attempt.entity'
 import { Result } from '../results/result.entity'
@@ -78,32 +74,6 @@ export class User extends BaseEntity {
   )
   tokens: Token[]
 
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @ManyToMany(
-    () => College,
-    college => college.editors,
-  )
-  @JoinTable()
-  editableColleges: College[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @ManyToMany(
-    () => Group,
-    group => group.students,
-  )
-  @JoinTable()
-  groups: Group[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @OneToMany(
-    () => College,
-    college => college.creator,
-  )
-  ownColleges: College[]
-
   @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
   @ApiModelProperty({ type: [Number] })
   @OneToMany(
@@ -111,14 +81,6 @@ export class User extends BaseEntity {
     subject => subject.creator,
   )
   createSubjectRequests: Subject[]
-
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
-  @ApiModelProperty({ type: [Number] })
-  @OneToMany(
-    () => Topic,
-    topic => topic.creator,
-  )
-  createTopicRequests: Subject[]
 
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
@@ -128,15 +90,6 @@ export class User extends BaseEntity {
   )
   @JoinTable()
   teachSubjects: Subject[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @ManyToMany(
-    () => Study,
-    study => study.teachers,
-  )
-  @JoinTable()
-  studies: Study[]
 
   @Expose({ groups: [UserRolesType.USER] })
   @ApiModelProperty({ type: [Number] })
@@ -153,14 +106,6 @@ export class User extends BaseEntity {
     result => result.student,
   )
   results: Result[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @OneToMany(
-    () => Permission,
-    permission => permission.allower,
-  )
-  permissions: Permission[]
 
   @Expose({ groups: [UserRolesType.USER] })
   @OneToMany(
