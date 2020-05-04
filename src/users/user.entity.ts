@@ -12,6 +12,7 @@ import { Token } from '../auth/token.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
+import { Student } from '../students/student.entity'
 
 @Exclude()
 @Entity('users')
@@ -60,9 +61,18 @@ export class User extends BaseEntity {
   @CreateDateColumn()
   createAt: Date
 
+  @Exclude()
   @OneToMany(
     () => Token,
     token => token.user,
   )
   tokens: Token[]
+
+  @Expose()
+  @ApiModelProperty({ type: () => Student })
+  @OneToMany(
+    () => Student,
+    student => student.user,
+  )
+  students: Student[]
 }
