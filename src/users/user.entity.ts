@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
@@ -12,6 +13,7 @@ import { Token } from '../auth/token.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { AccessLevelType } from '../enums/accessLevelType'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
+import { Subject } from '../subject/subject.entity'
 
 @Exclude()
 @Entity('users')
@@ -66,4 +68,11 @@ export class User extends BaseEntity {
     token => token.user,
   )
   tokens: Token[]
+
+  @Exclude()
+  @ManyToMany(
+    () => Subject,
+    subject => subject.teachers,
+  )
+  subjects: Subject[]
 }

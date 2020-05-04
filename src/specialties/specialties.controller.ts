@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { SpecialtiesService } from './specialties.service'
 import { Roles } from '../auth/decorators/roles.decorator'
-import { ApiBearerAuth } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
@@ -17,6 +17,7 @@ import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { Speciality } from './speciality.entity'
 import { FindAllSpecialityDto } from './dto/findAllSpeciality.dto'
 
+@ApiTags('specialties')
 @Controller('specialties')
 export class SpecialtiesController {
   constructor(private readonly specialtiesService: SpecialtiesService) {}
