@@ -200,10 +200,13 @@ export class UsersService {
   }
 
   async findResults(userId: number): Promise<Result[]> {
+    // TODO: refactor
+
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.results', 'results')
       .leftJoin('results.attempt', 'attempt')
       .leftJoin('results.student', 'student')
+      .leftJoin('results.test', 'test')
       .select([
         'user.id',
         'results.id',
@@ -215,6 +218,9 @@ export class UsersService {
         'student.firstName',
         'student.lastName',
         'student.patronymic',
+        'test.id',
+        'test.title',
+        'test.description',
       ])
       .where('user.id = :userId', { userId })
       .getOne()
@@ -255,6 +261,7 @@ export class UsersService {
         'study.id',
         'test.id',
         'test.title',
+        'test.description',
         'tickets.id',
         'tickets.used',
       ])

@@ -14,6 +14,7 @@ import { Attempt } from '../attempts/attempt.entity'
 import { UserRolesType } from '../enums/userRolesType'
 import { ResultAnswer } from './resultAnswer.entity'
 import { User } from '../users/user.entity'
+import { Test } from '../tests/test.entity'
 
 @Exclude()
 @Entity('results')
@@ -67,4 +68,13 @@ export class Result extends BaseEntity {
     user => user.results,
   )
   student: User
+
+  @Expose({
+    groups: [UserRolesType.USER],
+  })
+  @ManyToOne(
+    () => Test,
+    test => test.results,
+  )
+  test: Test
 }

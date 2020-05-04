@@ -8,13 +8,13 @@ export class ResultsService {
       where: {
         id,
       },
-      relations: ['attempt', 'resultAnswers', 'student'],
+      relations: ['attempt', 'resultAnswers', 'student', 'test'],
     })
   }
 
   async findByIds(ids: number[]): Promise<Result[]> {
     return await Result.findByIds(ids, {
-      relations: ['attempt', 'resultAnswers', 'student'],
+      relations: ['attempt', 'resultAnswers', 'student', 'test'],
     })
   }
 }

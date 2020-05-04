@@ -10,7 +10,7 @@ import {
 } from 'typeorm'
 import { Study } from '../studies/study.entity'
 import { User } from '../users/user.entity'
-import { Expose } from 'class-transformer'
+import { Exclude, Expose } from 'class-transformer'
 
 import { Subject } from '../subjects/subject.entity'
 import { College } from '../colleges/college.entity'
@@ -18,6 +18,7 @@ import { Level } from '../levels/level.entity'
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { Permission } from '../permissions/permission.entity'
+import { Result } from '../results/result.entity'
 
 @Entity('tests')
 export class Test extends BaseEntity {
@@ -74,6 +75,13 @@ export class Test extends BaseEntity {
     level => level.test,
   )
   levels: Level[]
+
+  @Exclude()
+  @OneToMany(
+    () => Result,
+    result => result.test,
+  )
+  results: Result[]
 
   @OneToMany(
     () => Permission,

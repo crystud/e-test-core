@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
@@ -23,6 +23,7 @@ import { CompleteAttemptDto } from './dto/completeAttempt.dto'
 import { Result } from '../results/result.entity'
 import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 
+@ApiTags('attempts')
 @Controller('attempts')
 export class AttemptsController {
   constructor(private readonly attemptsService: AttemptsService) {}

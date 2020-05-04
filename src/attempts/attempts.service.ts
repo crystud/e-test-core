@@ -15,6 +15,7 @@ import { TaskTypes } from '../enums/TaskTypes.enum'
 import { ResultAnswer } from '../results/resultAnswer.entity'
 import { Result } from '../results/result.entity'
 import { AnswerCheckResult } from './interfaces/answerCheckResult.interface'
+import { Test } from '../tests/test.entity'
 
 @Injectable()
 export class AttemptsService {
@@ -294,9 +295,19 @@ export class AttemptsService {
         },
       })
 
+    // TODO: refactor
+    const test = await Test.createQueryBuilder('test')
+      .leftJoin('test.permissions', 'permissions')
+      .leftJoin('permissions.tickets', 'tickets')
+      .leftJoin('tickets.attempts', 'attempts')
+      .select(['test.id'])
+      .where('attempts.id = :attemptsId', { attemptsId: attempt.id })
+      .getOne()
+
     const reportResult = await Result.create({
       resultScore: 0,
       persents: 0,
+      test,
       student: attempt.student,
     })
 
