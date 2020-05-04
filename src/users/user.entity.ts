@@ -14,6 +14,7 @@ import { UserRolesType } from '../enums/userRolesType'
 
 import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Subject } from '../subject/subject.entity'
+import { Group } from '../groups/group.entity'
 
 @Exclude()
 @Entity('users')
@@ -76,4 +77,11 @@ export class User extends BaseEntity {
     subject => subject.teachers,
   )
   subjects: Subject[]
+
+  @Expose()
+  @ManyToMany(
+    () => Group,
+    group => group.students,
+  )
+  groups: Group[]
 }

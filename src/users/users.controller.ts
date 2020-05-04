@@ -68,7 +68,7 @@ export class UsersController {
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Post(':id')
+  @Post(':id/admin')
   async makeAdmin(@Param('id') userId: number): Promise<User> {
     return await this.usersService.makeAdmin(userId)
   }

@@ -3,6 +3,8 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
@@ -10,6 +12,7 @@ import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-prop
 import { Speciality } from '../specialties/speciality.entity'
 import * as moment from 'moment'
 import { now } from 'moment'
+import { User } from '../users/user.entity'
 
 @Exclude()
 @Entity('groups')
@@ -33,6 +36,14 @@ export class Group extends BaseEntity {
     speciality => speciality.groups,
   )
   speciality: Speciality
+
+  @Expose()
+  @ManyToMany(
+    () => User,
+    user => user.groups,
+  )
+  @JoinTable({ name: 'student' })
+  students: User[]
 
   @Expose({ name: 'course' })
   get _course(): number {

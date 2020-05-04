@@ -31,7 +31,7 @@ export class UsersService {
       .where('user.id = :userId', { userId: id })
       .getOne()
 
-    if (!user) throw new BadRequestException()
+    if (!user) throw new BadRequestException('користувача з таки id не існує')
 
     return user
   }
@@ -71,7 +71,7 @@ export class UsersService {
       },
     })
 
-    if (emailIsFree) throw new BadRequestException()
+    if (emailIsFree) throw new BadRequestException('Email зайнятий')
 
     const user = await User.create({
       firstName,

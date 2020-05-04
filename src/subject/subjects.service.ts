@@ -54,7 +54,7 @@ export class SubjectsService {
     const subject = await this.findOne(subjectId)
 
     if (subject.teachers.some(teacher => teacher.id === Number(userId)))
-      throw new BadRequestException()
+      throw new BadRequestException('Користувач вже викладає даний предмет')
 
     subject.teachers.push(User.create({ id: userId }))
 
