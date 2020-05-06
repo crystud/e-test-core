@@ -31,9 +31,9 @@ export class Token extends BaseEntity {
   )
   readonly user: User
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'create_at' })
   createAt: Date
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'used_at' })
   usedAt: Date
 }

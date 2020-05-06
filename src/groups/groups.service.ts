@@ -3,7 +3,6 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { Group } from './group.entity'
 import { CreateGroupDto } from './dto/createGroup.dto'
 import { Speciality } from '../specialties/speciality.entity'
-import { User } from '../users/user.entity'
 
 @Injectable()
 export class GroupsService {
@@ -14,17 +13,20 @@ export class GroupsService {
       })
       .getCount()
 
-    return await Group.create({
+    const group = await Group.create({
       ...createGroupDto,
       number: thread + 1,
       speciality: Speciality.create({ id: createGroupDto.speciality }),
     }).save()
+
+    return this.findOne(group.id)
   }
 
   async findOne(groupId: number): Promise<Group> {
-    return await Group.createQueryBuilder('groups')
+    const group = await Group.createQueryBuilder('groups')
       .leftJoin('groups.speciality', 'speciality')
       .leftJoin('groups.students', 'students')
+      .leftJoin('students.user', 'users')
       .select([
         'groups.id',
         'groups.startYear',
@@ -35,25 +37,17 @@ export class GroupsService {
         'speciality.name',
         'speciality.code',
         'students.id',
-        'students.firstName',
-        'students.lastName',
-        'students.patronymic',
-        'students.email',
+        'students.scoringBook',
+        'users.id',
+        'users.firstName',
+        'users.lastName',
+        'users.patronymic',
       ])
-      .where('groups.id = :groupId ', { groupId })
+      .whereInIds(groupId)
       .getOne()
-  }
 
-  async addStudent(groupId: number, userId: number): Promise<Group> {
-    const group = await this.findOne(groupId)
+    if (!group) throw new BadRequestException('Групу не знайдено')
 
-    if (group.students.some(student => student.id === Number(userId)))
-      throw new BadRequestException('Користувач вже в групі')
-
-    group.students.push(User.create({ id: userId }))
-
-    await group.save()
-
-    return await this.findOne(groupId)
+    return group
   }
 }

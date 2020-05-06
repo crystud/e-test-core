@@ -42,17 +42,4 @@ export class GroupsController {
   async findOne(@Param('id') groupId: number): Promise<Group> {
     return await this.groupsService.findOne(groupId)
   }
-
-  @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.ADMIN)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
-  @Post(':groupId/student/:userId')
-  async addStudent(
-    @Param('groupId') groupId: number,
-    @Param('userId') userId: number,
-  ): Promise<Group> {
-    return await this.groupsService.addStudent(groupId, userId)
-  }
 }

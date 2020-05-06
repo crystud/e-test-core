@@ -1,5 +1,7 @@
 export enum UserRolesType {
-  ADMIN = 'admin',
-  USER = 'user',
   GHOST = 'ghost',
+  USER = 'user',
+  STUDENT = 'student',
+  TEACHER = 'teacher',
+  ADMIN = 'admin',
 }

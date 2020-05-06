@@ -11,26 +11,40 @@ export class SpecialtiesService {
   }
 
   async findOne(specialityId: number): Promise<Speciality> {
-    return await Speciality.createQueryBuilder('speciality')
+    const speciality = await Speciality.createQueryBuilder('speciality')
+      .leftJoin('speciality.groups', 'groups')
       .select([
         'speciality.id',
         'speciality.name',
         'speciality.symbol',
         'speciality.yearOfStudy',
         'speciality.code',
+        'groups.id',
+        'groups.startYear',
+        'groups.number',
       ])
       .where('speciality.id = :specialityId ', { specialityId })
       .getOne()
+
+    speciality.groups.forEach(group => {
+      group.speciality = new Speciality()
+      group.speciality.yearOfStudy = speciality.yearOfStudy
+      group.speciality.symbol = speciality.symbol
+    })
+
+    return speciality
   }
 
   async findAll(specialityName: string): Promise<Speciality[]> {
-    return await Speciality.createQueryBuilder('speciality')
+    return await Speciality.createQueryBuilder('specialties')
+      .leftJoin('specialties.groups', 'groups')
       .select([
-        'speciality.id',
-        'speciality.name',
-        'speciality.symbol',
-        'speciality.yearOfStudy',
-        'speciality.code',
+        'specialties.id',
+        'specialties.name',
+        'specialties.symbol',
+        'specialties.yearOfStudy',
+        'specialties.code',
+        'groups.id',
       ])
       .where('speciality.name like :name ', {
         name: `%${specialityName}%`,

@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt'
 import { jwtConstrant } from './constants/jwt.constant.js'
 import { TokenInterface } from './interfaces/token.interface'
 import { User } from '../users/user.entity'
+import { UserRolesType } from '../enums/userRolesType'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,7 +15,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  async validate(payload: TokenInterface): Promise<User> {
-    return payload.user
+  async validate(
+    payload: TokenInterface,
+  ): Promise<{ user: User; roles: UserRolesType[] }> {
+    return { user: payload.user, roles: payload.roles }
   }
 }

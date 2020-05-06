@@ -1,49 +1,43 @@
-import { Exclude, Expose } from 'class-transformer'
+import { Expose } from 'class-transformer'
 import {
   BaseEntity,
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
+  JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Speciality } from '../specialties/speciality.entity'
 import * as moment from 'moment'
 import { now } from 'moment'
-import { User } from '../users/user.entity'
 
-@Exclude()
+import { Student } from '../students/student.entity'
+
 @Entity('groups')
 export class Group extends BaseEntity {
-  @Expose()
   @PrimaryGeneratedColumn()
-  @ApiModelProperty()
   id: number
 
-  @Expose()
-  @Column({ type: 'smallint' })
+  @Column({ name: 'start_year', type: 'smallint' })
   startYear: number
 
   @Expose()
   @Column({ type: 'tinyint' })
   number: number
 
-  @Expose()
   @ManyToOne(
     () => Speciality,
     speciality => speciality.groups,
   )
+  @JoinColumn({ name: 'speciality_id' })
   speciality: Speciality
 
-  @Expose()
-  @ManyToMany(
-    () => User,
-    user => user.groups,
+  @OneToMany(
+    () => Student,
+    student => student.group,
   )
-  @JoinTable({ name: 'student' })
-  students: User[]
+  students: Student[]
 
   @Expose({ name: 'course' })
   get _course(): number {

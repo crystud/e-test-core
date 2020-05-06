@@ -9,6 +9,10 @@ import configuration from './config/configuration'
 import { GroupsModule } from './groups/groups.module'
 import { SubjectsModule } from './subject/subjects.module'
 import { TopicsModule } from './topics/topics.module'
+import { StudentsModule } from './students/students.module'
+import { TeachersModule } from './teachers/teachers.module'
+import { TestsModule } from './tests/tests.module'
+import { AdminsModule } from './admins/admins.module'
 
 @Module({
   imports: [
@@ -37,6 +41,10 @@ import { TopicsModule } from './topics/topics.module'
     GroupsModule,
     SubjectsModule,
     TopicsModule,
+    StudentsModule,
+    TeachersModule,
+    TestsModule,
+    AdminsModule,
   ],
 })
 export class AppModule {}

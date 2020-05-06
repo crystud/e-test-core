@@ -1,41 +1,31 @@
-import { Exclude, Expose } from 'class-transformer'
 import {
   BaseEntity,
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { User } from '../users/user.entity'
-import { Topic } from '../topics/topic.entity'
 
-@Exclude()
+import { Topic } from '../topics/topic.entity'
+import { Teacher } from '../teachers/teachers.entity'
+
 @Entity('subject')
 export class Subject extends BaseEntity {
-  @Expose()
   @PrimaryGeneratedColumn()
-  @ApiModelProperty()
   id: number
 
-  @Expose()
   @Column({ type: 'varchar', length: '50', unique: true })
   name: string
 
-  @Expose()
-  @ManyToMany(
-    () => User,
-    user => user.subjects,
+  @OneToMany(
+    () => Teacher,
+    teacher => teacher.subject,
   )
-  @JoinTable({ name: 'teachers' })
-  teachers: User[]
+  teachers: Teacher[]
 
-  @Expose()
   @OneToMany(
     () => Topic,
     topic => topic.subject,
   )
-  topics: User[]
+  topics: Topic[]
 }

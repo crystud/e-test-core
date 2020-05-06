@@ -19,11 +19,15 @@ import { SubjectsService } from './subjects.service'
 import { Subject } from './subject.entity'
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { FindAllSubjectsDto } from './dto/findAllSubjects.dto'
+import { TopicsService } from '../topics/topics.service'
 
 @ApiTags('subjects')
 @Controller('subjects')
 export class SubjectsController {
-  constructor(private readonly subjectsService: SubjectsService) {}
+  constructor(
+    private readonly subjectsService: SubjectsService,
+    private readonly topicsService: TopicsService,
+  ) {}
 
   @ApiBearerAuth()
   @Roles(UserRolesType.ADMIN)
@@ -31,7 +35,11 @@ export class SubjectsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() createSubjectDto: CreateSubjectDto): Promise<Subject> {
-    return await this.subjectsService.create(createSubjectDto)
+    const subject = await this.subjectsService.create(createSubjectDto)
+
+    await this.topicsService.create({ subject: subject.id, name: 'Без теми' })
+
+    return subject
   }
 
   @ApiBearerAuth()
@@ -52,17 +60,5 @@ export class SubjectsController {
     @Query() findAllSpecialityDto: FindAllSubjectsDto,
   ): Promise<Subject[]> {
     return await this.subjectsService.findAll(findAllSpecialityDto.name)
-  }
-
-  @ApiBearerAuth()
-  @Roles(UserRolesType.ADMIN)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
-  @Post(':subjectId/teacher/:userId')
-  async addTeacher(
-    @Param('subjectId') subjectId: number,
-    @Param('userId') userId: number,
-  ): Promise<Subject> {
-    return await this.subjectsService.addTeacher(subjectId, userId)
   }
 }

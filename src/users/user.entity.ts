@@ -3,85 +3,66 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose } from 'class-transformer'
+
 import { Token } from '../auth/token.entity'
 
-import { UserRolesType } from '../enums/userRolesType'
+import { Student } from '../students/student.entity'
 
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { Subject } from '../subject/subject.entity'
-import { Group } from '../groups/group.entity'
+import { Teacher } from '../teachers/teachers.entity'
+import { Exclude } from 'class-transformer'
+import { Admin } from '../admins/admin.entity'
 
-@Exclude()
 @Entity('users')
 export class User extends BaseEntity {
-  @Expose()
   @PrimaryGeneratedColumn()
-  @ApiModelProperty()
   id: number
 
-  @Expose()
-  @ApiModelProperty()
-  @Column()
+  @Column({ name: 'first_name', type: 'varchar', length: 40 })
   firstName: string
 
-  @Expose()
-  @ApiModelProperty()
-  @Column()
+  @Column({ name: 'last_name', type: 'varchar', length: 40 })
   lastName: string
 
-  @Expose()
-  @ApiModelProperty()
-  @Column()
+  @Column({ type: 'varchar', length: 40 })
   patronymic: string
 
   @Exclude()
   @Column()
   password: string
 
-  @Expose()
-  @ApiModelProperty()
   @Column({
     unique: true,
   })
   email: string
 
-  @Expose()
-  @ApiModelProperty()
-  @Column({
-    type: 'set',
-    enum: UserRolesType,
-    default: [UserRolesType.GHOST],
-  })
-  roles: UserRolesType[]
+  @OneToOne(
+    () => Admin,
+    admin => admin.user,
+  )
+  admin: Admin
 
-  @Expose()
-  @ApiModelProperty()
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'create_at' })
   createAt: Date
 
-  @Expose()
   @OneToMany(
     () => Token,
     token => token.user,
   )
   tokens: Token[]
 
-  @Expose()
-  @ManyToMany(
-    () => Subject,
-    subject => subject.teachers,
+  @OneToMany(
+    () => Teacher,
+    teacher => teacher.user,
   )
-  subjects: Subject[]
+  teachers: Teacher[]
 
-  @Expose()
-  @ManyToMany(
-    () => Group,
-    group => group.students,
+  @OneToMany(
+    () => Student,
+    student => student.user,
   )
-  groups: Group[]
+  students: Student[]
 }

@@ -1,8 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 import { CreateSubjectDto } from './dto/createSubject.dto'
 import { Subject } from './subject.entity'
-import { User } from '../users/user.entity'
 
 @Injectable()
 export class SubjectsService {
@@ -13,15 +12,17 @@ export class SubjectsService {
   async findOne(subjectId: number): Promise<Subject> {
     return await Subject.createQueryBuilder('subject')
       .leftJoin('subject.teachers', 'teachers')
+      .leftJoin('teachers.user', 'user')
       .leftJoin('subject.topics', 'topics')
       .select([
         'subject.id',
         'subject.name',
         'teachers.id',
-        'teachers.firstName',
-        'teachers.lastName',
-        'teachers.patronymic',
-        'teachers.email',
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'user.email',
         'topics.id',
         'topics.name',
       ])
@@ -32,15 +33,16 @@ export class SubjectsService {
   async findAll(subjectName: string): Promise<Subject[]> {
     return await Subject.createQueryBuilder('subject')
       .leftJoin('subject.teachers', 'teachers')
+      .leftJoin('teachers.user', 'user')
       .leftJoin('subject.topics', 'topics')
       .select([
         'subject.id',
         'subject.name',
         'teachers.id',
-        'teachers.firstName',
-        'teachers.lastName',
-        'teachers.patronymic',
-        'teachers.email',
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
         'topics.id',
         'topics.name',
       ])
@@ -48,18 +50,5 @@ export class SubjectsService {
         name: `%${subjectName}%`,
       })
       .getMany()
-  }
-
-  async addTeacher(subjectId: number, userId: number): Promise<Subject> {
-    const subject = await this.findOne(subjectId)
-
-    if (subject.teachers.some(teacher => teacher.id === Number(userId)))
-      throw new BadRequestException('Користувач вже викладає даний предмет')
-
-    subject.teachers.push(User.create({ id: userId }))
-
-    await subject.save()
-
-    return await this.findOne(subjectId)
   }
 }

@@ -26,7 +26,7 @@ export class TopicsController {
   }
 
   @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get(':id')

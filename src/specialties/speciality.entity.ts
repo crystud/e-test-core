@@ -6,7 +6,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Group } from '../groups/group.entity'
 
 @Exclude()
@@ -14,7 +13,6 @@ import { Group } from '../groups/group.entity'
 export class Speciality extends BaseEntity {
   @Expose()
   @PrimaryGeneratedColumn()
-  @ApiModelProperty()
   id: number
 
   @Expose()
@@ -26,7 +24,7 @@ export class Speciality extends BaseEntity {
   symbol: string
 
   @Expose()
-  @Column({ type: 'tinyint' })
+  @Column({ name: 'year_of_studt', type: 'tinyint' })
   yearOfStudy: number
 
   @Expose()

@@ -6,6 +6,8 @@ import {
   Get,
   Param,
   Query,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common'
 import { SpecialtiesService } from './specialties.service'
 import { Roles } from '../auth/decorators/roles.decorator'
@@ -23,6 +25,7 @@ export class SpecialtiesController {
   constructor(private readonly specialtiesService: SpecialtiesService) {}
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -34,7 +37,8 @@ export class SpecialtiesController {
   }
 
   @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
@@ -43,7 +47,8 @@ export class SpecialtiesController {
   }
 
   @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get()

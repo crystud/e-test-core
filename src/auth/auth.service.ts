@@ -6,6 +6,7 @@ import { Token } from './token.entity'
 import { classToClass } from 'class-transformer'
 import { compare } from 'bcryptjs'
 import { AccessLevelType } from '../enums/accessLevelType'
+import { UserRolesType } from '../enums/userRolesType'
 
 @Injectable()
 export class AuthService {
@@ -35,9 +36,13 @@ export class AuthService {
     )
   }
 
-  private async generateJWT(user: User): Promise<string> {
+  private async generateJWT(
+    user: User,
+    roles: UserRolesType[],
+  ): Promise<string> {
     return this.jwtService.signAsync({
       user,
+      roles,
     })
   }
 
@@ -65,7 +70,10 @@ export class AuthService {
   }
 
   async createTokens(user: User): Promise<TokensInterface> {
-    const token = await this.generateJWT(user)
+    const token = await this.generateJWT(
+      user,
+      await this.generateRoles(user.id),
+    )
 
     const refreshToken = await Token.create({
       user,
@@ -75,5 +83,23 @@ export class AuthService {
       access: token,
       refresh: refreshToken.value,
     }
+  }
+
+  async generateRoles(userId: number): Promise<UserRolesType[]> {
+    const roles: UserRolesType[] = [UserRolesType.USER]
+
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.admin', 'admin')
+      .leftJoin('user.students', 'students')
+      .leftJoin('user.teachers', 'teachers')
+      .select(['user.id', 'admin.id', 'students.id', 'teachers.id'])
+      .where('user.id = :userId', { userId })
+      .getOne()
+
+    if (user.admin) roles.push(UserRolesType.ADMIN)
+    if (user.students?.length) roles.push(UserRolesType.STUDENT)
+    if (user.teachers?.length) roles.push(UserRolesType.TEACHER)
+
+    return roles
   }
 }
