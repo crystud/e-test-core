@@ -85,4 +85,8 @@ export class TeachersService {
 
     return teacher
   }
+
+  belongsToUser(teacher: Teacher, user: User): boolean {
+    return teacher.user.id === user.id
+  }
 }

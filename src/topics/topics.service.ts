@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateTopicDto } from './dto/createTopic.dto'
 import { Topic } from './topic.entity'
 import { Subject } from '../subject/subject.entity'
@@ -18,5 +18,16 @@ export class TopicsService {
       .select(['topic.id', 'topic.name', 'subject.id', 'subject.name'])
       .where('topic.id = :topicId ', { topicId })
       .getOne()
+  }
+
+  async findEntity(topicId: number): Promise<Topic> {
+    const topic = await Topic.createQueryBuilder('topic')
+      .select(['topic.id'])
+      .where('topic.id = :topicId ', { topicId })
+      .getOne()
+
+    if (!topic) throw new BadRequestException('Тему не знайдено')
+
+    return topic
   }
 }

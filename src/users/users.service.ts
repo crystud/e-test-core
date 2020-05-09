@@ -24,10 +24,9 @@ export class UsersService {
         'user.patronymic',
         'user.firstName',
         'user.email',
-        'user.roles',
         'user.createAt',
         'students.id',
-        'students.scoring_book',
+        'students.scoringBook',
         'teachers.id',
       ])
       .where('user.id = :userId', { userId: id })
@@ -94,7 +93,6 @@ export class UsersService {
         'patronymic',
         'firstName',
         'email',
-        'roles',
         'createAt',
       ])
       .whereInIds(userIds)

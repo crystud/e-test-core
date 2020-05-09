@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 
 import { Subject } from '../subject/subject.entity'
+import { Task } from '../tasks/task.entity'
 
 @Entity('topics')
 export class Topic extends BaseEntity {
@@ -23,4 +25,10 @@ export class Topic extends BaseEntity {
   )
   @JoinColumn({ name: 'subject_id' })
   subject: Subject
+
+  @OneToMany(
+    () => Task,
+    task => task.topic,
+  )
+  tasks: Task[]
 }
