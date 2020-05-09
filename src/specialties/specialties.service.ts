@@ -35,7 +35,7 @@ export class SpecialtiesService {
     return speciality
   }
 
-  async findAll(specialityName: string): Promise<Speciality[]> {
+  async findAll(specialityName = ''): Promise<Speciality[]> {
     return await Speciality.createQueryBuilder('specialties')
       .leftJoin('specialties.groups', 'groups')
       .select([
@@ -46,7 +46,7 @@ export class SpecialtiesService {
         'specialties.code',
         'groups.id',
       ])
-      .where('speciality.name like :name ', {
+      .where('specialties.name like :name ', {
         name: `%${specialityName}%`,
       })
       .getMany()

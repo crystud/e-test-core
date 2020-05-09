@@ -41,6 +41,8 @@ export class Group extends BaseEntity {
 
   @Expose({ name: 'course' })
   get _course(): number {
+    if (!this.startYear) return undefined
+
     return Math.abs(
       Math.round(
         moment(new Date(`01/09/${this.startYear}`)).diff(now(), 'years', true),
@@ -50,6 +52,8 @@ export class Group extends BaseEntity {
 
   @Expose({ name: 'name' })
   get _name(): string {
+    if (!this.speciality?.symbol) return undefined
+
     return `${this.speciality.symbol}-${this._course}${this.number}`
   }
 }
