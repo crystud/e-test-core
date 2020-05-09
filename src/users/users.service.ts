@@ -16,7 +16,10 @@ export class UsersService {
   async findOne(id: number): Promise<User> {
     const user = await User.createQueryBuilder('user')
       .leftJoin('user.students', 'students')
+      .leftJoin('students.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
       .leftJoin('user.teachers', 'teachers')
+      .leftJoin('teachers.subject', 'subject')
       .select([
         'user.id',
         'user.patronymic',
@@ -26,7 +29,17 @@ export class UsersService {
         'user.createAt',
         'students.id',
         'students.scoringBook',
+        'group.id',
+        'group.number',
+        'group.startYear',
+        'speciality.id',
+        'speciality.name',
+        'speciality.symbol',
+        'speciality.yearOfStudy',
+        'speciality.code',
         'teachers.id',
+        'subject.id',
+        'subject.name',
       ])
       .where('user.id = :userId', { userId: id })
       .getOne()
@@ -100,9 +113,9 @@ export class UsersService {
 
   async findEntity(userId: number): Promise<User> {
     const user = await User.createQueryBuilder('user')
-      .leftJoin('user.teacher', 'teacher')
-      .leftJoin('user.student', 'student')
-      .select(['user.id', 'teacher.id', 'student.id'])
+      .leftJoin('user.teachers', 'teachers')
+      .leftJoin('user.students', 'students')
+      .select(['user.id', 'teachers.id', 'students.id'])
       .where('user.id = :userId ', { userId })
       .getOne()
 

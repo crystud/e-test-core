@@ -80,11 +80,6 @@ export class StudentsService {
       .select([
         'students.id',
         'students.scoringBook',
-        'user.id',
-        'user.firstName',
-        'user.lastName',
-        'user.patronymic',
-        'user.email',
         'group.id',
         'group.startYear',
         'group.number',

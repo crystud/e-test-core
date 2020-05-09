@@ -4,12 +4,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Topic } from '../topics/topic.entity'
 import { Teacher } from '../teachers/teachers.entity'
 import { Transform } from 'class-transformer'
 import { TaskType } from './enums/TaskType.enum'
+import { Answer } from '../answers/answer.entity'
 
 @Entity('tasks')
 export class Task extends BaseEntity {
@@ -54,4 +56,10 @@ export class Task extends BaseEntity {
   )
   @JoinColumn({ name: 'creator_id' })
   creator: Teacher
+
+  @OneToMany(
+    () => Answer,
+    answer => answer.task,
+  )
+  answers: Answer[]
 }
