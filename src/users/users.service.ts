@@ -19,10 +19,9 @@ export class UsersService {
       .leftJoin('user.teachers', 'teachers')
       .select([
         'user.id',
-        'user.first_name',
-        'user.last_name',
         'user.patronymic',
         'user.firstName',
+        'user.lastName',
         'user.email',
         'user.createAt',
         'students.id',
