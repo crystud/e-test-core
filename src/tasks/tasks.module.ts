@@ -5,6 +5,7 @@ import { TeachersModule } from '../teachers/teachers.module'
 import { TopicsModule } from '../topics/topics.module'
 
 @Module({
+  exports: [TasksService],
   imports: [TeachersModule, TopicsModule],
   providers: [TasksService],
   controllers: [TasksController],

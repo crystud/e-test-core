@@ -6,8 +6,6 @@ import {
   IsOptional,
   IsString,
   Length,
-  Max,
-  Min,
 } from 'class-validator'
 import { Transform, Type } from 'class-transformer'
 import { TaskType } from '../enums/TaskType.enum'
@@ -32,13 +30,6 @@ export class CreateTaskDto {
   @IsInt()
   @Type(() => Number)
   creator: number
-
-  @ApiProperty()
-  @IsInt()
-  @Max(255)
-  @Min(1)
-  @Type(() => Number)
-  duration: number
 
   @ApiProperty({ required: false })
   @IsString()

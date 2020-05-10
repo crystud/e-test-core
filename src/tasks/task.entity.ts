@@ -31,9 +31,6 @@ export class Task extends BaseEntity {
   @Column({ type: 'smallint' })
   type: TaskType
 
-  @Column({ type: 'tinyint' })
-  duration: number
-
   @Column({ type: 'mediumtext', nullable: true })
   attachment: string
 

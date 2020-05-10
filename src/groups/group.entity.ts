@@ -52,7 +52,7 @@ export class Group extends BaseEntity {
 
   @Expose({ name: 'name' })
   get _name(): string {
-    if (!this.speciality?.symbol) return undefined
+    if (!this.speciality?.symbol || !this.number) return undefined
 
     return `${this.speciality.symbol}-${this._course}${this.number}`
   }

@@ -52,7 +52,6 @@ export class TasksController {
       createTaskDto.question,
       createTaskDto.image,
       createTaskDto.type,
-      createTaskDto.duration,
       createTaskDto.attachment,
       topic,
       creator,

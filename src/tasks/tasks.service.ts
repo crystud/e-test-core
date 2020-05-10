@@ -10,7 +10,6 @@ export class TasksService {
     question: string,
     image: string | null = null,
     type: TaskType,
-    duration: number,
     attachment: string | null = null,
     topic: Topic,
     creator: Teacher,
@@ -19,7 +18,6 @@ export class TasksService {
       question,
       image,
       type,
-      duration,
       attachment,
       topic,
       creator,
@@ -31,6 +29,7 @@ export class TasksService {
   async findOne(taskId: number): Promise<Task> {
     const task = await Task.createQueryBuilder('task')
       .leftJoin('task.topic', 'topic')
+      .leftJoin('task.answers', 'answers')
       .leftJoin('task.creator', 'creator')
       .leftJoin('creator.user', 'user')
       .select([
@@ -38,7 +37,6 @@ export class TasksService {
         'task.question',
         'task.image',
         'task.type',
-        'task.duration',
         'task.attachment',
         'topic.id',
         'topic.name',
@@ -47,11 +45,24 @@ export class TasksService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'answers.id',
       ])
       .where('task.id = :taskId ', { taskId })
       .getOne()
 
     if (!task) throw new BadRequestException('Завдання не знайдено')
+
+    return task
+  }
+
+  async findEntity(taskId: number): Promise<Task> {
+    const task = await Task.createQueryBuilder('task')
+      .leftJoin('task.answers', 'answers')
+      .select(['task.id', 'task.type', 'answers.id', 'answers.position'])
+      .where('task.id = :taskId ', { taskId })
+      .getOne()
+
+    if (!task) throw new BadRequestException('Тест не знайдено')
 
     return task
   }

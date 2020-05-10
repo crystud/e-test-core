@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Task } from '../tasks/task.entity'
+import { Transform } from 'class-transformer'
 
 @Entity('answers')
 export class Answer extends BaseEntity {
@@ -21,6 +22,13 @@ export class Answer extends BaseEntity {
 
   @Column({ type: 'tinyint', nullable: true })
   position: number
+
+  @Transform(image => {
+    global.console.log(Buffer.byteLength(Buffer.from(image)))
+    return image ? Buffer.from(image).toString() : null
+  })
+  @Column({ type: 'blob', nullable: true })
+  image: string
 
   @ManyToOne(
     () => Task,
