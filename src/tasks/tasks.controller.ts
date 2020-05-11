@@ -1,12 +1,10 @@
 import {
-  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   Post,
-  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -32,21 +30,15 @@ export class TasksController {
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.TEACHER)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(
-    @Body() createTaskDto: CreateTaskDto,
-    @Request() { user: { user } },
-  ): Promise<Task> {
+  async create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
     const [creator, topic] = await Promise.all([
       this.teachersService.findEntity(createTaskDto.creator),
       this.topicsService.findEntity(createTaskDto.topic),
     ])
-
-    if (!this.teachersService.belongsToUser(creator, user))
-      throw new BadRequestException()
 
     return await this.tasksService.create(
       createTaskDto.question,

@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import {
 
 import { Subject } from '../subject/subject.entity'
 import { Task } from '../tasks/task.entity'
+import { Test } from '../tests/test.entity'
 
 @Entity('topics')
 export class Topic extends BaseEntity {
@@ -31,4 +33,10 @@ export class Topic extends BaseEntity {
     task => task.topic,
   )
   tasks: Task[]
+
+  @ManyToMany(
+    () => Test,
+    test => test.topics,
+  )
+  tests: Test[]
 }

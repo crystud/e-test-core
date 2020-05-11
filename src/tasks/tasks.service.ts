@@ -46,6 +46,10 @@ export class TasksService {
         'user.lastName',
         'user.patronymic',
         'answers.id',
+        'answers.answerText',
+        'answers.correct',
+        'answers.position',
+        'answers.image',
       ])
       .where('task.id = :taskId ', { taskId })
       .getOne()
@@ -62,7 +66,7 @@ export class TasksService {
       .where('task.id = :taskId ', { taskId })
       .getOne()
 
-    if (!task) throw new BadRequestException('Тест не знайдено')
+    if (!task) throw new BadRequestException('Завдаггя не знайдено')
 
     return task
   }

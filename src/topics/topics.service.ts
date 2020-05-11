@@ -15,7 +15,16 @@ export class TopicsService {
   async findOne(topicId: number): Promise<Topic> {
     return await Topic.createQueryBuilder('topic')
       .leftJoin('topic.subject', 'subject')
-      .select(['topic.id', 'topic.name', 'subject.id', 'subject.name'])
+      .leftJoin('topic.tasks', 'tasks')
+      .select([
+        'topic.id',
+        'topic.name',
+        'subject.id',
+        'subject.name',
+        'tasks.id',
+        'tasks.question',
+        'tasks.type',
+      ])
       .where('topic.id = :topicId ', { topicId })
       .getOne()
   }

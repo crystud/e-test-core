@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -12,6 +13,7 @@ import { Teacher } from '../teachers/teachers.entity'
 import { Transform } from 'class-transformer'
 import { TaskType } from './enums/TaskType.enum'
 import { Answer } from '../answers/answer.entity'
+import { Test } from '../tests/test.entity'
 
 @Entity('tasks')
 export class Task extends BaseEntity {
@@ -59,4 +61,10 @@ export class Task extends BaseEntity {
     answer => answer.task,
   )
   answers: Answer[]
+
+  @ManyToMany(
+    () => Test,
+    test => test.tasks,
+  )
+  tests: Test[]
 }

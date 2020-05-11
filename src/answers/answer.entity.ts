@@ -24,7 +24,6 @@ export class Answer extends BaseEntity {
   position: number
 
   @Transform(image => {
-    global.console.log(Buffer.byteLength(Buffer.from(image)))
     return image ? Buffer.from(image).toString() : null
   })
   @Column({ type: 'blob', nullable: true })
