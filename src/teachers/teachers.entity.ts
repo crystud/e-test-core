@@ -12,6 +12,7 @@ import { User } from '../users/user.entity'
 import { Subject } from '../subject/subject.entity'
 import { Test } from '../tests/test.entity'
 import { Task } from '../tasks/task.entity'
+import { Permission } from '../permissions/permission.entity'
 
 @Entity('teachers')
 @Index(['user', 'subject'], { unique: true })
@@ -50,4 +51,10 @@ export class Teacher extends BaseEntity {
     task => task.creator,
   )
   tasks: Test[]
+
+  @OneToMany(
+    () => Permission,
+    permission => permission.teacher,
+  )
+  permissions: Permission
 }

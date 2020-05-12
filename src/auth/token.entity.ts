@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -29,6 +30,7 @@ export class Token extends BaseEntity {
       nullable: false,
     },
   )
+  @JoinColumn({ name: 'user_id' })
   readonly user: User
 
   @CreateDateColumn({ name: 'create_at' })

@@ -1,0 +1,94 @@
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { UserRolesType } from '../enums/userRolesType'
+import { RolesGuard } from '../auth/roles.guard'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { Permission } from './permission.entity'
+import { TeachersService } from '../teachers/teachers.service'
+import { PermissionsService } from './permissions.service'
+
+import { CreatePermissionDto } from './dto/createPermission.dto'
+import { TestsService } from '../tests/tests.service'
+import { GroupsService } from '../groups/groups.service'
+
+@ApiTags('permissions')
+@Controller('permissions')
+export class PermissionsController {
+  constructor(
+    private readonly permissionsService: PermissionsService,
+    private readonly teachersService: TeachersService,
+    private readonly testsService: TestsService,
+    private readonly groupsService: GroupsService,
+  ) {}
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  async create(
+    @Body()
+    {
+      group: groupId,
+      test: testId,
+      teacher: teacherId,
+      startTime,
+      endTime,
+    }: CreatePermissionDto,
+    @Request() { user: { user } },
+  ): Promise<Permission> {
+    const [group, test, teacher] = await Promise.all([
+      this.groupsService.findEntity(groupId),
+      this.testsService.findEntity(testId),
+      this.teachersService.findEntity(teacherId),
+    ])
+
+    if (!this.teachersService.belongsToUser(teacher, user))
+      throw new ForbiddenException()
+
+    return this.permissionsService.create(
+      group,
+      test,
+      teacher,
+      startTime,
+      endTime,
+    )
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':permissionId')
+  async findOne(
+    @Param('permissionId') permissionId: number,
+  ): Promise<Permission> {
+    return await this.permissionsService.findOne(permissionId)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('/findByTeacher/:teacherId')
+  async findByTeacher(
+    @Param('teacherId') teacherId: number,
+  ): Promise<Permission[]> {
+    return await this.permissionsService.findByTeacher(teacherId)
+  }
+}

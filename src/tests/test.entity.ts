@@ -6,11 +6,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Teacher } from '../teachers/teachers.entity'
 import { Task } from '../tasks/task.entity'
 import { Topic } from '../topics/topic.entity'
+import { Permission } from '../permissions/permission.entity'
 
 @Entity('tests')
 export class Test extends BaseEntity {
@@ -63,4 +65,10 @@ export class Test extends BaseEntity {
     },
   })
   topics: Topic[]
+
+  @OneToMany(
+    () => Permission,
+    permission => permission.test,
+  )
+  permissions: Permission
 }

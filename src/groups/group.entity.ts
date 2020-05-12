@@ -13,6 +13,7 @@ import * as moment from 'moment'
 import { now } from 'moment'
 
 import { Student } from '../students/student.entity'
+import { Permission } from '../permissions/permission.entity'
 
 @Entity('groups')
 export class Group extends BaseEntity {
@@ -38,6 +39,12 @@ export class Group extends BaseEntity {
     student => student.group,
   )
   students: Student[]
+
+  @OneToMany(
+    () => Permission,
+    permission => permission.group,
+  )
+  permissions: Permission
 
   @Expose({ name: 'course' })
   get _course(): number {

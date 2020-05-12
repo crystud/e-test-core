@@ -15,6 +15,7 @@ import { TestsModule } from './tests/tests.module'
 import { AdminsModule } from './admins/admins.module'
 import { TasksModule } from './tasks/tasks.module'
 import { AnswersModule } from './answers/answers.module'
+import { PermissionsModule } from './permissions/permissions.module'
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AnswersModule } from './answers/answers.module'
     AdminsModule,
     TasksModule,
     AnswersModule,
+    PermissionsModule,
   ],
 })
 export class AppModule {}

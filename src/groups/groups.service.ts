@@ -50,4 +50,16 @@ export class GroupsService {
 
     return group
   }
+
+  async findEntity(groupId): Promise<Group> {
+    const group = await Group.createQueryBuilder('group')
+      .leftJoin('group.students', 'students')
+      .select(['group.id', 'students.id'])
+      .where('group.id = :groupId ', { groupId })
+      .getOne()
+
+    if (!group) throw new BadRequestException('Групу не знайдено')
+
+    return group
+  }
 }

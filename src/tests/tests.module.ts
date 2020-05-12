@@ -7,6 +7,7 @@ import { TopicsModule } from '../topics/topics.module'
 
 @Module({
   imports: [TeachersModule, TasksModule, TopicsModule],
+  exports: [TestsService],
   providers: [TestsService],
   controllers: [TestsController],
 })
