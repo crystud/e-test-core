@@ -9,11 +9,13 @@ export class TestsService {
   async create(
     name: string,
     countOfTasks: number,
+    duration: number,
     teacher: Teacher,
   ): Promise<Test> {
     const test = await Test.create({
       name,
       countOfTasks,
+      duration,
       creator: teacher,
     }).save()
 
@@ -29,6 +31,7 @@ export class TestsService {
       .select([
         'test.id',
         'test.name',
+        'test.duration',
         'creator.id',
         'user.id',
         'user.firstName',
@@ -56,6 +59,7 @@ export class TestsService {
       .select([
         'test.id',
         'test.name',
+        'test.duration',
         'creator.id',
         'user.id',
         'user.firstName',
@@ -74,6 +78,7 @@ export class TestsService {
       .select([
         'test.id',
         'test.countOfTasks',
+        'test.duration',
         'tasks.id',
         'topics.id',
         'creator.id',

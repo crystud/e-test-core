@@ -1,14 +1,17 @@
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Test } from '../tests/test.entity'
 import { Group } from '../groups/group.entity'
 import { Teacher } from '../teachers/teachers.entity'
+import { Ticket } from '../tickets/ticket.entity'
 
 @Entity('permissions')
 export class Permission extends BaseEntity {
@@ -27,9 +30,25 @@ export class Permission extends BaseEntity {
   @JoinColumn({ name: 'group_id' })
   group: Group
 
-  @Column({ type: 'datetime', name: 'start_time' })
+  @CreateDateColumn({ name: 'create_at' })
+  createAt: Date
+
+  @Column({
+    type: 'datetime',
+    name: 'start_time',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   startTime: Date
 
-  @Column({ type: 'datetime', name: 'end_time' })
+  @Column({ type: 'datetime', name: 'end_time', nullable: true })
   endTime: Date
+
+  @Column({ name: 'max_count_of_use', type: 'tinyint', nullable: true })
+  maxCountOfUse: number
+
+  @OneToMany(
+    () => Ticket,
+    ticket => ticket.permission,
+  )
+  tickets: Ticket[]
 }

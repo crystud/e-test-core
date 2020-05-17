@@ -7,6 +7,7 @@ import { Group } from '../groups/group.entity'
 
 @Injectable()
 export class StudentsService {
+  // TODO: refactor
   async create(
     userId: number,
     groupId: number,
@@ -14,7 +15,7 @@ export class StudentsService {
   ): Promise<Student> {
     const [user, group] = await Promise.all([
       User.createQueryBuilder('user')
-        .select(['user.id', 'user.roles'])
+        .select(['user.id'])
         .whereInIds(userId)
         .getOne(),
 
@@ -33,8 +34,6 @@ export class StudentsService {
         group,
         scoringBook,
       }).save()
-
-      await user.save()
 
       return this.findOne(teacher.id)
     } catch (e) {

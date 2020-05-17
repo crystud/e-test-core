@@ -29,7 +29,6 @@ export class TeachersController {
   ) {}
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)

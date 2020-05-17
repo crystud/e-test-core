@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt } from 'class-validator'
+import { IsInt, IsOptional, Max, Min } from 'class-validator'
 import { Type } from 'class-transformer'
 
 export class CreatePermissionDto {
@@ -7,9 +7,17 @@ export class CreatePermissionDto {
   @Type(() => Date)
   startTime: Date
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Set null if end time is infinity' })
+  @IsOptional()
   @Type(() => Date)
-  endTime: Date
+  endTime: Date | null
+
+  @ApiProperty()
+  @IsInt()
+  @Min(0)
+  @Max(255)
+  @IsOptional()
+  maxCountOfUse: number
 
   @ApiProperty()
   @IsInt()

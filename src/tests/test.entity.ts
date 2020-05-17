@@ -32,6 +32,9 @@ export class Test extends BaseEntity {
   @JoinColumn({ name: 'creator_id' })
   creator: Teacher
 
+  @Column({ type: 'tinyint' })
+  duration: number
+
   @ManyToMany(
     () => Task,
     task => task.tests,

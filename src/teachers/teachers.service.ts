@@ -8,8 +8,8 @@ export class TeachersService {
   async create(userId: number, subjectId: number): Promise<Teacher> {
     const [user, subject] = await Promise.all([
       User.createQueryBuilder('user')
-        .select(['user.id', 'user.roles'])
-        .whereInIds(userId)
+        .select(['user.id'])
+        .where('user.id = :userId', { userId })
         .getOne(),
 
       Subject.createQueryBuilder('subject')

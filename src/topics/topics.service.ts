@@ -6,10 +6,12 @@ import { Subject } from '../subject/subject.entity'
 @Injectable()
 export class TopicsService {
   async create(createTopicDto: CreateTopicDto): Promise<Topic> {
-    return await Topic.create({
+    const topic = await Topic.create({
       ...createTopicDto,
       subject: Subject.create({ id: createTopicDto.subject }),
     }).save()
+
+    return this.findOne(topic.id)
   }
 
   async findOne(topicId: number): Promise<Topic> {

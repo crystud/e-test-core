@@ -42,7 +42,7 @@ export class TestsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
-    @Body() { name, countOfTasks, teacher: teacherId }: CreateTestDto,
+    @Body() { name, countOfTasks, duration, teacher: teacherId }: CreateTestDto,
     @Request() { user: { user, roles } },
   ): Promise<Test> {
     const teacher = await this.teachersService.findEntity(teacherId)
@@ -55,7 +55,7 @@ export class TestsController {
     )
       throw new ForbiddenException()
 
-    return await this.testsService.create(name, countOfTasks, teacher)
+    return await this.testsService.create(name, countOfTasks, duration, teacher)
   }
 
   @ApiBearerAuth()

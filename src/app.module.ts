@@ -16,6 +16,9 @@ import { AdminsModule } from './admins/admins.module'
 import { TasksModule } from './tasks/tasks.module'
 import { AnswersModule } from './answers/answers.module'
 import { PermissionsModule } from './permissions/permissions.module'
+import { TicketsModule } from './tickets/tickets.module'
+import { utilities, WinstonModule } from 'nest-winston'
+import * as winston from 'winston'
 
 @Module({
   imports: [
@@ -38,6 +41,18 @@ import { PermissionsModule } from './permissions/permissions.module'
       }),
       inject: [ConfigService],
     }),
+    WinstonModule.forRootAsync({
+      useFactory: () => ({
+        transports: [
+          new winston.transports.Console({
+            format: winston.format.combine(
+              winston.format.timestamp(),
+              utilities.format.nestLike(),
+            ),
+          }),
+        ],
+      }),
+    }),
     UsersModule,
     AuthModule,
     SpecialtiesModule,
@@ -51,6 +66,7 @@ import { PermissionsModule } from './permissions/permissions.module'
     TasksModule,
     AnswersModule,
     PermissionsModule,
+    TicketsModule,
   ],
 })
 export class AppModule {}

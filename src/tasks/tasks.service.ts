@@ -52,6 +52,9 @@ export class TasksService {
         'answers.image',
       ])
       .where('task.id = :taskId ', { taskId })
+      .orderBy({
+        'answers.position': 'ASC',
+      })
       .getOne()
 
     if (!task) throw new BadRequestException('Завдання не знайдено')

@@ -9,7 +9,7 @@ import {
 import { Topic } from '../topics/topic.entity'
 import { Teacher } from '../teachers/teachers.entity'
 
-@Entity('subject')
+@Entity('subjects')
 export class Subject extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number

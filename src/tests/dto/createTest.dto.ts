@@ -18,6 +18,13 @@ export class CreateTestDto {
 
   @ApiProperty()
   @IsInt()
+  @Min(1)
+  @Max(255)
+  @Type(() => Number)
+  duration: number
+
+  @ApiProperty()
+  @IsInt()
   @Type(() => Number)
   teacher: number
 }
