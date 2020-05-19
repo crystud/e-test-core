@@ -64,6 +64,20 @@ export class TeachersService {
       .getMany()
   }
 
+  async findOneByUser(user: User, subject: Subject): Promise<Teacher> {
+    const teacher = await Teacher.createQueryBuilder('teachers')
+      .leftJoin('teachers.subject', 'subject')
+      .leftJoin('teachers.user', 'user')
+      .select(['teachers.id', 'subject.id', 'subject.name'])
+      .where('user.id = :userId ', { userId: user.id })
+      .where('subject.id = :subjectId ', { subjectId: subject.id })
+      .getOne()
+
+    if (!teacher) throw new BadRequestException('Викладача не знайдено')
+
+    return teacher
+  }
+
   async findEntity(teacherId: number): Promise<Teacher> {
     const teacher = await Teacher.createQueryBuilder('teacher')
       .leftJoin('teacher.user', 'user')

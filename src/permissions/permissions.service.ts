@@ -5,10 +5,14 @@ import { Teacher } from '../teachers/teachers.entity'
 import { Test } from '../tests/test.entity'
 import { TicketsService } from '../tickets/tickets.service'
 import { Ticket } from '../tickets/ticket.entity'
+import { TestsService } from '../tests/tests.service'
 
 @Injectable()
 export class PermissionsService {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly testsService: TestsService,
+  ) {}
 
   async create(
     group: Group,
@@ -17,6 +21,9 @@ export class PermissionsService {
     startTime: Date,
     endTime: Date,
   ): Promise<Permission> {
+    if (!(await this.testsService.completed(test)))
+      throw new BadRequestException('В тесті замало питань')
+
     const permission = await Permission.create({
       group,
       test,

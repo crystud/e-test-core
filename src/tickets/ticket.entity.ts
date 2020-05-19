@@ -4,10 +4,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Student } from '../students/student.entity'
 import { Permission } from '../permissions/permission.entity'
+import { Attempt } from '../attempts/attempt.entity'
+import { Expose } from 'class-transformer'
 
 @Entity('tickets')
 export class Ticket extends BaseEntity {
@@ -36,4 +39,26 @@ export class Ticket extends BaseEntity {
   )
   @JoinColumn({ name: 'permission_id' })
   permission: Permission
+
+  @OneToMany(
+    () => Attempt,
+    attempt => attempt.ticket,
+  )
+  attempts: Attempt[]
+
+  @Expose({ name: 'used' })
+  get _used(): boolean {
+    if (!this.permission || !this.attempts) return undefined
+
+    if (this.permission.maxCountOfUse === null) return false
+
+    return this.attempts.length < this.permission.maxCountOfUse
+  }
+
+  @Expose({ name: 'outstanding' })
+  get _outstanding(): boolean {
+    if (!this.permission) return undefined
+
+    return this.permission.endTime.getTime() < Date.now()
+  }
 }

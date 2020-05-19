@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -34,11 +35,11 @@ export class TasksController {
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    const [creator, topic] = await Promise.all([
-      this.teachersService.findEntity(createTaskDto.creator),
-      this.topicsService.findEntity(createTaskDto.topic),
-    ])
+  async create(
+    @Body() createTaskDto: CreateTaskDto,
+    @Request() { user: { user } },
+  ): Promise<Task> {
+    const topic = await this.topicsService.findEntity(createTaskDto.topic)
 
     return await this.tasksService.create(
       createTaskDto.question,
@@ -46,7 +47,7 @@ export class TasksController {
       createTaskDto.type,
       createTaskDto.attachment,
       topic,
-      creator,
+      user,
     )
   }
 

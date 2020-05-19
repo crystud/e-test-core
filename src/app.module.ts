@@ -18,6 +18,7 @@ import { AnswersModule } from './answers/answers.module'
 import { PermissionsModule } from './permissions/permissions.module'
 import { TicketsModule } from './tickets/tickets.module'
 import { utilities, WinstonModule } from 'nest-winston'
+import { AttemptsModule } from './attempts/attempts.module'
 import * as winston from 'winston'
 
 @Module({
@@ -67,6 +68,7 @@ import * as winston from 'winston'
     AnswersModule,
     PermissionsModule,
     TicketsModule,
+    AttemptsModule,
   ],
 })
 export class AppModule {}

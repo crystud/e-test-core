@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Param,
-  Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -47,17 +46,5 @@ export class TicketsController {
     const student = await this.studentsService.findOne(studentId)
     // TODO: refactor check access
     return await this.ticketsService.findByStudent(student)
-  }
-
-  @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.STUDENT)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
-  @Post('activate/:ticketId')
-  async activate(@Param('ticketId') ticketId: number): Promise<Ticket> {
-    const ticket = await this.ticketsService.findEntity(ticketId)
-    // TODO: refactor check access
-    return await this.ticketsService.activate(ticket)
   }
 }

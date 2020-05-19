@@ -104,4 +104,19 @@ export class TestsService {
 
     return this.findOne(test.id)
   }
+
+  async completed(test: Test): Promise<boolean> {
+    const topicTasks = await Test.createQueryBuilder('test')
+      .leftJoin('test.tasks', 'tasks')
+      .leftJoin('test.topics', 'topics')
+      .leftJoin('topics.tasks', 'topic_tasks')
+      .select(['tasks.id', 'topics.id', 'topic_tasks.id'])
+      .where('topic_tasks.id NOT ON (tasks)')
+      .where('test.id = :testId', { testId: test.id })
+      .getOne()
+
+    global.console.log(topicTasks)
+
+    return true
+  }
 }

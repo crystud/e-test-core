@@ -25,6 +25,7 @@ export class TicketsService {
     const ticket = await Ticket.createQueryBuilder('ticket')
       .leftJoin('ticket.student', 'student')
       .leftJoin('ticket.permission', 'permission')
+      .leftJoin('ticket.attempts', 'attempts')
       .select([
         'ticket.id',
         'ticket.createAt',
@@ -32,6 +33,7 @@ export class TicketsService {
         'permission.maxCountOfUse',
         'permission.startTime',
         'permission.endTime',
+        'attempts.id',
       ])
       .where('ticket.id = :ticketId', { ticketId })
       .getOne()
@@ -45,6 +47,7 @@ export class TicketsService {
     const ticket = await Ticket.createQueryBuilder('ticket')
       .leftJoin('ticket.student', 'student')
       .leftJoin('student.user', 'user')
+      .leftJoin('ticket.attempts', 'attempts')
       .leftJoin('ticket.permission', 'permission')
       .select([
         'ticket.id',
@@ -54,6 +57,7 @@ export class TicketsService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'attempts.id',
         'permission.id',
         'permission.maxCountOfUse',
         'permission.startTime',
@@ -64,10 +68,6 @@ export class TicketsService {
 
     if (!ticket) throw new BadRequestException('Квиток не знайдено')
 
-    return ticket
-  }
-
-  async activate(ticket: Ticket): Promise<Ticket> {
     return ticket
   }
 

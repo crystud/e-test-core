@@ -20,7 +20,7 @@ export class Group extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ name: 'start_year', type: 'smallint' })
+  @Column({ name: 'start_year', type: 'year' })
   startYear: number
 
   @Expose()

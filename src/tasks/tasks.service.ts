@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { Task } from './task.entity'
 import { Topic } from '../topics/topic.entity'
-import { Teacher } from '../teachers/teachers.entity'
+
 import { TaskType } from './enums/TaskType.enum'
+import { User } from '../users/user.entity'
 
 @Injectable()
 export class TasksService {
@@ -12,7 +13,7 @@ export class TasksService {
     type: TaskType,
     attachment: string | null = null,
     topic: Topic,
-    creator: Teacher,
+    creator: User,
   ): Promise<Task> {
     const task = await Task.create({
       question,
@@ -31,7 +32,6 @@ export class TasksService {
       .leftJoin('task.topic', 'topic')
       .leftJoin('task.answers', 'answers')
       .leftJoin('task.creator', 'creator')
-      .leftJoin('creator.user', 'user')
       .select([
         'task.id',
         'task.question',
@@ -41,10 +41,9 @@ export class TasksService {
         'topic.id',
         'topic.name',
         'creator.id',
-        'user.id',
-        'user.firstName',
-        'user.lastName',
-        'user.patronymic',
+        'creator.firstName',
+        'creator.lastName',
+        'creator.patronymic',
         'answers.id',
         'answers.answerText',
         'answers.correct',

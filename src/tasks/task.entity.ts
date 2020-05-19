@@ -9,11 +9,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Topic } from '../topics/topic.entity'
-import { Teacher } from '../teachers/teachers.entity'
+
 import { Transform } from 'class-transformer'
 import { TaskType } from './enums/TaskType.enum'
 import { Answer } from '../answers/answer.entity'
 import { Test } from '../tests/test.entity'
+import { User } from '../users/user.entity'
 
 @Entity('tasks')
 export class Task extends BaseEntity {
@@ -47,14 +48,14 @@ export class Task extends BaseEntity {
   topic: Topic
 
   @ManyToOne(
-    () => Teacher,
-    teacher => teacher,
+    () => User,
+    user => user.tasks,
     {
       nullable: false,
     },
   )
-  @JoinColumn({ name: 'creator_id' })
-  creator: Teacher
+  @JoinColumn({ name: 'user_id' })
+  creator: User
 
   @OneToMany(
     () => Answer,

@@ -26,11 +26,6 @@ export class CreateTaskDto {
   @Type(() => Number)
   topic: number
 
-  @ApiProperty()
-  @IsInt()
-  @Type(() => Number)
-  creator: number
-
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()

@@ -15,6 +15,8 @@ import { Student } from '../students/student.entity'
 import { Teacher } from '../teachers/teachers.entity'
 import { Exclude } from 'class-transformer'
 import { Admin } from '../admins/admin.entity'
+import { Task } from '../tasks/task.entity'
+import { Test } from '../tests/test.entity'
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -65,4 +67,10 @@ export class User extends BaseEntity {
     student => student.user,
   )
   students: Student[]
+
+  @OneToMany(
+    () => Task,
+    task => task.creator,
+  )
+  tasks: Test[]
 }
