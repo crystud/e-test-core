@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { Task } from '../tasks/task.entity'
 import { Transform } from 'class-transformer'
-import { AttemptAnswer } from '../attempts/attempt_answers.entity'
+import { AttemptAnswer } from '../attempts/attemptAnswers.entity'
 
 @Entity('answers')
 export class Answer extends BaseEntity {

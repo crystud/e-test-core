@@ -8,13 +8,14 @@ import { PermissionsService } from '../permissions/permissions.service'
 import { Task } from '../tasks/task.entity'
 
 import { TasksService } from '../tasks/tasks.service'
-import moment = require('moment')
 import { Test } from '../tests/test.entity'
 import { Permission } from '../permissions/permission.entity'
-import { AttemptTask } from './attempt_task.entity'
-import { AttemptAnswer } from './attempt_answers.entity'
+import { AttemptTask } from './attemptTask.entity'
+import { AttemptAnswer } from './attemptAnswers.entity'
 import { Answer } from '../answers/answer.entity'
 import { SchedulerRegistry } from '@nestjs/schedule'
+import { TaskType } from '../tasks/enums/TaskType.enum'
+import moment = require('moment')
 
 @Injectable()
 export class AttemptsService {
@@ -121,6 +122,7 @@ export class AttemptsService {
   async findOne(attemptId: number) {
     const attempt = await Attempt.createQueryBuilder('attempt')
       .leftJoin('attempt.attemptTasks', 'attemptTasks')
+      .leftJoin('attemptTasks.task', 'task')
       .select([
         'attempt.id',
         'attempt.maxScore',
@@ -128,6 +130,8 @@ export class AttemptsService {
         'attempt.endTime',
         'attempt.maxEndTime',
         'attemptTasks.id',
+        'task.question',
+        'task.type',
       ])
       .where('attempt.id = :attemptId', { attemptId })
       .getOne()
@@ -135,6 +139,34 @@ export class AttemptsService {
     if (!attempt) throw new BadRequestException('Спробу не знайдено')
 
     return attempt
+  }
+
+  async findAttemptTask(attemptTaskId: number): Promise<AttemptTask> {
+    const attemptTask = await AttemptTask.createQueryBuilder('attemptTask')
+      .leftJoin('attemptTask.task', 'task')
+      .leftJoin('attemptTask.attemptAnswers', 'attemptAnswers')
+      .leftJoin('attemptAnswers.answer', 'answer')
+      .select([
+        'attemptTask.id',
+        'task.question',
+        'task.type',
+        'task.image',
+        'task.attachment',
+        'attemptAnswers.id',
+        'answer.answerText',
+        'answer.image',
+      ])
+      .where('attemptTask.id = :attemptTaskId', { attemptTaskId })
+      .getOne()
+
+    attemptTask.attemptAnswers.forEach(attemptAnswer => {
+      if (attemptTask.task.type === TaskType.SHORT_ANSWER)
+        attemptAnswer.answer.answerText = undefined
+    })
+
+    if (!attemptTask) throw new BadRequestException('Завдання не знайдено')
+
+    return attemptTask
   }
 
   timeOutHandleBuilder(attempt: Attempt) {

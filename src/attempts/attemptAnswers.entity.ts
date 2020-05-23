@@ -7,7 +7,7 @@ import {
 } from 'typeorm'
 
 import { Answer } from '../answers/answer.entity'
-import { AttemptTask } from './attempt_task.entity'
+import { AttemptTask } from './attemptTask.entity'
 
 @Entity('attempts_answers')
 export class AttemptAnswer extends BaseEntity {

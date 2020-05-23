@@ -10,7 +10,7 @@ import {
 } from 'typeorm'
 import { Ticket } from '../tickets/ticket.entity'
 import { Expose } from 'class-transformer'
-import { AttemptTask } from './attempt_task.entity'
+import { AttemptTask } from './attemptTask.entity'
 
 @Entity('attempts')
 export class Attempt extends BaseEntity {

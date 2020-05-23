@@ -59,6 +59,9 @@ export class TicketsService {
         'user.lastName',
         'user.patronymic',
         'attempts.id',
+        'attempts.startTime',
+        'attempts.endTime',
+        'attempts.maxEndTime',
         'permission.id',
         'permission.maxCountOfUse',
         'permission.startTime',
@@ -76,6 +79,7 @@ export class TicketsService {
     return await Ticket.createQueryBuilder('tickets')
       .leftJoin('tickets.student', 'student')
       .leftJoin('tickets.permission', 'permission')
+      .leftJoin('tickets.attempts', 'attempts')
       .select([
         'tickets.id',
         'tickets.createAt',
@@ -83,6 +87,10 @@ export class TicketsService {
         'permission.maxCountOfUse',
         'permission.startTime',
         'permission.endTime',
+        'attempts.id',
+        'attempts.startTime',
+        'attempts.endTime',
+        'attempts.maxEndTime',
       ])
       .where('student.id = :studentId', { studentId: student.id })
       .getMany()

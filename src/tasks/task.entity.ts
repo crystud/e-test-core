@@ -15,7 +15,7 @@ import { TaskType } from './enums/TaskType.enum'
 import { Answer } from '../answers/answer.entity'
 import { Test } from '../tests/test.entity'
 import { User } from '../users/user.entity'
-import { AttemptTask } from '../attempts/attempt_task.entity'
+import { AttemptTask } from '../attempts/attemptTask.entity'
 
 @Entity('tasks')
 export class Task extends BaseEntity {
