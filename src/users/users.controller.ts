@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -18,6 +19,7 @@ import { User } from './user.entity'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { UserRolesType } from '../enums/userRolesType'
+import { FilterUserDto } from './dto/filterUser.dto'
 
 @ApiTags('users')
 @Controller('users')
@@ -45,5 +47,15 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') userId: number): Promise<User> {
     return await this.usersService.findOne(userId)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async findAll(@Query() filterUserDto: FilterUserDto): Promise<User[]> {
+    return await this.usersService.findAll(filterUserDto, 0, 100)
   }
 }

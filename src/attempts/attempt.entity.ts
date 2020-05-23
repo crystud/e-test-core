@@ -5,10 +5,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Ticket } from '../tickets/ticket.entity'
 import { Expose } from 'class-transformer'
+import { AttemptTask } from './attempt_task.entity'
 
 @Entity('attempts')
 export class Attempt extends BaseEntity {
@@ -21,7 +23,7 @@ export class Attempt extends BaseEntity {
   @CreateDateColumn({ name: 'create_at' })
   startTime: Date
 
-  @Column({ name: 'end_time', type: 'datetime' })
+  @Column({ name: 'end_time', type: 'datetime', default: null })
   endTime: Date | null
 
   @Column({ name: 'max_end_time', type: 'datetime' })
@@ -34,8 +36,14 @@ export class Attempt extends BaseEntity {
   @JoinColumn({ name: 'ticket_id' })
   ticket: Ticket
 
+  @OneToMany(
+    () => AttemptTask,
+    attemptTask => attemptTask.attempt,
+  )
+  attemptTasks: AttemptTask[]
+
   @Expose({ name: 'active' })
   get _active(): boolean {
-    return Boolean(this.endTime)
+    return !Boolean(this.endTime)
   }
 }

@@ -21,7 +21,9 @@ export class PermissionsService {
     startTime: Date,
     endTime: Date,
   ): Promise<Permission> {
-    if (!(await this.testsService.completed(test)))
+    const testStatus = await this.testsService.status(test)
+
+    if (!testStatus.completed)
       throw new BadRequestException('В тесті замало питань')
 
     const permission = await Permission.create({
@@ -64,11 +66,39 @@ export class PermissionsService {
         'test.id',
         'test.name',
         'test.duration',
+        'test.countOfTasks',
         'teacher.id',
         'teacher_user.id',
         'teacher_user.firstName',
         'teacher_user.lastName',
         'teacher_user.patronymic',
+        'subject.id',
+        'subject.name',
+      ])
+      .where('permission.id = :permissionId', { permissionId })
+      .getOne()
+
+    if (!permission) throw new BadRequestException('Дозвіл не знайдено')
+
+    return permission
+  }
+
+  async findEntity(permissionId: number): Promise<Permission> {
+    const permission = await Permission.createQueryBuilder('permission')
+      .leftJoin('permission.test', 'test')
+      .leftJoin('permission.teacher', 'teacher')
+      .leftJoin('teacher.user', 'teacher_user')
+      .leftJoin('teacher.subject', 'subject')
+      .leftJoin('permission.group', 'group')
+      .select([
+        'permission.id',
+        'permission.startTime',
+        'permission.endTime',
+        'test.id',
+        'test.name',
+        'test.duration',
+        'teacher.id',
+        'teacher_user.id',
         'subject.id',
         'subject.name',
       ])

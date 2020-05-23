@@ -20,9 +20,11 @@ import { TicketsModule } from './tickets/tickets.module'
 import { utilities, WinstonModule } from 'nest-winston'
 import { AttemptsModule } from './attempts/attempts.module'
 import * as winston from 'winston'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,

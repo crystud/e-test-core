@@ -27,6 +27,7 @@
     "@nestjs/passport": "^6.2.0",
     "@nestjs/platform-express": "^6.10.14",
     "@nestjs/platform-fastify": "^6.11.8",
+    "@nestjs/schedule": "^0.4.0",
     "@nestjs/swagger": "^4.3.2",
     "@nestjs/typeorm": "^6.3.3",
     "bcryptjs": "^2.4.2",

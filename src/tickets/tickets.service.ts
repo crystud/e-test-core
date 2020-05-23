@@ -30,6 +30,7 @@ export class TicketsService {
         'ticket.id',
         'ticket.createAt',
         'student.id',
+        'permission.id',
         'permission.maxCountOfUse',
         'permission.startTime',
         'permission.endTime',

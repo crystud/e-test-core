@@ -10,12 +10,6 @@ export const dbStringLikeBuilder = (
 
     const item = filterObj[filterItem]
 
-    if (!isNaN(Number(item))) {
-      filter[filterItem] = item
-
-      continue
-    }
-
     if (typeof filterObj[filterItem] === 'string') {
       filter[filterItem] = Like(`%${item}%`)
     } else {

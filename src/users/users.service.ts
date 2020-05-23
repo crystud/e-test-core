@@ -8,6 +8,7 @@ import { FilterUserDto } from './dto/filterUser.dto'
 import { ConfigService } from '@nestjs/config'
 
 import { dbStringLikeBuilder } from '../tools/dbRequestBuilders/dbStringLike.builder'
+import { UserRolesType } from '../enums/userRolesType'
 
 @Injectable()
 export class UsersService {
@@ -49,23 +50,40 @@ export class UsersService {
     return user
   }
 
-  async findAll(filterUserDto: FilterUserDto, like = true): Promise<User[]> {
+  async findAll(
+    filterUserDto: FilterUserDto,
+    offset: number,
+    limit: number,
+    like = true,
+  ): Promise<User[]> {
     const filter = like ? dbStringLikeBuilder(filterUserDto) : filterUserDto
 
-    return await User.find({
-      where: {
-        ...filter,
-      },
-      select: [
-        'id',
-        'firstName',
-        'lastName',
-        'patronymic',
-        'firstName',
-        'email',
-        'createAt',
-      ],
-    })
+    let quaryBuilder = await User.createQueryBuilder('users')
+      .leftJoin('users.teachers', 'teachers')
+      .leftJoin('users.students', 'students')
+      .select([
+        'users.id',
+        'users.firstName',
+        'users.lastName',
+        'users.patronymic',
+        'users.email',
+      ])
+      .where(filter)
+
+    // TODO: refactor to function
+    if (filterUserDto.roles.includes(UserRolesType.TEACHER))
+      quaryBuilder = quaryBuilder.andWhere('teachers.id IS NOT NULL')
+
+    if (filterUserDto.roles.includes(UserRolesType.STUDENT))
+      quaryBuilder = quaryBuilder.andWhere('students.id IS NOT NULL')
+
+    if (filterUserDto.isNotInRoles.includes(UserRolesType.TEACHER))
+      quaryBuilder = quaryBuilder.andWhere('teachers.id IS NULL')
+
+    if (filterUserDto.isNotInRoles.includes(UserRolesType.STUDENT))
+      quaryBuilder = quaryBuilder.andWhere('students.id IS NULL')
+
+    return await quaryBuilder.getMany()
   }
 
   async create({

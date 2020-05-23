@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Task } from '../tasks/task.entity'
 import { Transform } from 'class-transformer'
+import { AttemptAnswer } from '../attempts/attempt_answers.entity'
 
 @Entity('answers')
 export class Answer extends BaseEntity {
@@ -38,4 +40,10 @@ export class Answer extends BaseEntity {
   )
   @JoinColumn({ name: 'task_id' })
   task: Task
+
+  @OneToMany(
+    () => AttemptAnswer,
+    attemptAnswer => attemptAnswer.answer,
+  )
+  attemptAnswer: AttemptAnswer[]
 }

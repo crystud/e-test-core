@@ -3,6 +3,7 @@ import { Test } from './test.entity'
 import { Teacher } from '../teachers/teachers.entity'
 import { Task } from '../tasks/task.entity'
 import { Topic } from '../topics/topic.entity'
+import { TestStatusInterface } from './interfaces/TestStatus.interface'
 
 @Injectable()
 export class TestsService {
@@ -40,6 +41,7 @@ export class TestsService {
         'topics.id',
         'topics.name',
         'tasks.id',
+        'tasks.type',
         'tasks.question',
       ])
       .where('test.id = :testId', { testId })
@@ -65,6 +67,9 @@ export class TestsService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'tasks.id',
+        'topics.id',
+        'topics.name',
       ])
       .where('creator.id = :creatorId', { creatorId: teacher.id })
       .getMany()
@@ -105,18 +110,30 @@ export class TestsService {
     return this.findOne(test.id)
   }
 
-  async completed(test: Test): Promise<boolean> {
-    const topicTasks = await Test.createQueryBuilder('test')
-      .leftJoin('test.tasks', 'tasks')
-      .leftJoin('test.topics', 'topics')
-      .leftJoin('topics.tasks', 'topic_tasks')
-      .select(['tasks.id', 'topics.id', 'topic_tasks.id'])
-      .where('topic_tasks.id NOT ON (tasks)')
-      .where('test.id = :testId', { testId: test.id })
-      .getOne()
+  async status(test: Test): Promise<TestStatusInterface> {
+    const tasks = await Task.createQueryBuilder('tasks')
+      .leftJoin('tasks.tests', 'tests')
+      .select(['tasks.id'])
+      .where('tests.id = :testId', { testId: test.id })
+      .getMany()
 
-    global.console.log(topicTasks)
+    const topicsTasks = await Task.createQueryBuilder('tasks')
+      .leftJoin('tasks.topic', 'topic')
+      .leftJoin('topic.tests', 'tests')
+      .select(['tasks.id'])
+      .where('tests.id = :testId', { testId: test.id })
+      .where('tasks.id NOT IN (:tasksIds)', {
+        tasksIds: tasks.map<number>(task => task.id),
+      })
+      .getMany()
 
-    return true
+    const tasksCount = tasks.length
+    const topicsTasksCount = topicsTasks.length
+
+    return {
+      tasksCount,
+      topicsTasksCount,
+      completed: tasksCount + tasksCount >= test.countOfTasks,
+    }
   }
 }

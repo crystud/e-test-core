@@ -72,4 +72,8 @@ export class TasksService {
 
     return task
   }
+
+  maxScore(task: Task): number {
+    return task.answers.filter(answer => answer.correct).length
+  }
 }

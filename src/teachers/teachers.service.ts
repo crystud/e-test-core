@@ -59,7 +59,14 @@ export class TeachersService {
     return await Teacher.createQueryBuilder('teachers')
       .leftJoin('teachers.subject', 'subject')
       .leftJoin('teachers.user', 'user')
-      .select(['teachers.id', 'subject.id', 'subject.name'])
+      .leftJoin('teachers.tests', 'test')
+      .select([
+        'teachers.id',
+        'subject.id',
+        'subject.name',
+        'test.id',
+        'test.name',
+      ])
       .where('user.id = :userId ', { userId: user.id })
       .getMany()
   }
