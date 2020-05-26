@@ -16,6 +16,7 @@ import { Answer } from '../answers/answer.entity'
 import { Test } from '../tests/test.entity'
 import { User } from '../users/user.entity'
 import { AttemptTask } from '../attempts/attemptTask.entity'
+import { ResultTask } from '../results/resultTask.entity'
 
 @Entity('tasks')
 export class Task extends BaseEntity {
@@ -57,6 +58,12 @@ export class Task extends BaseEntity {
   )
   @JoinColumn({ name: 'user_id' })
   creator: User
+
+  @OneToMany(
+    () => ResultTask,
+    resultTask => resultTask.task,
+  )
+  taskResults: ResultTask[]
 
   @OneToMany(
     () => Answer,

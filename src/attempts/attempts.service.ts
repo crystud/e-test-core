@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common'
 import { Attempt } from './attempt.entity'
 import { Ticket } from '../tickets/ticket.entity'
 import { TicketsService } from '../tickets/tickets.service'
@@ -6,6 +11,8 @@ import { TestsService } from '../tests/tests.service'
 
 import { PermissionsService } from '../permissions/permissions.service'
 import { Task } from '../tasks/task.entity'
+
+import { ResultAnswer } from './dto/completeAttempt.dto'
 
 import { TasksService } from '../tasks/tasks.service'
 import { Test } from '../tests/test.entity'
@@ -17,13 +24,19 @@ import { SchedulerRegistry } from '@nestjs/schedule'
 import { TaskType } from '../tasks/enums/TaskType.enum'
 import moment = require('moment')
 
+import { ResultsService } from '../results/results.service'
+
+import { getConnection } from 'typeorm'
+
 @Injectable()
 export class AttemptsService {
   constructor(
     private readonly ticketsService: TicketsService,
     private readonly testsService: TestsService,
+    @Inject(forwardRef(() => TasksService))
     private readonly tasksService: TasksService,
     private readonly permissionsService: PermissionsService,
+    private readonly resultsService: ResultsService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
@@ -38,30 +51,6 @@ export class AttemptsService {
     )
 
     const test = await this.testsService.findEntity(permission.test.id)
-    /*
-    const testInfo = await this.testsService.status(test)
-
-    const countOfTasksFromSoureces = {
-      tasks: 0,
-      topics: 0,
-    }
-
-    // TODO: refactor (omg! level of gavnocode goes to 100%)
-    //       please DON`T look inside
-    if (Math.round(test.countOfTasks / 2) >= testInfo.tasksCount)
-      countOfTasksFromSoureces.tasks = testInfo.tasksCount
-    else countOfTasksFromSoureces.tasks = Math.round(test.countOfTasks / 2)
-
-    countOfTasksFromSoureces.topics =
-      test.countOfTasks - countOfTasksFromSoureces.tasks
-
-    if (countOfTasksFromSoureces.topics > testInfo.topicsTasksCount) {
-      const lack = countOfTasksFromSoureces.topics - testInfo.topicsTasksCount
-      countOfTasksFromSoureces.topics -= lack
-      countOfTasksFromSoureces.tasks += lack
-    }*/
-
-    // global.console.log(test)
 
     // TODO: move to another method
     const tasks = await Task.createQueryBuilder('tasks')
@@ -77,7 +66,7 @@ export class AttemptsService {
       .take(test.countOfTasks)
       .getMany()
 
-    const attempt = this.attemptBuilder(test, permission, ticket)
+    const attempt = this.entityBuilder(test, permission, ticket)
     let attemptTasks = []
 
     tasks.forEach(task => {
@@ -121,6 +110,7 @@ export class AttemptsService {
 
   async findOne(attemptId: number) {
     const attempt = await Attempt.createQueryBuilder('attempt')
+      .leftJoin('attempt.result', 'result')
       .leftJoin('attempt.attemptTasks', 'attemptTasks')
       .leftJoin('attemptTasks.task', 'task')
       .select([
@@ -132,6 +122,9 @@ export class AttemptsService {
         'attemptTasks.id',
         'task.question',
         'task.type',
+        'result.id',
+        'result.score',
+        'result.percent',
       ])
       .where('attempt.id = :attemptId', { attemptId })
       .getOne()
@@ -175,7 +168,82 @@ export class AttemptsService {
       global.console.log(`Спроба ${attempt.id} повинна закінчитись зараз`)
   }
 
-  attemptBuilder(
+  async complete(
+    attempt: Attempt,
+    resultAnswers: ResultAnswer[],
+  ): Promise<Attempt> {
+    const attemptTasks = await AttemptTask.createQueryBuilder('attemptTasks')
+      .leftJoin('attemptTasks.attempt', 'attempt')
+      .leftJoin('attemptTasks.task', 'task')
+      .leftJoin('attemptTasks.attemptAnswers', 'attemptAnswers')
+      .leftJoin('attemptAnswers.answer', 'answer')
+      .select([
+        'attemptTasks.id',
+        'attemptAnswers.id',
+        'task.id',
+        'task.type',
+        'answer.id',
+        'answer.correct',
+        'answer.position',
+        'answer.answerText',
+      ])
+      .where('attempt.id = :attemptId', { attemptId: attempt.id })
+      .getMany()
+
+    let score = 0
+    const resultTasks = []
+
+    attemptTasks.forEach((attemptTask, index) => {
+      const result = this.tasksService.checkTask(
+        attemptTask.task,
+        resultAnswers[index],
+        attemptTask,
+      )
+
+      resultTasks.push(
+        this.resultsService.resultTaskBuilder(
+          null,
+          attemptTask.task,
+          result.correct,
+          result.incorrect,
+          result.maxScore,
+          result.receivedScore,
+        ),
+      )
+
+      score += result.receivedScore
+
+      return result
+    })
+
+    await getConnection().transaction(async transactionalEntityManager => {
+      let result = await this.resultsService.entityBuilder(
+        attempt,
+        score,
+        score ? (score / attempt.maxScore) * 100 : 0,
+      )
+
+      result = await transactionalEntityManager.save(result)
+
+      resultTasks.forEach(resultTask => (resultTask.result = result))
+
+      await transactionalEntityManager
+        .getRepository(Attempt)
+        .createQueryBuilder('attempt')
+        .update()
+        .set({
+          endTime: new Date(),
+        })
+        .where('id = :attemptId', { attemptId: attempt.id })
+        .execute()
+
+      await transactionalEntityManager.save(resultTasks)
+    })
+
+    return this.findOne(attempt.id)
+  }
+
+  entityBuilder(
     test: Test,
     permission: Permission,
     ticket: Ticket,
@@ -202,5 +270,11 @@ export class AttemptsService {
     attemptTask?: AttemptTask,
   ): AttemptAnswer {
     return AttemptAnswer.create({ answer, attemptTask })
+  }
+
+  maxScore(attemptTask: AttemptTask): number {
+    return attemptTask.attemptAnswers.filter(
+      attemptTask => attemptTask.answer.correct,
+    ).length
   }
 }

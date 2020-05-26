@@ -21,6 +21,7 @@ import { utilities, WinstonModule } from 'nest-winston'
 import { AttemptsModule } from './attempts/attempts.module'
 import * as winston from 'winston'
 import { ScheduleModule } from '@nestjs/schedule'
+import { ResultsModule } from './results/results.module'
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     PermissionsModule,
     TicketsModule,
     AttemptsModule,
+    ResultsModule,
   ],
 })
 export class AppModule {}

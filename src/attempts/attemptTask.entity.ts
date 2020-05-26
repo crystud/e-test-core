@@ -37,7 +37,7 @@ export class AttemptTask extends BaseEntity {
 
   @OneToMany(
     () => AttemptAnswer,
-    attemptAnswer => attemptAnswer.answer,
+    attemptAnswer => attemptAnswer.attemptTask,
   )
   attemptAnswers: AttemptAnswer[]
 }

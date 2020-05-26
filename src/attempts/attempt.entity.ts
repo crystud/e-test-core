@@ -6,12 +6,16 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Ticket } from '../tickets/ticket.entity'
 import { Expose } from 'class-transformer'
 import { AttemptTask } from './attemptTask.entity'
+import { Result } from '../results/result.entity'
+import { ApiTags } from '@nestjs/swagger'
 
+@ApiTags('attempts')
 @Entity('attempts')
 export class Attempt extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -41,6 +45,12 @@ export class Attempt extends BaseEntity {
     attemptTask => attemptTask.attempt,
   )
   attemptTasks: AttemptTask[]
+
+  @OneToOne(
+    () => Result,
+    result => result.attempt,
+  )
+  result: Result | null
 
   @Expose({ name: 'active' })
   get _active(): boolean {

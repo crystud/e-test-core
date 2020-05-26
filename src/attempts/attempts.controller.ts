@@ -19,6 +19,7 @@ import { AttemptsService } from './attempts.service'
 import { TicketsService } from '../tickets/tickets.service'
 import { Attempt } from './attempt.entity'
 import { AttemptTask } from './attemptTask.entity'
+import { CompleteAttemptDto } from './dto/completeAttempt.dto'
 
 @Controller('attempts')
 export class AttemptsController {
@@ -59,5 +60,24 @@ export class AttemptsController {
     @Param('attemptTaskId') attemptTaskId: number,
   ): Promise<AttemptTask> {
     return await this.attemptsService.findAttemptTask(attemptTaskId)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.STUDENT)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('complete')
+  async complete(
+    @Body() completeAttemptDto: CompleteAttemptDto,
+  ): Promise<Attempt> {
+    const attempt = await this.attemptsService.findOne(
+      completeAttemptDto.attempt,
+    )
+
+    return await this.attemptsService.complete(
+      attempt,
+      completeAttemptDto.tasks,
+    )
   }
 }
