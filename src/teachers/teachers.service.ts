@@ -37,6 +37,7 @@ export class TeachersService {
     const teacher = await Teacher.createQueryBuilder('teacher')
       .leftJoin('teacher.user', 'user')
       .leftJoin('teacher.subject', 'subject')
+      .loadRelationCountAndMap('subject.topicsCount', 'subject.topics')
       .select([
         'teacher.id',
         'user.id',
@@ -60,6 +61,7 @@ export class TeachersService {
       .leftJoin('teachers.subject', 'subject')
       .leftJoin('teachers.user', 'user')
       .leftJoin('teachers.tests', 'test')
+      .loadRelationCountAndMap('subject.topicsCount', 'subject.topics')
       .select([
         'teachers.id',
         'subject.id',
@@ -75,6 +77,7 @@ export class TeachersService {
     const teacher = await Teacher.createQueryBuilder('teachers')
       .leftJoin('teachers.subject', 'subject')
       .leftJoin('teachers.user', 'user')
+      .loadRelationCountAndMap('subject.topicsCount', 'subject.topics')
       .select(['teachers.id', 'subject.id', 'subject.name'])
       .where('user.id = :userId ', { userId: user.id })
       .where('subject.id = :subjectId ', { subjectId: subject.id })
