@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
@@ -17,6 +26,7 @@ export class TopicsController {
   constructor(private readonly topicsService: TopicsService) {}
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -26,6 +36,7 @@ export class TopicsController {
   }
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
