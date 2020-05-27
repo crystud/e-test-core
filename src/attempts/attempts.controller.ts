@@ -8,7 +8,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiBearerAuth } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
@@ -21,6 +21,7 @@ import { Attempt } from './attempt.entity'
 import { AttemptTask } from './attemptTask.entity'
 import { CompleteAttemptDto } from './dto/completeAttempt.dto'
 
+@ApiTags('attempts')
 @Controller('attempts')
 export class AttemptsController {
   constructor(

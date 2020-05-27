@@ -18,6 +18,7 @@ export class TestsService {
       countOfTasks,
       duration,
       creator: teacher,
+      subject: teacher.subject,
     }).save()
 
     return await this.findOne(test.id)
@@ -26,6 +27,7 @@ export class TestsService {
   async findOne(testId: number): Promise<Test> {
     const test = await Test.createQueryBuilder('test')
       .leftJoin('test.creator', 'creator')
+      .leftJoin('test.subject', 'subject')
       .leftJoin('creator.user', 'user')
       .leftJoin('test.tasks', 'tasks')
       .leftJoin('test.topics', 'topics')
@@ -38,6 +40,8 @@ export class TestsService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'subject.id',
+        'subject.name',
         'topics.id',
         'topics.name',
         'tasks.id',

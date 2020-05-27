@@ -5,6 +5,7 @@ import { Type } from 'class-transformer'
 export class CreateAnswerDto {
   @ApiProperty()
   @Length(1, 128)
+  @IsOptional()
   @Type(() => String)
   answerText: string
 

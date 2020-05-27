@@ -16,7 +16,7 @@ export class Answer extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ name: 'answer_text', type: 'varchar', length: '128' })
+  @Column({ name: 'answer_text', type: 'varchar', length: '128', default: '' })
   answerText: string
 
   @Column()

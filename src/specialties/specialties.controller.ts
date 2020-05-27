@@ -18,11 +18,16 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { CreateSpecialityDto } from './dto/createSpeciality.dto'
 import { Speciality } from './speciality.entity'
 import { FindAllSpecialityDto } from './dto/findAllSpeciality.dto'
+import { AddSubjectDto } from './dto/addSubject.dto'
+import { SubjectsService } from '../subject/subjects.service'
 
 @ApiTags('specialties')
 @Controller('specialties')
 export class SpecialtiesController {
-  constructor(private readonly specialtiesService: SpecialtiesService) {}
+  constructor(
+    private readonly specialtiesService: SpecialtiesService,
+    private readonly subjectsService: SubjectsService,
+  ) {}
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
@@ -34,6 +39,21 @@ export class SpecialtiesController {
     @Body() createSpecialityDto: CreateSpecialityDto,
   ): Promise<Speciality> {
     return await this.specialtiesService.create(createSpecialityDto)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('addSubject')
+  async addSubject(@Body() addSubjectDto: AddSubjectDto): Promise<Speciality> {
+    const [speciality, subject] = await Promise.all([
+      this.specialtiesService.findEntity(addSubjectDto.speciality),
+      this.subjectsService.findEntity(addSubjectDto.subject),
+    ])
+
+    return await this.specialtiesService.addSubject(speciality, subject)
   }
 
   @ApiBearerAuth()

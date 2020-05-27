@@ -23,7 +23,6 @@ export class Group extends BaseEntity {
   @Column({ name: 'start_year', type: 'year' })
   startYear: number
 
-  @Expose()
   @Column({ type: 'tinyint' })
   number: number
 

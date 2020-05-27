@@ -1,40 +1,40 @@
-import { Exclude, Expose } from 'class-transformer'
 import {
   BaseEntity,
   Column,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Group } from '../groups/group.entity'
+import { Subject } from '../subject/subject.entity'
 
-@Exclude()
 @Entity('specialties')
 export class Speciality extends BaseEntity {
-  @Expose()
   @PrimaryGeneratedColumn()
   id: number
 
-  @Expose()
   @Column({ type: 'varchar', length: 50 })
   name: string
 
-  @Expose()
   @Column({ type: 'varchar', length: 8 })
   symbol: string
 
-  @Expose()
   @Column({ name: 'year_of_studt', type: 'tinyint' })
   yearOfStudy: number
 
-  @Expose()
   @Column({ unique: true, type: 'smallint' })
   code: number
 
-  @Expose()
   @OneToMany(
     () => Group,
     group => group.speciality,
   )
   groups: Group[]
+
+  @ManyToMany(
+    () => Subject,
+    subject => subject.specialties,
+  )
+  subjects: Subject[]
 }

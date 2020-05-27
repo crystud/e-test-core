@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Answer } from './answer.entity'
 import { Task } from '../tasks/task.entity'
 import { getManager } from 'typeorm'
@@ -44,6 +44,26 @@ export class AnswersService {
         answer = await transactionalEntityManager.save(answer)
       },
     )
+
+    return await this.findOne(answer.id)
+  }
+
+  async findOne(answerId: number): Promise<Answer> {
+    const answer = await Answer.createQueryBuilder('answer')
+      .leftJoin('answer.task', 'task')
+      .select([
+        'answer.id',
+        'answer.answerText',
+        'answer.correct',
+        'answer.position',
+        'answer.image',
+        'task.id',
+        'task.type',
+      ])
+      .where('answer.id = :answerId', { answerId })
+      .getOne()
+
+    if (!answer) throw new BadRequestException('Відповідь не знайдено')
 
     return answer
   }

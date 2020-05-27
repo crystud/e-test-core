@@ -1,11 +1,13 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
@@ -43,6 +45,7 @@ export class SubjectsController {
   }
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.USER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -57,8 +60,11 @@ export class SubjectsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
-    @Query() findAllSpecialityDto: FindAllSubjectsDto,
+    @Query() findAllSubjectsDto: FindAllSubjectsDto,
   ): Promise<Subject[]> {
-    return await this.subjectsService.findAll(findAllSpecialityDto.name)
+    return await this.subjectsService.findAll(
+      findAllSubjectsDto.name,
+      findAllSubjectsDto.specialties,
+    )
   }
 }

@@ -13,6 +13,7 @@ import { Teacher } from '../teachers/teachers.entity'
 import { Task } from '../tasks/task.entity'
 import { Topic } from '../topics/topic.entity'
 import { Permission } from '../permissions/permission.entity'
+import { Subject } from '../subject/subject.entity'
 
 @Entity('tests')
 export class Test extends BaseEntity {
@@ -31,6 +32,13 @@ export class Test extends BaseEntity {
   )
   @JoinColumn({ name: 'creator_id' })
   creator: Teacher
+
+  @ManyToOne(
+    () => Subject,
+    subject => subject.tests,
+  )
+  @JoinColumn({ name: 'subject_id' })
+  subject: Subject
 
   @Column({ type: 'tinyint' })
   duration: number
