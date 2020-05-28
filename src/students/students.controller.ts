@@ -53,7 +53,7 @@ export class StudentsController {
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.USER)
+  @Roles(UserRolesType.STUDENT)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get('own')

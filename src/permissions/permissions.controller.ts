@@ -2,7 +2,6 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  ForbiddenException,
   Get,
   Param,
   Post,
@@ -41,23 +40,15 @@ export class PermissionsController {
   @Post()
   async create(
     @Body()
-    {
-      group: groupId,
-      test: testId,
-      teacher: teacherId,
-      startTime,
-      endTime,
-    }: CreatePermissionDto,
+    { group: groupId, test: testId, startTime, endTime }: CreatePermissionDto,
     @Request() { user: { user } },
   ): Promise<Permission> {
-    const [group, test, teacher] = await Promise.all([
+    const [group, test] = await Promise.all([
       this.groupsService.findEntity(groupId),
       this.testsService.findEntity(testId),
-      this.teachersService.findEntity(teacherId),
     ])
 
-    if (!this.teachersService.belongsToUser(teacher, user))
-      throw new ForbiddenException()
+    const teacher = await this.teachersService.findOneByUser(user, test.subject)
 
     return this.permissionsService.create(
       group,

@@ -6,12 +6,14 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 
 import { User } from '../users/user.entity'
 import { Group } from '../groups/group.entity'
 import { Ticket } from '../tickets/ticket.entity'
+import { Invite } from '../invites/invite.entity'
 
 @Entity('students')
 @Index(['user', 'group'], { unique: true })
@@ -41,4 +43,10 @@ export class Student extends BaseEntity {
   )
   @JoinColumn({ name: 'group_id' })
   group: Group
+
+  @OneToOne(
+    () => Invite,
+    invite => invite.student,
+  )
+  invite: Invite
 }

@@ -28,9 +28,4 @@ export class CreatePermissionDto {
   @IsInt()
   @Type(() => Number)
   test: number
-
-  @ApiProperty()
-  @IsInt()
-  @Type(() => Number)
-  teacher: number
 }

@@ -17,6 +17,7 @@ import { Exclude } from 'class-transformer'
 import { Admin } from '../admins/admin.entity'
 import { Task } from '../tasks/task.entity'
 import { Test } from '../tests/test.entity'
+import { Invite } from '../invites/invite.entity'
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -34,12 +35,13 @@ export class User extends BaseEntity {
 
   @Exclude()
   @Column()
-  password: string
+  password: string | null
 
   @Column({
     unique: true,
+    nullable: true,
   })
-  email: string
+  email: string | null
 
   @OneToOne(
     () => Admin,
@@ -73,4 +75,10 @@ export class User extends BaseEntity {
     task => task.creator,
   )
   tasks: Test[]
+
+  @OneToMany(
+    () => Invite,
+    invite => invite.creator,
+  )
+  invites: Invite[]
 }

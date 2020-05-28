@@ -27,7 +27,7 @@ export class TopicsController {
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.ADMIN)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()

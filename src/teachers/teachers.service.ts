@@ -83,7 +83,8 @@ export class TeachersService {
       .where('subject.id = :subjectId ', { subjectId: subject.id })
       .getOne()
 
-    if (!teacher) throw new BadRequestException('Викладача не знайдено')
+    if (!teacher)
+      throw new BadRequestException('Користувач не викладає даний предмет')
 
     return teacher
   }

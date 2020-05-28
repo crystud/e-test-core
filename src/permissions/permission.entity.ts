@@ -10,8 +10,10 @@ import {
 } from 'typeorm'
 import { Test } from '../tests/test.entity'
 import { Group } from '../groups/group.entity'
-import { Teacher } from '../teachers/teachers.entity'
+
 import { Ticket } from '../tickets/ticket.entity'
+
+import { Teacher } from '../teachers/teachers.entity'
 
 @Entity('permissions')
 export class Permission extends BaseEntity {
@@ -22,11 +24,17 @@ export class Permission extends BaseEntity {
   @JoinColumn({ name: 'test_id' })
   test: Test
 
-  @ManyToOne(() => Teacher)
+  @ManyToOne(
+    () => Teacher,
+    teacher => teacher.permissions,
+  )
   @JoinColumn({ name: 'teacher_id' })
   teacher: Teacher
 
-  @ManyToOne(() => Group)
+  @ManyToOne(
+    () => Group,
+    group => group.permissions,
+  )
   @JoinColumn({ name: 'group_id' })
   group: Group
 

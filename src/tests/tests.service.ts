@@ -83,6 +83,7 @@ export class TestsService {
     const test = await Test.createQueryBuilder('test')
       .leftJoin('test.creator', 'creator')
       .leftJoin('test.tasks', 'tasks')
+      .leftJoin('test.subject', 'subject')
       .leftJoin('test.topics', 'topics')
       .select([
         'test.id',
@@ -91,6 +92,7 @@ export class TestsService {
         'tasks.id',
         'topics.id',
         'creator.id',
+        'subject.id',
       ])
       .where('test.id = :testId ', { testId })
       .getOne()
@@ -115,29 +117,20 @@ export class TestsService {
   }
 
   async status(test: Test): Promise<TestStatusInterface> {
-    const tasks = await Task.createQueryBuilder('tasks')
+    const tasksCount = await Task.createQueryBuilder('tasks')
       .leftJoin('tasks.tests', 'tests')
-      .select(['tasks.id'])
-      .where('tests.id = :testId', { testId: test.id })
-      .getMany()
-
-    const topicsTasks = await Task.createQueryBuilder('tasks')
       .leftJoin('tasks.topic', 'topic')
-      .leftJoin('topic.tests', 'tests')
-      .select(['tasks.id'])
+      .leftJoin('tasks.answers', 'answers')
+      .select(['tasks.id', 'answers.id', 'answers.correct'])
       .where('tests.id = :testId', { testId: test.id })
-      .where('tasks.id NOT IN (:tasksIds)', {
-        tasksIds: tasks.map<number>(task => task.id),
+      .orWhere('topic.id IN (:topicIds)', {
+        topicIds: test.topics.map<number>(topic => topic.id),
       })
-      .getMany()
-
-    const tasksCount = tasks.length
-    const topicsTasksCount = topicsTasks.length
+      .getCount()
 
     return {
       tasksCount,
-      topicsTasksCount,
-      completed: tasksCount + tasksCount >= test.countOfTasks,
+      completed: tasksCount >= test.countOfTasks,
     }
   }
 }

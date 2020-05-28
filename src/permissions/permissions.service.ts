@@ -23,6 +23,8 @@ export class PermissionsService {
   ): Promise<Permission> {
     const testStatus = await this.testsService.status(test)
 
+    global.console.log(testStatus)
+
     if (!testStatus.completed)
       throw new BadRequestException('В тесті замало питань')
 
