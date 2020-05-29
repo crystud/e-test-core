@@ -23,8 +23,6 @@ export class PermissionsService {
   ): Promise<Permission> {
     const testStatus = await this.testsService.status(test)
 
-    global.console.log(testStatus)
-
     if (!testStatus.completed)
       throw new BadRequestException('В тесті замало питань')
 
@@ -55,6 +53,7 @@ export class PermissionsService {
       .leftJoin('teacher.user', 'teacher_user')
       .leftJoin('teacher.subject', 'subject')
       .leftJoin('permission.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
       .select([
         'permission.id',
         'permission.startTime',
@@ -76,6 +75,12 @@ export class PermissionsService {
         'teacher_user.patronymic',
         'subject.id',
         'subject.name',
+        'group.id',
+        'group.startYear',
+        'group.number',
+        'speciality.id',
+        'speciality.yearOfStudy',
+        'speciality.symbol',
       ])
       .where('permission.id = :permissionId', { permissionId })
       .getOne()
@@ -91,7 +96,6 @@ export class PermissionsService {
       .leftJoin('permission.teacher', 'teacher')
       .leftJoin('teacher.user', 'teacher_user')
       .leftJoin('teacher.subject', 'subject')
-      .leftJoin('permission.group', 'group')
       .select([
         'permission.id',
         'permission.startTime',
@@ -119,6 +123,7 @@ export class PermissionsService {
       .leftJoin('teacher.user', 'user')
       .leftJoin('teacher.subject', 'subject')
       .leftJoin('permission.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
       .select([
         'permission.id',
         'permission.startTime',
@@ -134,6 +139,12 @@ export class PermissionsService {
         'user.firstName',
         'subject.id',
         'subject.name',
+        'group.id',
+        'group.startYear',
+        'group.number',
+        'speciality.id',
+        'speciality.yearOfStudy',
+        'speciality.symbol',
       ])
       .where('teacher.id = :teacherId', { teacherId })
       .getMany()
