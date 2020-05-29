@@ -19,10 +19,10 @@ export class Invite extends BaseEntity {
   @CreateDateColumn({ name: 'create_at' })
   createAt: Date
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', default: null, nullable: true })
   usedAt: Date | null
 
-  @Column({ type: 'varchar', length: 13 })
+  @Column({ type: 'varchar', length: 14, unique: true })
   code: string
 
   @OneToOne(

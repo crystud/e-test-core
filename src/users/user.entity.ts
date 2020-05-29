@@ -34,7 +34,7 @@ export class User extends BaseEntity {
   patronymic: string
 
   @Exclude()
-  @Column()
+  @Column({ type: 'varchar', length: 60, nullable: true })
   password: string | null
 
   @Column({

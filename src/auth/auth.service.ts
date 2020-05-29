@@ -70,14 +70,13 @@ export class AuthService {
   }
 
   async createTokens(user: User): Promise<TokensInterface> {
-    const token = await this.generateJWT(
-      user,
-      await this.generateRoles(user.id),
-    )
+    const [token, refreshToken] = await Promise.all([
+      this.generateJWT(user, await this.generateRoles(user.id)),
 
-    const refreshToken = await Token.create({
-      user,
-    }).save()
+      Token.create({
+        user,
+      }).save(),
+    ])
 
     return {
       access: token,

@@ -117,16 +117,23 @@ export class TestsService {
   }
 
   async status(test: Test): Promise<TestStatusInterface> {
-    const tasksCount = await Task.createQueryBuilder('tasks')
+    let tasksCountQueryBuilder = Task.createQueryBuilder('tasks')
       .leftJoin('tasks.tests', 'tests')
       .leftJoin('tasks.topic', 'topic')
       .leftJoin('tasks.answers', 'answers')
       .select(['tasks.id', 'answers.id', 'answers.correct'])
       .where('tests.id = :testId', { testId: test.id })
-      .orWhere('topic.id IN (:topicIds)', {
-        topicIds: test.topics.map<number>(topic => topic.id),
-      })
-      .getCount()
+
+    if (test.topics.length) {
+      tasksCountQueryBuilder = tasksCountQueryBuilder.orWhere(
+        'topic.id IN (:topicIds)',
+        {
+          topicIds: test.topics.map<number>(topic => topic.id),
+        },
+      )
+    }
+
+    const tasksCount = await tasksCountQueryBuilder.getCount()
 
     return {
       tasksCount,

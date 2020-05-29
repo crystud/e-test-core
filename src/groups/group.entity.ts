@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Speciality } from '../specialties/speciality.entity'
-import * as moment from 'moment'
+import moment from 'moment'
 import { now } from 'moment'
 
 import { Student } from '../students/student.entity'

@@ -21,7 +21,7 @@ export class Student extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ type: 'int', name: 'scoring_book' })
+  @Column({ type: 'int', name: 'scoring_book', unique: true })
   scoringBook: number
 
   @OneToMany(

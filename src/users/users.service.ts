@@ -95,6 +95,7 @@ export class UsersService {
   }): Promise<User> {
     const hashPassword = await hash(password, 8)
 
+    // TODO: add transaction
     const emailIsFree = await User.findOne({
       where: {
         email,
