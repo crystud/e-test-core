@@ -52,16 +52,20 @@ export class AttemptsService {
 
     const test = await this.testsService.findEntity(permission.test.id)
 
-    // TODO: move to another method
-    const tasks = await Task.createQueryBuilder('tasks')
+    let tasksQueryBuilder = await Task.createQueryBuilder('tasks')
       .leftJoin('tasks.tests', 'tests')
       .leftJoin('tasks.topic', 'topic')
       .leftJoin('tasks.answers', 'answers')
       .select(['tasks.id', 'answers.id', 'answers.correct'])
       .where('tests.id = :testId', { testId: test.id })
-      .orWhere('topic.id IN (:topicIds)', {
+
+    if (test.topics.length) {
+      tasksQueryBuilder = tasksQueryBuilder.orWhere('topic.id IN (:topicIds)', {
         topicIds: test.topics.map<number>(topic => topic.id),
       })
+    }
+
+    const tasks = await tasksQueryBuilder
       .orderBy('RAND()')
       .take(test.countOfTasks)
       .getMany()

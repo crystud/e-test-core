@@ -50,6 +50,7 @@ export class TicketsService {
       .leftJoin('student.user', 'user')
       .leftJoin('ticket.attempts', 'attempts')
       .leftJoin('ticket.permission', 'permission')
+      .leftJoin('permission.test', 'test')
       .select([
         'ticket.id',
         'ticket.createAt',
@@ -58,6 +59,8 @@ export class TicketsService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'test.id',
+        'test.name',
         'attempts.id',
         'attempts.startTime',
         'attempts.endTime',
@@ -80,6 +83,7 @@ export class TicketsService {
       .leftJoin('tickets.student', 'student')
       .leftJoin('tickets.permission', 'permission')
       .leftJoin('tickets.attempts', 'attempts')
+      .leftJoin('permission.test', 'test')
       .select([
         'tickets.id',
         'tickets.createAt',
@@ -91,6 +95,8 @@ export class TicketsService {
         'attempts.startTime',
         'attempts.endTime',
         'attempts.maxEndTime',
+        'test.id',
+        'test.name',
       ])
       .where('student.id = :studentId', { studentId: student.id })
       .getMany()
