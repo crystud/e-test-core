@@ -20,6 +20,7 @@ export class PermissionsService {
     teacher: Teacher,
     startTime: Date,
     endTime: Date,
+    maxCountOfUse: number | null,
   ): Promise<Permission> {
     const testStatus = await this.testsService.status(test)
 
@@ -32,6 +33,7 @@ export class PermissionsService {
       teacher,
       startTime,
       endTime,
+      maxCountOfUse,
     }).save()
 
     const tickets = group.students.map<Ticket>(student =>

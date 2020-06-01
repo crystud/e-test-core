@@ -49,10 +49,10 @@ export class Permission extends BaseEntity {
   startTime: Date
 
   @Column({ type: 'datetime', name: 'end_time', nullable: true })
-  endTime: Date
+  endTime: Date | null
 
   @Column({ name: 'max_count_of_use', type: 'tinyint', nullable: true })
-  maxCountOfUse: number
+  maxCountOfUse: number | null
 
   @OneToMany(
     () => Ticket,

@@ -49,6 +49,7 @@ export class TicketsService {
       .leftJoin('ticket.student', 'student')
       .leftJoin('student.user', 'user')
       .leftJoin('ticket.attempts', 'attempts')
+      .leftJoin('attempts.result', 'result')
       .leftJoin('ticket.permission', 'permission')
       .leftJoin('permission.test', 'test')
       .select([
@@ -63,8 +64,12 @@ export class TicketsService {
         'test.name',
         'attempts.id',
         'attempts.startTime',
+        'attempts.maxScore',
         'attempts.endTime',
         'attempts.maxEndTime',
+        'result.id',
+        'result.percent',
+        'result.score',
         'permission.id',
         'permission.maxCountOfUse',
         'permission.startTime',

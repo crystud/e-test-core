@@ -40,7 +40,13 @@ export class PermissionsController {
   @Post()
   async create(
     @Body()
-    { group: groupId, test: testId, startTime, endTime }: CreatePermissionDto,
+    {
+      group: groupId,
+      test: testId,
+      startTime,
+      endTime,
+      maxCountOfUse,
+    }: CreatePermissionDto,
     @Request() { user: { user } },
   ): Promise<Permission> {
     const [group, test] = await Promise.all([
@@ -56,6 +62,7 @@ export class PermissionsController {
       teacher,
       startTime,
       endTime,
+      maxCountOfUse,
     )
   }
 

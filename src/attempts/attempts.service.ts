@@ -27,6 +27,7 @@ import moment = require('moment')
 import { ResultsService } from '../results/results.service'
 
 import { getConnection } from 'typeorm'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class AttemptsService {
@@ -36,6 +37,7 @@ export class AttemptsService {
     @Inject(forwardRef(() => TasksService))
     private readonly tasksService: TasksService,
     private readonly permissionsService: PermissionsService,
+    private readonly configService: ConfigService,
     private readonly resultsService: ResultsService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
@@ -100,14 +102,19 @@ export class AttemptsService {
 
     await AttemptAnswer.save(attemptAnswer)
 
-    const duration = moment(attempt.startTime).diff(moment(attempt.maxEndTime))
+    const duration = moment(attempt.startTime).diff(
+      moment(attempt.maxEndTime).add(
+        this.configService.get<number>('attempt.maxDelayTime'),
+      ),
+    )
+
     const timeOutHandler = this.timeOutHandleBuilder(attempt)
 
     const timeout = setTimeout(
       timeOutHandler,
       moment.duration(duration).asMilliseconds(),
     )
-    this.schedulerRegistry.addTimeout('test', timeout)
+    this.schedulerRegistry.addTimeout(`attempt-${attempt.id}`, timeout)
 
     return await this.findOne(attempt.id)
   }
@@ -176,6 +183,12 @@ export class AttemptsService {
     attempt: Attempt,
     resultAnswers: ResultAnswer[],
   ): Promise<Attempt> {
+    if (!attempt._active) {
+      throw new BadRequestException(
+        'Спробу вже завершено, або час виконання спроби закінчився',
+      )
+    }
+
     const attemptTasks = await AttemptTask.createQueryBuilder('attemptTasks')
       .leftJoin('attemptTasks.attempt', 'attempt')
       .leftJoin('attemptTasks.task', 'task')
