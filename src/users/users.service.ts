@@ -61,6 +61,7 @@ export class UsersService {
     let quaryBuilder = await User.createQueryBuilder('users')
       .leftJoin('users.teachers', 'teachers')
       .leftJoin('users.students', 'students')
+      .leftJoin('users.admin', 'admin')
       .select([
         'users.id',
         'users.firstName',
@@ -71,11 +72,18 @@ export class UsersService {
       .where(filter)
 
     // TODO: refactor to function
+
+    if (filterUserDto.roles.includes(UserRolesType.ADMIN))
+      quaryBuilder = quaryBuilder.andWhere('admin.id IS NOT NULL')
+
     if (filterUserDto.roles.includes(UserRolesType.TEACHER))
       quaryBuilder = quaryBuilder.andWhere('teachers.id IS NOT NULL')
 
     if (filterUserDto.roles.includes(UserRolesType.STUDENT))
       quaryBuilder = quaryBuilder.andWhere('students.id IS NOT NULL')
+
+    if (filterUserDto.isNotInRoles.includes(UserRolesType.ADMIN))
+      quaryBuilder = quaryBuilder.andWhere('admin.id IS NULL')
 
     if (filterUserDto.isNotInRoles.includes(UserRolesType.TEACHER))
       quaryBuilder = quaryBuilder.andWhere('teachers.id IS NULL')

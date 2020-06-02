@@ -11,6 +11,35 @@ export class ResultsService {
       .leftJoinAndSelect('result.resultTasks', 'resultTasks')
       .leftJoinAndSelect('resultTasks.task', 'task')
       .leftJoinAndSelect('result.attempt', 'attempt')
+      .leftJoinAndSelect('attempt.ticket', 'ticket')
+      .leftJoinAndSelect('ticket.student', 'student')
+      .leftJoinAndSelect('student.user', 'user')
+      .select([
+        'result.id',
+        'result.score',
+        'result.percent',
+        'resultTasks.correct',
+        'resultTasks.incorrect',
+        'resultTasks.maxScore',
+        'resultTasks.receivedScore',
+        'task.id',
+        'task.question',
+        'task.question',
+        'task.image',
+        'task.type',
+        'attempt.id',
+        'attempt.maxScore',
+        'attempt.startTime',
+        'attempt.endTime',
+        'ticket.id',
+        'ticket.createAt',
+        'student.id',
+        'student.scoringBook',
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+      ])
       .where('result.id = :resultId', { resultId })
       .getOne()
 
