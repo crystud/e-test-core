@@ -104,6 +104,7 @@ export class TicketsService {
         'test.name',
       ])
       .where('student.id = :studentId', { studentId: student.id })
+      .orderBy('tickets.createAt', 'DESC')
       .getMany()
   }
 }

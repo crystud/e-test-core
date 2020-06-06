@@ -56,6 +56,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Query() filterUserDto: FilterUserDto): Promise<User[]> {
-    return await this.usersService.findAll(filterUserDto, 0, 100)
+    return await this.usersService.findAll(
+      filterUserDto,
+      filterUserDto.offset,
+      filterUserDto.limit,
+    )
   }
 }

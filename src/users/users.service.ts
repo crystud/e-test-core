@@ -91,7 +91,10 @@ export class UsersService {
     if (filterUserDto.isNotInRoles.includes(UserRolesType.STUDENT))
       quaryBuilder = quaryBuilder.andWhere('students.id IS NULL')
 
-    return await quaryBuilder.getMany()
+    return await quaryBuilder
+      .limit(limit)
+      .offset(offset)
+      .getMany()
   }
 
   async create({

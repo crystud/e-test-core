@@ -200,7 +200,7 @@ export class InvitesService {
 
   async findAll(
     user: User,
-    limin: number,
+    limit: number,
     offset: number,
     onlyUnused: boolean,
     onlyOwn: boolean,
@@ -243,7 +243,7 @@ export class InvitesService {
     }
 
     return invitesQuaryBuilder
-      .limit(limin)
+      .limit(limit)
       .offset(offset)
       .getMany()
   }

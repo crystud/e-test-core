@@ -61,7 +61,7 @@ export class InvitesController {
   ): Promise<Invite[]> {
     return await this.invitesService.findAll(
       user,
-      filterInvitesDto.limin,
+      filterInvitesDto.limit,
       filterInvitesDto.offset,
       filterInvitesDto.onlyUnused,
       filterInvitesDto.onlyOwn,

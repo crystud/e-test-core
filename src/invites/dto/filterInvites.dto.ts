@@ -9,7 +9,7 @@ export class FilterInvitesDto {
   @Max(40)
   @IsOptional()
   @Type(() => Number)
-  limin = 40
+  limit = 40
 
   @ApiProperty({ type: Number, required: false })
   @IsInt()

@@ -149,6 +149,7 @@ export class PermissionsService {
         'speciality.symbol',
       ])
       .where('teacher.id = :teacherId', { teacherId })
+      .orderBy('permission.startTime', 'DESC')
       .getMany()
   }
 }

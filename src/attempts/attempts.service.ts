@@ -102,18 +102,17 @@ export class AttemptsService {
 
     await AttemptAnswer.save(attemptAnswer)
 
-    const duration = moment(attempt.startTime).diff(
-      moment(attempt.maxEndTime).add(
-        this.configService.get<number>('attempt.maxDelayTime'),
-      ),
-    )
+    const maxDuration = moment(attempt.maxEndTime)
+      .add(this.configService.get<number>('attempt.maxDelayTime'), 'minutes')
+      .diff(moment(attempt.startTime))
+
+    let duration = moment.duration(test.duration, 'minutes').asMilliseconds()
+
+    if (duration > maxDuration) duration = maxDuration
 
     const timeOutHandler = this.timeOutHandleBuilder(attempt)
 
-    const timeout = setTimeout(
-      timeOutHandler,
-      moment.duration(duration).asMilliseconds(),
-    )
+    const timeout = setTimeout(timeOutHandler, duration)
     this.schedulerRegistry.addTimeout(`attempt-${attempt.id}`, timeout)
 
     return await this.findOne(attempt.id)
