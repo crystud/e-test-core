@@ -83,8 +83,14 @@ export class TicketsService {
     return ticket
   }
 
-  async findByStudent(student: Student): Promise<Ticket[]> {
-    return await Ticket.createQueryBuilder('tickets')
+  async findByStudent(
+    student: Student,
+    limit: number,
+    offset: number,
+    onlyIsNotOutstanding: boolean,
+    onlyUnused: boolean,
+  ): Promise<Ticket[]> {
+    let ticketQueryBuilder = Ticket.createQueryBuilder('tickets')
       .leftJoin('tickets.student', 'student')
       .leftJoin('tickets.permission', 'permission')
       .leftJoin('tickets.attempts', 'attempts')
@@ -104,7 +110,25 @@ export class TicketsService {
         'test.name',
       ])
       .where('student.id = :studentId', { studentId: student.id })
+
+    if (onlyIsNotOutstanding)
+      ticketQueryBuilder = ticketQueryBuilder.andWhere(
+        'permission.endTime > NOW()',
+      )
+
+    if (onlyUnused) {
+      ticketQueryBuilder = ticketQueryBuilder
+        .addSelect('COUNT(attempts.id) as attemptsCount')
+        .andHaving(
+          '(permission.maxCountOfUse IS NULL OR attemptsCount < permission.maxCountOfUse)',
+        )
+    }
+
+    return ticketQueryBuilder
+      .groupBy('tickets.id')
       .orderBy('tickets.createAt', 'DESC')
+      .take(limit)
+      .offset(offset)
       .getMany()
   }
 }

@@ -5,6 +5,7 @@ import {
   Param,
   UseGuards,
   UseInterceptors,
+  Query,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Ticket } from './ticket.entity'
 import { TicketsService } from './tickets.service'
 import { StudentsService } from '../students/students.service'
+import { FindByStudentDto } from './dto/findByStudent.dto'
 
 @ApiTags('tickets')
 @Controller('tickets')
@@ -42,9 +44,16 @@ export class TicketsController {
   @Get('findByStudent/:studentId')
   async findByStudent(
     @Param('studentId') studentId: number,
+    @Query() findByStudentDto: FindByStudentDto,
   ): Promise<Ticket[]> {
     const student = await this.studentsService.findOne(studentId)
     // TODO: refactor check access
-    return await this.ticketsService.findByStudent(student)
+    return await this.ticketsService.findByStudent(
+      student,
+      findByStudentDto.limit,
+      findByStudentDto.offset,
+      findByStudentDto.onlyIsNotOutstanding,
+      findByStudentDto.onlyUnused,
+    )
   }
 }
