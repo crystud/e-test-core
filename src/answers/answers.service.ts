@@ -33,6 +33,21 @@ export class AnswersService {
     await getManager().transaction(
       'READ COMMITTED',
       async transactionalEntityManager => {
+        if (
+          task.type === TaskType.SIMPLE_CHOICE &&
+          task.answers.some(answer => answer.correct)
+        ) {
+          await transactionalEntityManager
+            .getRepository(Task)
+            .createQueryBuilder('task')
+            .update()
+            .set({
+              type: TaskType.MULTIPLE_CHOICE,
+            })
+            .where('task.id = :taskId', { taskId: task.id })
+            .execute()
+        }
+
         await transactionalEntityManager
           .createQueryBuilder()
           .update(Answer)

@@ -103,14 +103,17 @@ export class AttemptsService {
     await AttemptAnswer.save(attemptAnswer)
 
     const maxDuration = moment(attempt.maxEndTime)
-      .add(this.configService.get<number>('attempt.maxDelayTime'), 'minutes')
+      .add(this.configService.get<number>('attempt.maxDelayTime'), 'seconds')
       .diff(moment(attempt.startTime))
 
-    let duration = moment.duration(test.duration, 'minutes').asMilliseconds()
+    let duration = moment
+      .duration(test.duration, 'minutes')
+      .add(this.configService.get<number>('attempt.maxDelayTime'), 'seconds')
+      .asMilliseconds()
 
     if (duration > maxDuration) duration = maxDuration
 
-    const timeOutHandler = this.timeOutHandleBuilder(attempt)
+    const timeOutHandler = this.timeOutHandleBuilder(attempt.id)
 
     const timeout = setTimeout(timeOutHandler, duration)
     this.schedulerRegistry.addTimeout(`attempt-${attempt.id}`, timeout)
@@ -172,10 +175,31 @@ export class AttemptsService {
     return attemptTask
   }
 
-  timeOutHandleBuilder(attempt: Attempt) {
-    // TODO: add handler
-    return () =>
-      global.console.log(`Спроба ${attempt.id} повинна закінчитись зараз`)
+  timeOutHandleBuilder(attemptId: number) {
+    return async () => {
+      await getConnection().transaction(async transactionalEntityManager => {
+        const attempt = await transactionalEntityManager
+          .getRepository(Attempt)
+          .createQueryBuilder('attempt')
+          .leftJoin('attempt.attemptTasks', 'attemptTasks')
+          .select([
+            'attempt.id',
+            'attempt.endTime',
+            'attempt.maxScore',
+            'attempt.maxScore',
+            'attemptTasks.id',
+          ])
+          .where('attempt.id = :attemptId', { attemptId })
+          .andWhere('attempt.endTime IS NULL')
+          .getOne()
+
+        if (attempt._active)
+          await this.complete(
+            attempt,
+            new Array(attempt.attemptTasks.length).fill([]),
+          )
+      })
+    }
   }
 
   async complete(
