@@ -136,6 +136,40 @@ export class InvitesService {
     return invite
   }
 
+  async findOneByCode(code: string): Promise<Invite> {
+    const invite = await Invite.createQueryBuilder('invite')
+      .leftJoin('invite.student', 'student')
+      .leftJoin('student.user', 'user')
+      .leftJoin('student.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
+      .select([
+        'invite.id',
+        'invite.createAt',
+        'invite.usedAt',
+        'invite.code',
+        'student.id',
+        'student.scoringBook',
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'group.id',
+        'group.startYear',
+        'group.number',
+        'speciality.id',
+        'speciality.symbol',
+        'speciality.yearOfStudy',
+        'speciality.code',
+      ])
+      .where('invite.usedAt IS NULL')
+      .andWhere('invite.code = :code', { code })
+      .getOne()
+
+    if (!invite) throw new BadRequestException('Запрошення не знайдено')
+
+    return invite
+  }
+
   async activate(
     code: string,
     email: string,

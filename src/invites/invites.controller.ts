@@ -22,6 +22,7 @@ import { GroupsService } from '../groups/groups.service'
 import { ActivateInviteDto } from './dto/activateInvite.dto'
 import { TokensInterface } from '../auth/interfaces/tokens.interface'
 import { FilterInvitesDto } from './dto/filterInvites.dto'
+import { FindOneInviteByCodeDto } from './dto/findOneInviteByCode.dto'
 
 @ApiTags('invites')
 @Controller('invites')
@@ -77,5 +78,12 @@ export class InvitesController {
       activateInviteDto.email,
       activateInviteDto.password,
     )
+  }
+
+  @Get('findOneByCode')
+  async findOneByCode(
+    @Query() findOneInviteByCodeDto: FindOneInviteByCodeDto,
+  ): Promise<Invite> {
+    return await this.invitesService.findOneByCode(findOneInviteByCodeDto.code)
   }
 }
