@@ -22,12 +22,12 @@ import { AttemptAnswer } from './attemptAnswers.entity'
 import { Answer } from '../answers/answer.entity'
 import { SchedulerRegistry } from '@nestjs/schedule'
 import { TaskType } from '../tasks/enums/TaskType.enum'
-import moment = require('moment')
 
 import { ResultsService } from '../results/results.service'
 
 import { getConnection } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
+import moment = require('moment')
 
 @Injectable()
 export class AttemptsService {
@@ -41,6 +41,19 @@ export class AttemptsService {
     private readonly resultsService: ResultsService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    await getConnection().transaction(async transactionalEntityManager => {
+      const attempts = await transactionalEntityManager
+        .getRepository(Attempt)
+        .createQueryBuilder('attempts')
+        .select(['attempts.id', 'attempts.endTime', 'attempts.maxEndTime'])
+        .where('attempts.endTime IS NULL')
+        .getMany()
+
+      attempts.forEach(attempt => this.timeOutHandlerBuilder(attempt))
+    })
+  }
 
   async create(ticket: Ticket): Promise<Attempt> {
     // TODO: add transaction
@@ -102,21 +115,7 @@ export class AttemptsService {
 
     await AttemptAnswer.save(attemptAnswer)
 
-    const maxDuration = moment(attempt.maxEndTime)
-      .add(this.configService.get<number>('attempt.maxDelayTime'), 'seconds')
-      .diff(moment(attempt.startTime))
-
-    let duration = moment
-      .duration(test.duration, 'minutes')
-      .add(this.configService.get<number>('attempt.maxDelayTime'), 'seconds')
-      .asMilliseconds()
-
-    if (duration > maxDuration) duration = maxDuration
-
-    const timeOutHandler = this.timeOutHandleBuilder(attempt.id)
-
-    const timeout = setTimeout(timeOutHandler, duration)
-    this.schedulerRegistry.addTimeout(`attempt-${attempt.id}`, timeout)
+    this.timeOutHandlerBuilder(attempt)
 
     return await this.findOne(attempt.id)
   }
@@ -175,10 +174,16 @@ export class AttemptsService {
     return attemptTask
   }
 
-  timeOutHandleBuilder(attemptId: number) {
-    return async () => {
+  attemptDurationRemainsMs(attempt: Attempt): number {
+    return moment(attempt.maxEndTime)
+      .add(this.configService.get<string>('attempt.maxDelayTime'), 'seconds')
+      .diff(moment())
+  }
+
+  timeOutHandlerBuilder(attempt: Attempt) {
+    const timeOutHandler = async () => {
       await getConnection().transaction(async transactionalEntityManager => {
-        const attempt = await transactionalEntityManager
+        const timeOutAttempt = await transactionalEntityManager
           .getRepository(Attempt)
           .createQueryBuilder('attempt')
           .leftJoin('attempt.attemptTasks', 'attemptTasks')
@@ -189,17 +194,23 @@ export class AttemptsService {
             'attempt.maxScore',
             'attemptTasks.id',
           ])
-          .where('attempt.id = :attemptId', { attemptId })
+          .where('attempt.id = :attemptId', { attemptId: attempt.id })
           .andWhere('attempt.endTime IS NULL')
           .getOne()
 
-        if (attempt._active)
+        if (timeOutAttempt._active)
           await this.complete(
-            attempt,
-            new Array(attempt.attemptTasks.length).fill([]),
+            timeOutAttempt,
+            new Array(timeOutAttempt.attemptTasks.length).fill([]),
           )
       })
     }
+
+    const timeout = setTimeout(
+      timeOutHandler,
+      this.attemptDurationRemainsMs(attempt),
+    )
+    this.schedulerRegistry.addTimeout(`attempt-${attempt.id}`, timeout)
   }
 
   async complete(
