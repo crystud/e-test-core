@@ -183,15 +183,7 @@ export class InvitesService {
         .createQueryBuilder('invite')
         .leftJoin('invite.student', 'student')
         .leftJoin('student.user', 'user')
-        .select([
-          'invite.id',
-          'student.id',
-          'user.id',
-          'user.firstName',
-          'user.lastName',
-          'user.email',
-          'user.createAt',
-        ])
+        .select(['invite.id', 'student.id', 'user.id', 'user.createAt'])
         .where('invite.code = :code', { code })
         .andWhere('invite.usedAt IS NULL')
         .getOne()
@@ -207,6 +199,8 @@ export class InvitesService {
 
       if (emailIsFree) throw new BadRequestException('Email зайнятий')
 
+      global.console.log(invite.student.user)
+
       await transactionalEntityManager
         .getRepository(User)
         .createQueryBuilder()
@@ -215,7 +209,7 @@ export class InvitesService {
           email,
           password: await hash(passport, 8),
         })
-        .where(invite.student.user)
+        .where('id = :userId', { userId: invite.student.user.id })
         .execute()
 
       await transactionalEntityManager
@@ -225,7 +219,7 @@ export class InvitesService {
         .set({
           usedAt: new Date(),
         })
-        .where(invite)
+        .where('id = :inviteId', { inviteId: invite.id })
         .execute()
     })
 
