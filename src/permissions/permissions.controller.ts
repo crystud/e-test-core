@@ -1,115 +1,92 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
-  ForbiddenException,
   Get,
   Param,
   Post,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Permission } from './permission.entity'
-import { CreatePermissionDto } from './dto/createPermission.dto'
+import { TeachersService } from '../teachers/teachers.service'
 import { PermissionsService } from './permissions.service'
+
+import { CreatePermissionDto } from './dto/createPermission.dto'
 import { TestsService } from '../tests/tests.service'
-import { classToClass } from 'class-transformer'
-import { AccessLevelType } from '../enums/accessLevelType'
 import { GroupsService } from '../groups/groups.service'
-import { TicketsService } from '../tickets/tickets.service'
-import { StudiesService } from '../studies/studies.service'
 
 @ApiTags('permissions')
 @Controller('permissions')
 export class PermissionsController {
   constructor(
     private readonly permissionsService: PermissionsService,
+    private readonly teachersService: TeachersService,
     private readonly testsService: TestsService,
     private readonly groupsService: GroupsService,
-    private readonly ticketsService: TicketsService,
-    private readonly studiesService: StudiesService,
   ) {}
 
   @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
-  @ApiCreatedResponse({
-    type: Permission,
-    description: 'Creates new permission.',
-  })
   async create(
-    @Body() createPermissionDto: CreatePermissionDto,
-    @Request() req,
+    @Body()
+    {
+      group: groupId,
+      test: testId,
+      startTime,
+      endTime,
+      maxCountOfUse,
+    }: CreatePermissionDto,
+    @Request() { user: { user } },
   ): Promise<Permission> {
-    const [test, groups, study] = await Promise.all([
-      this.testsService.findOne(createPermissionDto.testId),
-      this.groupsService.findByIds(createPermissionDto.groups),
-      this.studiesService.findOne(createPermissionDto.study),
+    const [group, test] = await Promise.all([
+      this.groupsService.findEntity(groupId),
+      this.testsService.findEntity(testId),
     ])
 
-    const user = req.user
+    const teacher = await this.teachersService.findOneByUser(user, test.subject)
 
-    if (await this.testsService.hasAccess(test, user)) {
-      let permission = await this.permissionsService.create(
-        createPermissionDto,
-        test,
-        user,
-        groups,
-        study,
-      )
-
-      let users = []
-      groups.forEach(group => (users = [...users, ...group.students]))
-
-      await this.ticketsService.createMany(
-        `${permission.test.title} (${permission.allower.firstName} ${permission.allower.lastName} ${permission.allower.patronymic})`,
-        permission,
-        users,
-      )
-
-      permission = await this.permissionsService.findOne(permission.id)
-
-      return classToClass(permission, {
-        groups: [...user.roles, AccessLevelType.ALLOWER],
-      })
-    }
-
-    throw new ForbiddenException()
+    return this.permissionsService.create(
+      group,
+      test,
+      teacher,
+      startTime,
+      endTime,
+      maxCountOfUse,
+    )
   }
 
   @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  @ApiOkResponse({
-    type: Permission,
-    description: 'Find the permission by id.',
-  })
+  @Get(':permissionId')
   async findOne(
-    @Param('id') permissionId: number,
-    @Request() req,
+    @Param('permissionId') permissionId: number,
   ): Promise<Permission> {
-    const permission = await this.permissionsService.findOne(permissionId)
+    return await this.permissionsService.findOne(permissionId)
+  }
 
-    const accesses = await this.permissionsService.accessRelations(
-      permission,
-      req.user,
-    )
-
-    return classToClass(permission, {
-      groups: [...req.user.roles, ...accesses],
-    })
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('/findByTeacher/:teacherId')
+  async findByTeacher(
+    @Param('teacherId') teacherId: number,
+  ): Promise<Permission[]> {
+    return await this.permissionsService.findByTeacher(teacherId)
   }
 }

@@ -22,6 +22,9 @@ yarn.lock
 /coverage
 /.nyc_output
 
+# Docs
+documentation
+
 # IDEs and editors
 /.idea
 .project

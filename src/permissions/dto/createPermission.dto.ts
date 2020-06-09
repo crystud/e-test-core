@@ -1,25 +1,42 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt, Min } from 'class-validator'
+import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator'
+import { Transform, Type } from 'class-transformer'
+import { ResultSelectingMethodEnum } from '../enums/resultSelectingMethod.enum'
 
 export class CreatePermissionDto {
   @ApiProperty()
-  @IsInt()
-  @Min(0)
-  testId: number
-
-  @ApiProperty({ type: [Number], default: [] })
-  @IsInt({ each: true })
-  @Min(0, { each: true })
-  groups: number[]
-
-  @ApiProperty({ type: Number })
-  @IsInt()
-  @Min(0)
-  study: number
-
-  @ApiProperty()
+  @Type(() => Date)
   startTime: Date
 
+  @ApiProperty({ description: 'Set null if end time is infinity' })
+  @IsOptional()
+  @Type(() => Date)
+  endTime: Date | null
+
   @ApiProperty()
-  endTime: Date
+  @IsInt()
+  @Min(0)
+  @Max(255)
+  @IsOptional()
+  maxCountOfUse: number | null
+
+  @ApiProperty({
+    enum: Object.keys(ResultSelectingMethodEnum).filter(
+      x => !(parseInt(x) >= 0),
+    ),
+  })
+  @IsEnum(ResultSelectingMethodEnum)
+  @Transform(type => ResultSelectingMethodEnum[type])
+  resultSelectingMethod: ResultSelectingMethodEnum =
+    ResultSelectingMethodEnum.BEST_RESULT
+
+  @ApiProperty()
+  @IsInt()
+  @Type(() => Number)
+  group: number
+
+  @ApiProperty()
+  @IsInt()
+  @Type(() => Number)
+  test: number
 }

@@ -1,19 +1,31 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsBoolean, IsInt, Min } from 'class-validator'
+import { IsBase64, IsInt, IsOptional, Length, Min } from 'class-validator'
+import { Type } from 'class-transformer'
 
 export class CreateAnswerDto {
   @ApiProperty()
-  text: string
+  @Length(1, 128)
+  @IsOptional()
+  @Type(() => String)
+  answerText: string
 
-  @ApiProperty({ required: false, default: -1 })
-  position?: number
+  @ApiProperty({ required: false })
+  @IsBase64()
+  @IsOptional()
+  image: string
+
+  @ApiProperty({ required: false })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  position: number
 
   @ApiProperty()
-  @IsBoolean()
+  @Type(() => Boolean)
   correct: boolean
 
   @ApiProperty()
   @IsInt()
-  @Min(0)
+  @Type(() => Number)
   task: number
 }

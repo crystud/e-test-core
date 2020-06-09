@@ -1,97 +1,80 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
-  ForbiddenException,
+  Post,
+  UseGuards,
   Get,
   Param,
-  Post,
-  Request,
-  UseGuards,
+  Query,
   UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { SpecialtiesService } from './specialties.service'
 import { Roles } from '../auth/decorators/roles.decorator'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
-import { Speciality } from './speciality.entity'
 import { CreateSpecialityDto } from './dto/createSpeciality.dto'
-import { CollegesService } from '../colleges/colleges.service'
-import { SpecialtiesService } from './specialties.service'
-import { StudiesService } from '../studies/studies.service'
-import { AddStudyDto } from './dto/addStudy.dto'
-import { UserRolesType } from '../enums/userRolesType'
+import { Speciality } from './speciality.entity'
+import { FindAllSpecialityDto } from './dto/findAllSpeciality.dto'
+import { AddSubjectDto } from './dto/addSubject.dto'
+import { SubjectsService } from '../subject/subjects.service'
 
 @ApiTags('specialties')
 @Controller('specialties')
 export class SpecialtiesController {
   constructor(
-    private readonly collegesService: CollegesService,
     private readonly specialtiesService: SpecialtiesService,
-    private readonly studiesService: StudiesService,
+    private readonly subjectsService: SubjectsService,
   ) {}
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.USER)
+  @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Body() createSpecialityDto: CreateSpecialityDto,
-    @Request() req,
   ): Promise<Speciality> {
-    const college = await this.collegesService.findOne(
-      createSpecialityDto.college,
-    )
-
-    if (await this.collegesService.isCreator(college, req.user)) {
-      return await this.specialtiesService.create(createSpecialityDto, college)
-    }
-
-    throw new ForbiddenException()
+    return await this.specialtiesService.create(createSpecialityDto)
   }
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.USER)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('addSubject')
+  async addSubject(@Body() addSubjectDto: AddSubjectDto): Promise<Speciality> {
+    const [speciality, subject] = await Promise.all([
+      this.specialtiesService.findEntity(addSubjectDto.speciality),
+      this.subjectsService.findEntity(addSubjectDto.subject),
+    ])
+
+    return await this.specialtiesService.addSubject(speciality, subject)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async findOne(
-    @Param('id') specialityID: number,
-    @Request() req,
-  ): Promise<Speciality> {
-    const speciality = await this.specialtiesService.findOne(specialityID)
-    const college = await this.collegesService.findOne(speciality.college.id)
-
-    if (await this.collegesService.hasAccess(college, req.user))
-      return speciality
-
-    throw new ForbiddenException()
+  async findOne(@Param('id') specialityId: number): Promise<Speciality> {
+    return await this.specialtiesService.findOne(specialityId)
   }
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.USER)
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Post(':id/study')
-  async addStudy(
-    @Body() addStudyDto: AddStudyDto,
-    @Param('id') specialityId: number,
-    @Request() req,
-  ): Promise<Speciality> {
-    const [study, speciality] = await Promise.all([
-      this.studiesService.findOne(addStudyDto.study),
-      this.specialtiesService.findOne(specialityId),
-    ])
-
-    const college = await this.collegesService.findOne(speciality.college.id)
-
-    if (await this.collegesService.isEditor(college, req.user))
-      return await this.specialtiesService.addStudy(speciality, study)
-
-    throw new ForbiddenException()
+  @Get()
+  async findAll(
+    @Query() findAllSpecialityDto: FindAllSpecialityDto,
+  ): Promise<Speciality[]> {
+    return await this.specialtiesService.findAll(findAllSpecialityDto.name)
   }
 }

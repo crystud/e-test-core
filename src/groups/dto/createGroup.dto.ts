@@ -1,16 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsDateString, IsNumber } from 'class-validator'
+import { IsInt, Min } from 'class-validator'
+import { Type } from 'class-transformer'
 
 export class CreateGroupDto {
   @ApiProperty()
-  @IsNumber()
+  @IsInt()
+  @Type(() => Number)
   speciality: number
 
   @ApiProperty()
-  @IsDateString()
-  startEducation: Date
-
-  @ApiProperty()
-  @IsDateString()
-  endEducation: Date
+  @IsInt()
+  @Min(2000)
+  @Type(() => Number)
+  startYear: number
 }

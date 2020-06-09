@@ -1,17 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { IsInt } from 'class-validator'
 
-class Task {
-  @ApiProperty({ type: [Number] })
+export class ResultAnswer {
+  @ApiProperty({ type: [Number, String] })
   answers: number[] | string
 }
 
 export class CompleteAttemptDto {
   @ApiProperty({
-    type: () => [Task],
+    type: () => [ResultAnswer],
   })
-  tasks: [
-    {
-      answers: number[] | string
-    },
-  ]
+  tasks: ResultAnswer[]
+
+  @ApiProperty()
+  @IsInt()
+  attempt: number
 }

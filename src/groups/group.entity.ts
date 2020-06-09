@@ -1,18 +1,18 @@
+import { Expose } from 'class-transformer'
 import {
   BaseEntity,
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
+  JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { User } from '../users/user.entity'
-import { Exclude, Expose } from 'class-transformer'
-
 import { Speciality } from '../specialties/speciality.entity'
-import * as moment from 'moment'
+import moment from 'moment'
 import { now } from 'moment'
+
+import { Student } from '../students/student.entity'
 import { Permission } from '../permissions/permission.entity'
 
 @Entity('groups')
@@ -20,52 +20,46 @@ export class Group extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ type: 'date' })
-  startEducation: Date
+  @Column({ name: 'start_year', type: 'year' })
+  startYear: number
 
-  @Column({ type: 'date' })
-  endEducation: Date
-
-  @Column({ default: true })
-  active: boolean
-
-  @Column({ type: 'smallint' })
+  @Column({ type: 'tinyint' })
   number: number
 
   @ManyToOne(
     () => Speciality,
     speciality => speciality.groups,
-    {
-      nullable: false,
-    },
   )
-  @JoinTable()
+  @JoinColumn({ name: 'speciality_id' })
   speciality: Speciality
 
-  @ManyToMany(
-    () => User,
-    user => user.groups,
+  @OneToMany(
+    () => Student,
+    student => student.group,
   )
-  students: User[]
+  students: Student[]
 
-  @Exclude()
-  @ManyToMany(
+  @OneToMany(
     () => Permission,
-    permission => permission.groups,
+    permission => permission.group,
   )
-  permissions: Permission[]
+  permissions: Permission
 
   @Expose({ name: 'course' })
   get _course(): number {
+    if (!this.startYear) return undefined
+
     return Math.abs(
-      Math.round(moment(this.startEducation).diff(now(), 'years', true)),
+      Math.round(
+        moment(new Date(`01/09/${this.startYear}`)).diff(now(), 'years', true),
+      ),
     )
   }
 
   @Expose({ name: 'name' })
-  get _name(): string | null {
-    return this.speciality
-      ? `${this.speciality.symbol}-${this._course}${this.number}`
-      : null
+  get _name(): string {
+    if (!this.speciality?.symbol || !this.number) return undefined
+
+    return `${this.speciality.symbol}-${this._course}${this.number}`
   }
 }

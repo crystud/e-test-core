@@ -1,73 +1,63 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   Post,
   Request,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger'
+import { CreateTaskDto } from './dto/createTask.dto'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { TopicsService } from '../topics/topics.service'
+import { TasksService } from './tasks.service'
+import { TeachersService } from '../teachers/teachers.service'
+import { Task } from './task.entity'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 
-import { classToClass } from 'class-transformer'
-import { AccessLevelType } from '../enums/accessLevelType'
-import { CreateTaskDto } from './dto/createTask.dto'
-import { Task } from './task.entity'
-import { TasksService } from './tasks.service'
-import { TopicsService } from '../topics/topics.service'
-
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
   constructor(
-    private readonly tasksService: TasksService,
+    private readonly teachersService: TeachersService,
     private readonly topicsService: TopicsService,
+    private readonly tasksService: TasksService,
   ) {}
 
   @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
-  @ApiCreatedResponse({
-    type: Task,
-    description: 'Creates new task.',
-  })
   async create(
     @Body() createTaskDto: CreateTaskDto,
-    @Request() req,
+    @Request() { user: { user } },
   ): Promise<Task> {
-    const topic = await this.topicsService.findOne(createTaskDto.topic)
+    const topic = await this.topicsService.findEntity(createTaskDto.topic)
 
-    const task = await this.tasksService.create(createTaskDto, topic)
-
-    return classToClass(task, {
-      groups: [...req.user.roles, AccessLevelType.OWNER],
-    })
+    return await this.tasksService.create(
+      createTaskDto.question,
+      createTaskDto.image,
+      createTaskDto.type,
+      createTaskDto.attachment,
+      topic,
+      user,
+    )
   }
+
   @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  @ApiOkResponse({
-    type: Task,
-    description: 'Find the task by id',
-  })
-  async findOne(@Param('id') taskId: number, @Request() req): Promise<Task> {
-    const task = await this.tasksService.findOne(taskId)
-
-    return classToClass(task, {
-      groups: [...req.user.roles],
-    })
+  async findOne(@Param('id') taskId: number): Promise<Task> {
+    return await this.tasksService.findOne(taskId)
   }
 }

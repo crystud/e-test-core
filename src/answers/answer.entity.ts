@@ -2,77 +2,48 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose, Transform } from 'class-transformer'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Task } from '../tasks/task.entity'
-import { UserRolesType } from '../enums/userRolesType'
-import { transformToId } from '../tools/transformers/transformToId'
-import { TaskTypes } from '../enums/TaskTypes.enum'
-import { AttemptAnswer } from '../attempts/attemptAnswer.entity'
+import { Transform } from 'class-transformer'
+import { AttemptAnswer } from '../attempts/attemptAnswers.entity'
 
-@Exclude()
 @Entity('answers')
 export class Answer extends BaseEntity {
-  @Expose()
-  @ApiModelProperty()
   @PrimaryGeneratedColumn()
   id: number
 
-  @Expose({
-    groups: [
-      UserRolesType.USER,
-      TaskTypes.TEXT_INPUT,
-      TaskTypes.MULTY_CHOICE,
-      TaskTypes.SINGLE_CHOICE,
-    ],
-  })
-  @ApiModelProperty()
-  @Column()
-  text: string
+  @Column({ name: 'answer_text', type: 'varchar', length: '128', default: '' })
+  answerText: string
 
-  @Expose({
-    groups: [
-      UserRolesType.USER,
-      TaskTypes.TEXT_INPUT,
-      TaskTypes.MULTY_CHOICE,
-      TaskTypes.SINGLE_CHOICE,
-    ],
-  })
-  @ApiModelProperty()
   @Column()
   correct: boolean
 
-  @Expose({ groups: [UserRolesType.USER, TaskTypes.NUMBERING] })
-  @ApiModelProperty({
-    description: `Position of answer for ${TaskTypes.NUMBERING}`,
-  })
-  @Column({ type: 'tinyint', default: -1 })
+  @Column({ type: 'tinyint', nullable: true })
   position: number
 
-  @Transform(transformToId)
-  @Expose({
-    groups: [
-      UserRolesType.USER,
-      TaskTypes.TEXT_INPUT,
-      TaskTypes.MULTY_CHOICE,
-      TaskTypes.SINGLE_CHOICE,
-    ],
+  @Transform(image => {
+    return image ? Buffer.from(image).toString() : null
   })
-  @ApiModelProperty({ type: [Number] })
+  @Column({ type: 'blob', nullable: true })
+  image: string
+
   @ManyToOne(
     () => Task,
     task => task.answers,
+    {
+      nullable: false,
+    },
   )
+  @JoinColumn({ name: 'task_id' })
   task: Task
 
-  @Exclude()
   @OneToMany(
     () => AttemptAnswer,
     attemptAnswer => attemptAnswer.answer,
   )
-  attemptAnswers: AttemptAnswer
+  attemptAnswer: AttemptAnswer[]
 }

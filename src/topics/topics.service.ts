@@ -1,91 +1,44 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateTopicDto } from './dto/createTopic.dto'
-import { User } from '../users/user.entity'
-import { Subject } from '../subjects/subject.entity'
-import { Topic } from './topics.entity'
-import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
-import { AccessLevelType } from '../enums/accessLevelType'
-import { FilterTopicDto } from './dto/filterTopic.dto'
-import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
+import { Topic } from './topic.entity'
+import { Subject } from '../subject/subject.entity'
 
 @Injectable()
 export class TopicsService {
-  async create(
-    createTopicDto: CreateTopicDto,
-    creator: User,
-    subject: Subject,
-  ): Promise<Topic> {
-    try {
-      const topic = await Topic.create({
-        ...createTopicDto,
-        creator,
-        subject,
-      }).save()
+  async create(createTopicDto: CreateTopicDto): Promise<Topic> {
+    const topic = await Topic.create({
+      ...createTopicDto,
+      subject: Subject.create({ id: createTopicDto.subject }),
+    }).save()
 
-      return await this.findOne(topic.id)
-    } catch (e) {
-      if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestExceptionError({
-          property: 'field',
-          value: '',
-          constraints: {
-            duplicate: e.message,
-          },
-        })
-      }
-    }
+    return this.findOne(topic.id)
   }
 
-  async findOne(id: number): Promise<Topic> {
-    const topic = await Topic.findOne({
-      where: {
-        id,
-      },
-      relations: ['subject', 'creator', 'tasks'],
-    })
+  async findOne(topicId: number): Promise<Topic> {
+    return await Topic.createQueryBuilder('topic')
+      .leftJoin('topic.subject', 'subject')
+      .leftJoin('topic.tasks', 'tasks')
+      .select([
+        'topic.id',
+        'topic.name',
+        'subject.id',
+        'subject.name',
+        'tasks.id',
+        'tasks.question',
+        'tasks.type',
+      ])
+      .where('topic.id = :topicId ', { topicId })
+      .getOne()
+  }
 
-    if (!topic) {
-      throw new BadRequestExceptionError({
-        property: 'topicId',
-        value: id,
-        constraints: {
-          isNotExist: 'topic is not exist',
-        },
-      })
-    }
+  async findEntity(topicId: number): Promise<Topic> {
+    const topic = await Topic.createQueryBuilder('topic')
+      .select(['topic.id'])
+      .where('topic.id = :topicId ', { topicId })
+      .getOne()
+
+    if (!topic) throw new BadRequestException('Тему не знайдено')
 
     return topic
-  }
-
-  async isCreator(topic: Topic, user: User): Promise<boolean> {
-    return topic.creator.id === user.id
-  }
-
-  async accessRelations(topic: Topic, user: User): Promise<AccessLevelType[]> {
-    const levels: AccessLevelType[] = []
-
-    const [isCreator] = await Promise.all([this.isCreator(topic, user)])
-
-    if (isCreator) levels.push(AccessLevelType.OWNER)
-
-    return levels
-  }
-
-  async confirm(topic: Topic): Promise<Topic> {
-    topic.confirmed = true
-    await topic.save()
-
-    return await this.findOne(topic.id)
-  }
-
-  async findAll(filterTopicDto: FilterTopicDto, like = true): Promise<Topic[]> {
-    const filter = like ? dbStringLikeBuilder(filterTopicDto) : filterTopicDto
-
-    return await Topic.find({
-      where: {
-        ...filter,
-      },
-      relations: ['subject', 'creator', 'tasks'],
-    })
   }
 }

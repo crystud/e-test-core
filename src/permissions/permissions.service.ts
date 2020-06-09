@@ -1,97 +1,155 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Permission } from './permission.entity'
-
-import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
-import { CreatePermissionDto } from './dto/createPermission.dto'
-import { Test } from '../tests/test.entity'
-import { User } from '../users/user.entity'
 import { Group } from '../groups/group.entity'
-
-import { AccessLevelType } from '../enums/accessLevelType'
-import { Study } from '../studies/study.entity'
+import { Teacher } from '../teachers/teachers.entity'
+import { Test } from '../tests/test.entity'
+import { TicketsService } from '../tickets/tickets.service'
+import { Ticket } from '../tickets/ticket.entity'
+import { TestsService } from '../tests/tests.service'
 
 @Injectable()
 export class PermissionsService {
-  async create(
-    createPermissionDto: CreatePermissionDto,
-    test: Test,
-    allower: User,
-    groups: Group[],
-    study: Study,
-  ): Promise<Permission> {
-    try {
-      const permission = await Permission.create({
-        ...createPermissionDto,
-        test,
-        allower,
-        groups,
-        study,
-      }).save()
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly testsService: TestsService,
+  ) {}
 
-      return await this.findOne(permission.id)
-    } catch (e) {
-      if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestExceptionError({
-          property: 'field',
-          value: '',
-          constraints: {
-            duplicate: e.message,
-          },
-        })
-      }
-    }
+  async create(
+    group: Group,
+    test: Test,
+    teacher: Teacher,
+    startTime: Date,
+    endTime: Date,
+    maxCountOfUse: number | null,
+  ): Promise<Permission> {
+    const testStatus = await this.testsService.status(test)
+
+    if (!testStatus.completed)
+      throw new BadRequestException('В тесті замало питань')
+
+    const permission = await Permission.create({
+      group,
+      test,
+      teacher,
+      startTime,
+      endTime,
+      maxCountOfUse,
+    }).save()
+
+    const tickets = group.students.map<Ticket>(student =>
+      this.ticketsService.entityBuilder(student, permission),
+    )
+
+    await Ticket.save(tickets)
+
+    return await this.findOne(permission.id)
   }
 
-  async findOne(id: number): Promise<Permission> {
-    const permission = await Permission.findOne({
-      where: {
-        id,
-      },
-      relations: ['allower', 'test', 'groups', 'tickets', 'study'],
-    })
+  async findOne(permissionId: number): Promise<Permission> {
+    const permission = await Permission.createQueryBuilder('permission')
+      .leftJoin('permission.test', 'test')
+      .leftJoin('permission.tickets', 'tickets')
+      .leftJoin('tickets.student', 'student')
+      .leftJoin('student.user', 'student_user')
+      .leftJoin('permission.teacher', 'teacher')
+      .leftJoin('teacher.user', 'teacher_user')
+      .leftJoin('teacher.subject', 'subject')
+      .leftJoin('permission.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
+      .select([
+        'permission.id',
+        'permission.startTime',
+        'permission.endTime',
+        'tickets.id',
+        'student.id',
+        'student_user.id',
+        'student_user.firstName',
+        'student_user.lastName',
+        'student_user.patronymic',
+        'test.id',
+        'test.name',
+        'test.duration',
+        'test.countOfTasks',
+        'teacher.id',
+        'teacher_user.id',
+        'teacher_user.firstName',
+        'teacher_user.lastName',
+        'teacher_user.patronymic',
+        'subject.id',
+        'subject.name',
+        'group.id',
+        'group.startYear',
+        'group.number',
+        'speciality.id',
+        'speciality.yearOfStudy',
+        'speciality.symbol',
+      ])
+      .where('permission.id = :permissionId', { permissionId })
+      .getOne()
 
-    if (!permission) {
-      throw new BadRequestExceptionError({
-        property: 'permissionId',
-        value: id,
-        constraints: {
-          isNotExist: 'permission is not exist',
-        },
-      })
-    }
+    if (!permission) throw new BadRequestException('Дозвіл не знайдено')
 
     return permission
   }
 
-  async isStudent(permission: Permission, student: User): Promise<boolean> {
-    const isStudent = await Permission.createQueryBuilder('permission')
-      .leftJoinAndSelect('permission.tickets', 'tickets')
-      .leftJoinAndSelect('tickets.student', 'student')
-      .where('permission.id = :permissionID', { permissionID: permission.id })
-      .where('student.id = :studentID', { studentID: student.id })
-      .getCount()
+  async findEntity(permissionId: number): Promise<Permission> {
+    const permission = await Permission.createQueryBuilder('permission')
+      .leftJoin('permission.test', 'test')
+      .leftJoin('permission.teacher', 'teacher')
+      .leftJoin('teacher.user', 'teacher_user')
+      .leftJoin('teacher.subject', 'subject')
+      .select([
+        'permission.id',
+        'permission.startTime',
+        'permission.endTime',
+        'test.id',
+        'test.name',
+        'test.duration',
+        'teacher.id',
+        'teacher_user.id',
+        'subject.id',
+        'subject.name',
+      ])
+      .where('permission.id = :permissionId', { permissionId })
+      .getOne()
 
-    return Boolean(isStudent)
+    if (!permission) throw new BadRequestException('Дозвіл не знайдено')
+
+    return permission
   }
 
-  async isAllower(permission: Permission, user: User): Promise<boolean> {
-    return permission.allower.id === user.id
-  }
-
-  async accessRelations(
-    permission: Permission,
-    user: User,
-  ): Promise<AccessLevelType[]> {
-    const levels: AccessLevelType[] = []
-
-    const [isStudent, isAllower] = await Promise.all([
-      this.isStudent(permission, user),
-      this.isAllower(permission, user),
-    ])
-
-    if (isStudent) levels.push(AccessLevelType.STUDENT)
-    if (isAllower) levels.push(AccessLevelType.ALLOWER)
-
-    return levels
+  async findByTeacher(teacherId: number): Promise<Permission[]> {
+    return await Permission.createQueryBuilder('permission')
+      .leftJoin('permission.test', 'test')
+      .leftJoin('permission.teacher', 'teacher')
+      .leftJoin('teacher.user', 'user')
+      .leftJoin('teacher.subject', 'subject')
+      .leftJoin('permission.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
+      .select([
+        'permission.id',
+        'permission.startTime',
+        'permission.endTime',
+        'test.id',
+        'test.name',
+        'test.duration',
+        'teacher.id',
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'user.firstName',
+        'subject.id',
+        'subject.name',
+        'group.id',
+        'group.startYear',
+        'group.number',
+        'speciality.id',
+        'speciality.yearOfStudy',
+        'speciality.symbol',
+      ])
+      .where('teacher.id = :teacherId', { teacherId })
+      .orderBy('permission.startTime', 'DESC')
+      .getMany()
   }
 }

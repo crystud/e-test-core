@@ -1,79 +1,75 @@
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose } from 'class-transformer'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Ticket } from '../tickets/ticket.entity'
-import { UserRolesType } from '../enums/userRolesType'
+import { Expose } from 'class-transformer'
 import { AttemptTask } from './attemptTask.entity'
-import { User } from '../users/user.entity'
 import { Result } from '../results/result.entity'
+import { ApiTags } from '@nestjs/swagger'
+import moment from 'moment'
 
-@Exclude()
+@ApiTags('attempts')
 @Entity('attempts')
 export class Attempt extends BaseEntity {
-  @Expose()
-  @ApiModelProperty()
   @PrimaryGeneratedColumn()
   id: number
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty()
-  @Column({ type: 'float' })
+  @Column({ name: 'max_score', type: 'smallint', unsigned: true })
   maxScore: number
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty()
-  @Column({ default: null })
+  @CreateDateColumn({ name: 'create_at' })
+  startTime: Date
+
+  @Column({ name: 'end_time', type: 'datetime', default: null })
   endTime: Date | null
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: Number })
+  @Column({ name: 'max_end_time', type: 'datetime' })
+  maxEndTime: Date
+
   @ManyToOne(
     () => Ticket,
     ticket => ticket.attempts,
   )
+  @JoinColumn({ name: 'ticket_id' })
   ticket: Ticket
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: Number })
-  @OneToOne(
-    () => Result,
-    result => result.attempt,
-  )
-  result: Result
-
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: Number })
-  @ManyToOne(
-    () => User,
-    user => user.attempts,
-  )
-  student: User
-
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: [Number] })
   @OneToMany(
     () => AttemptTask,
     attemptTask => attemptTask.attempt,
   )
-  tasks: AttemptTask[]
+  attemptTasks: AttemptTask[]
+
+  @OneToOne(
+    () => Result,
+    result => result.attempt,
+  )
+  result: Result | null
+
+  @Expose({ name: 'active' })
+  get _active(): boolean {
+    return !Boolean(this.endTime)
+  }
+
+  @Expose({ name: 'timeSpent' })
+  get _timeSpent(): number | null {
+    if (this.startTime) return undefined
+
+    if (this.endTime) {
+      const duration = moment.duration(
+        moment(this.startTime).diff(this.endTime),
+      )
+
+      return duration.asMinutes()
+    }
+
+    return null
+  }
 }

@@ -3,78 +3,39 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose } from 'class-transformer'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
 import { Attempt } from '../attempts/attempt.entity'
-import { UserRolesType } from '../enums/userRolesType'
-import { ResultAnswer } from './resultAnswer.entity'
-import { User } from '../users/user.entity'
-import { Test } from '../tests/test.entity'
+import { ResultTask } from './resultTask.entity'
 
-@Exclude()
 @Entity('results')
 export class Result extends BaseEntity {
-  @Expose()
-  @ApiModelProperty()
   @PrimaryGeneratedColumn()
   id: number
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty()
-  @Column({ type: 'float', default: null })
-  resultScore: number
+  @Column({ name: 'score', type: 'smallint', unsigned: true })
+  score: number
 
-  @Expose({
-    groups: [UserRolesType.USER],
+  @Column({
+    name: 'percent',
+    type: 'decimal',
+    unsigned: true,
   })
-  @ApiModelProperty()
-  @Column({ type: 'float' })
-  persents: number
+  percent: number
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: () => Attempt })
   @OneToOne(
     () => Attempt,
     attempt => attempt.result,
+    { nullable: false },
   )
-  @JoinColumn()
+  @JoinColumn({ name: 'attempt_id' })
   attempt: Attempt
 
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: () => [ResultAnswer] })
   @OneToMany(
-    () => ResultAnswer,
-    resultAnswer => resultAnswer.result,
+    () => ResultTask,
+    resultTask => resultTask.result,
   )
-  resultAnswers: ResultAnswer[]
-
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: () => User })
-  @ManyToOne(
-    () => User,
-    user => user.results,
-  )
-  student: User
-
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ManyToOne(
-    () => Test,
-    test => test.results,
-  )
-  test: Test
+  resultTasks: ResultTask[]
 }

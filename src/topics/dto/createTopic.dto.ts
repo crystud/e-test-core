@@ -1,13 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt, IsNotEmpty } from 'class-validator'
+import { IsInt, IsString, Length } from 'class-validator'
+import { Type } from 'class-transformer'
 
 export class CreateTopicDto {
   @ApiProperty()
-  @IsNotEmpty()
+  @IsString()
+  @Length(1, 50)
+  @Type(() => String)
   name: string
 
   @ApiProperty()
-  @IsNotEmpty()
   @IsInt()
+  @Type(() => Number)
   subject: number
 }

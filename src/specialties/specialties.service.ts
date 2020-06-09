@@ -1,76 +1,94 @@
-import { Injectable } from '@nestjs/common'
-import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Speciality } from './speciality.entity'
 import { CreateSpecialityDto } from './dto/createSpeciality.dto'
-import { College } from '../colleges/college.entity'
-import { Study } from '../studies/study.entity'
+import { Subject } from '../subject/subject.entity'
 
 @Injectable()
 export class SpecialtiesService {
-  async create(
-    createSpecialityDto: CreateSpecialityDto,
-    college: College,
-  ): Promise<Speciality> {
-    try {
-      const speciality = await Speciality.create({
-        ...createSpecialityDto,
-        college,
-      }).save()
-
-      return await this.findOne(speciality.id)
-    } catch (e) {
-      if (e.name === 'QueryFailedError' && e.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestExceptionError({
-          property: 'field',
-          value: '',
-          constraints: {
-            duplicate: e.message,
-          },
-        })
-      }
-    }
+  async create(createSpecialityDto: CreateSpecialityDto): Promise<Speciality> {
+    return await Speciality.create({
+      ...createSpecialityDto,
+    }).save()
   }
 
-  async findOne(id: number): Promise<Speciality> {
-    const speciality = await Speciality.findOne({
-      where: {
-        id,
-      },
-      relations: ['college', 'groups', 'studies', 'groups.speciality'],
+  async findOne(specialityId: number): Promise<Speciality> {
+    const speciality = await Speciality.createQueryBuilder('speciality')
+      .leftJoin('speciality.groups', 'groups')
+      .leftJoin('speciality.subjects', 'subjects')
+      .select([
+        'speciality.id',
+        'speciality.name',
+        'speciality.symbol',
+        'speciality.yearOfStudy',
+        'speciality.code',
+        'subjects.id',
+        'subjects.name',
+        'groups.id',
+        'groups.startYear',
+        'groups.number',
+      ])
+      .where('speciality.id = :specialityId ', { specialityId })
+      .getOne()
+
+    if (!speciality) throw new BadRequestException('Спеціальність не знайдено')
+
+    speciality.groups.forEach(group => {
+      group.speciality = new Speciality()
+      group.speciality.yearOfStudy = speciality.yearOfStudy
+      group.speciality.symbol = speciality.symbol
     })
 
-    if (!speciality) {
-      throw new BadRequestExceptionError({
-        property: 'specialityId',
-        value: id,
-        constraints: {
-          isNotExist: 'speciality is not exist',
-        },
+    return speciality
+  }
+
+  async findAll(specialityName = ''): Promise<Speciality[]> {
+    return await Speciality.createQueryBuilder('specialties')
+      .leftJoin('specialties.groups', 'groups')
+      .leftJoin('specialties.subjects', 'subjects')
+      .select([
+        'specialties.id',
+        'specialties.name',
+        'specialties.symbol',
+        'specialties.yearOfStudy',
+        'specialties.code',
+        'subjects.id',
+        'subjects.name',
+        'groups.id',
+      ])
+      .where('specialties.name like :name ', {
+        name: `%${specialityName}%`,
       })
-    }
+      .getMany()
+  }
+
+  async findEntity(specialityId: number): Promise<Speciality> {
+    const speciality = await Speciality.createQueryBuilder('speciality')
+      .leftJoin('speciality.groups', 'groups')
+      .leftJoin('speciality.subjects', 'subjects')
+      .select([
+        'speciality.id',
+        'speciality.yearOfStudy',
+        'speciality.code',
+        'subjects.id',
+        'groups.id',
+        'groups.startYear',
+        'groups.number',
+      ])
+      .where('speciality.id = :specialityId ', { specialityId })
+      .getOne()
+
+    if (!speciality) throw new BadRequestException('Спеціальність не знайдено')
 
     return speciality
   }
 
-  hasStudy(speciality: Speciality, study: Study): boolean {
-    return speciality.studies.some(value => value.id === study.id)
-  }
-
-  async addStudy(speciality: Speciality, study: Study): Promise<Speciality> {
-    if (this.hasStudy(speciality, study)) {
-      throw new BadRequestExceptionError({
-        property: 'studyId',
-        value: study.id,
-        constraints: {
-          isNotExist: 'Cannon add study which already is in the speciality',
-        },
-      })
-    }
-
-    speciality.studies.push(study)
-
+  async addSubject(
+    speciality: Speciality,
+    subject: Subject,
+  ): Promise<Speciality> {
+    speciality.subjects.push(subject)
     await speciality.save()
 
-    return speciality
+    return this.findOne(speciality.id)
   }
 }

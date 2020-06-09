@@ -2,90 +2,84 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Study } from '../studies/study.entity'
-import { User } from '../users/user.entity'
-import { Exclude, Expose } from 'class-transformer'
-
-import { Subject } from '../subjects/subject.entity'
-import { College } from '../colleges/college.entity'
-import { Level } from '../levels/level.entity'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { UserRolesType } from '../enums/userRolesType'
+import { Teacher } from '../teachers/teachers.entity'
+import { Task } from '../tasks/task.entity'
+import { Topic } from '../topics/topic.entity'
 import { Permission } from '../permissions/permission.entity'
-import { Result } from '../results/result.entity'
+import { Subject } from '../subject/subject.entity'
 
 @Entity('tests')
 export class Test extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
-  title: string
+  @Column({ type: 'varchar', length: 80, nullable: false })
+  name: string
 
-  @Column()
-  description: string
+  @Column({ type: 'tinyint', nullable: false })
+  countOfTasks: number
 
-  @Column()
-  isPublic: boolean
-
-  @ManyToMany(
-    () => Study,
-    study => study.tests,
+  @ManyToOne(
+    () => Teacher,
+    teacher => teacher.tests,
   )
-  @JoinTable()
-  studies: Study[]
+  @JoinColumn({ name: 'creator_id' })
+  creator: Teacher
 
   @ManyToOne(
     () => Subject,
     subject => subject.tests,
-    {
-      nullable: false,
-    },
   )
+  @JoinColumn({ name: 'subject_id' })
   subject: Subject
 
-  @ManyToOne(
-    () => User,
-    user => user.tests,
-    {
-      nullable: false,
-    },
-  )
-  creator: User
+  @Column({ type: 'tinyint' })
+  duration: number
 
   @ManyToMany(
-    () => College,
-    college => college.tests,
+    () => Task,
+    task => task.tests,
   )
-  @JoinTable()
-  colleges: College[]
-
-  @Expose({
-    groups: [UserRolesType.USER],
+  @JoinTable({
+    name: 'tests_tasks',
+    joinColumn: {
+      name: 'test_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'task_id',
+      referencedColumnName: 'id',
+    },
   })
-  @ApiModelProperty({ type: Number })
-  @OneToMany(
-    () => Level,
-    level => level.test,
-  )
-  levels: Level[]
+  tasks: Task[]
 
-  @Exclude()
-  @OneToMany(
-    () => Result,
-    result => result.test,
+  @ManyToMany(
+    () => Topic,
+    topic => topic.tests,
   )
-  results: Result[]
+  @JoinTable({
+    name: 'tests_topics',
+    joinColumn: {
+      name: 'test_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'topic_id',
+      referencedColumnName: 'id',
+    },
+  })
+  topics: Topic[]
 
   @OneToMany(
     () => Permission,
     permission => permission.test,
   )
-  permissions: Permission[]
+  permissions: Permission
 }

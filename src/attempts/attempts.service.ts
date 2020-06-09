@@ -1,416 +1,331 @@
-import { Injectable } from '@nestjs/common'
-import { Ticket } from '../tickets/ticket.entity'
-
-import { Task } from '../tasks/task.entity'
-import { AttemptTask } from './attemptTask.entity'
-import { AttemptAnswer } from './attemptAnswer.entity'
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common'
 import { Attempt } from './attempt.entity'
-import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
-import { shuffle } from 'lodash'
+import { Ticket } from '../tickets/ticket.entity'
+import { TicketsService } from '../tickets/tickets.service'
+import { TestsService } from '../tests/tests.service'
 
-import { User } from '../users/user.entity'
-import { AccessLevelType } from '../enums/accessLevelType'
-import { CompleteAttemptDto } from './dto/completeAttempt.dto'
-import { TaskTypes } from '../enums/TaskTypes.enum'
-import { ResultAnswer } from '../results/resultAnswer.entity'
-import { Result } from '../results/result.entity'
-import { AnswerCheckResult } from './interfaces/answerCheckResult.interface'
+import { PermissionsService } from '../permissions/permissions.service'
+import { Task } from '../tasks/task.entity'
+
+import { ResultAnswer } from './dto/completeAttempt.dto'
+
+import { TasksService } from '../tasks/tasks.service'
 import { Test } from '../tests/test.entity'
+import { Permission } from '../permissions/permission.entity'
+import { AttemptTask } from './attemptTask.entity'
+import { AttemptAnswer } from './attemptAnswers.entity'
+import { Answer } from '../answers/answer.entity'
+import { SchedulerRegistry } from '@nestjs/schedule'
+import { TaskType } from '../tasks/enums/TaskType.enum'
+
+import { ResultsService } from '../results/results.service'
+
+import { getConnection } from 'typeorm'
+import { ConfigService } from '@nestjs/config'
+import moment = require('moment')
 
 @Injectable()
 export class AttemptsService {
-  async create(ticket: Ticket) {
-    let maxScore = 0
-    let attemptTasks = []
-    let attemptAnswers = []
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly testsService: TestsService,
+    @Inject(forwardRef(() => TasksService))
+    private readonly tasksService: TasksService,
+    private readonly permissionsService: PermissionsService,
+    private readonly configService: ConfigService,
+    private readonly resultsService: ResultsService,
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) {}
 
-    const attempt = await Attempt.create({
-      maxScore,
-      ticket,
-      student: ticket.student,
-    }).save()
-
-    for (const level of ticket.permission.test.levels) {
-      const countOfTask = level.countOfTask
-      const tasks = await Task.createQueryBuilder('task')
-        .leftJoinAndSelect('task.levels', 'levels')
-        .leftJoinAndSelect('task.answers', 'answers')
-        .where('levels.id = :levelsID', { levelsID: level.id })
-        .orderBy('RAND()')
-        .take(countOfTask)
+  async onApplicationBootstrap(): Promise<void> {
+    await getConnection().transaction(async transactionalEntityManager => {
+      const attempts = await transactionalEntityManager
+        .getRepository(Attempt)
+        .createQueryBuilder('attempts')
+        .select(['attempts.id', 'attempts.endTime', 'attempts.maxEndTime'])
+        .where('attempts.endTime IS NULL')
         .getMany()
 
-      tasks.forEach(task => {
-        maxScore += task.maxScore * level.difficult
+      attempts.forEach(attempt => this.timeOutHandlerBuilder(attempt))
+    })
+  }
 
-        attemptTasks = [
-          ...attemptTasks,
-          AttemptTask.create({
-            task,
-            level,
-            attempt,
-          }),
-        ]
+  async create(ticket: Ticket): Promise<Attempt> {
+    // TODO: add transaction
+    if (ticket._used) throw new BadRequestException('Всі спроби вичерпано')
+    if (ticket._outstanding) throw new BadRequestException('Час вичерпано')
+
+    let maxScore = 0
+    const permission = await this.permissionsService.findEntity(
+      ticket.permission.id,
+    )
+
+    const test = await this.testsService.findEntity(permission.test.id)
+
+    let tasksQueryBuilder = await Task.createQueryBuilder('tasks')
+      .leftJoin('tasks.tests', 'tests')
+      .leftJoin('tasks.topic', 'topic')
+      .leftJoin('tasks.answers', 'answers')
+      .select(['tasks.id', 'answers.id', 'answers.correct'])
+      .where('tests.id = :testId', { testId: test.id })
+
+    if (test.topics.length) {
+      tasksQueryBuilder = tasksQueryBuilder.orWhere('topic.id IN (:topicIds)', {
+        topicIds: test.topics.map<number>(topic => topic.id),
       })
     }
 
-    attemptTasks = await AttemptTask.save(attemptTasks)
+    const tasks = await tasksQueryBuilder
+      .orderBy('RAND()')
+      .take(test.countOfTasks)
+      .getMany()
 
-    attemptTasks.forEach(attemptTask => {
-      const task = attemptTask.task
+    const attempt = this.entityBuilder(test, permission, ticket)
+    let attemptTasks = []
 
-      task.answers.forEach(answer => {
-        attemptAnswers = [
-          ...attemptAnswers,
-          AttemptAnswer.create({
-            answer,
-            attemptTask,
-          }),
-        ]
-      })
+    tasks.forEach(task => {
+      attemptTasks.push(this.attemptTaskEntityBuilder(task))
+
+      maxScore += this.tasksService.maxScore(task)
     })
-
-    attemptAnswers = shuffle<AttemptAnswer>(attemptAnswers)
 
     attempt.maxScore = maxScore
 
-    await Promise.all([attempt.save(), AttemptAnswer.save(attemptAnswers)])
+    await attempt.save()
+
+    attemptTasks = attemptTasks.map<AttemptTask>(attemptTask => {
+      attemptTask.attempt = attempt
+      return attemptTask
+    })
+
+    await AttemptTask.save(attemptTasks)
+
+    const attemptAnswer = []
+
+    attemptTasks.forEach(attemptTask => {
+      attemptTask.task.answers.forEach(answer => {
+        attemptAnswer.push(this.attemptAnswerBuilder(answer, attemptTask))
+      })
+    })
+
+    await AttemptAnswer.save(attemptAnswer)
+
+    this.timeOutHandlerBuilder(attempt)
 
     return await this.findOne(attempt.id)
   }
 
-  async findOne(id: number): Promise<Attempt> {
-    const attempt = await Attempt.findOne({
-      where: {
-        id,
-      },
-      relations: ['ticket', 'student', 'tasks', 'result'],
-    })
+  async findOne(attemptId: number) {
+    const attempt = await Attempt.createQueryBuilder('attempt')
+      .leftJoin('attempt.result', 'result')
+      .leftJoin('attempt.attemptTasks', 'attemptTasks')
+      .leftJoin('attemptTasks.task', 'task')
+      .select([
+        'attempt.id',
+        'attempt.maxScore',
+        'attempt.startTime',
+        'attempt.endTime',
+        'attempt.maxEndTime',
+        'attemptTasks.id',
+        'task.question',
+        'task.type',
+        'result.id',
+        'result.score',
+        'result.percent',
+      ])
+      .where('attempt.id = :attemptId', { attemptId })
+      .getOne()
 
-    if (!attempt) {
-      throw new BadRequestExceptionError({
-        property: 'attemptId',
-        value: id,
-        constraints: {
-          isNotExist: 'attempt is not exist',
-        },
-      })
-    }
+    if (!attempt) throw new BadRequestException('Спробу не знайдено')
 
     return attempt
   }
 
-  async isStudent(attempt: Attempt, user: User): Promise<boolean> {
-    return attempt.student.id === user.id
-  }
+  async findAttemptTask(attemptTaskId: number): Promise<AttemptTask> {
+    const attemptTask = await AttemptTask.createQueryBuilder('attemptTask')
+      .leftJoin('attemptTask.task', 'task')
+      .leftJoin('attemptTask.attemptAnswers', 'attemptAnswers')
+      .leftJoin('attemptAnswers.answer', 'answer')
+      .select([
+        'attemptTask.id',
+        'task.question',
+        'task.type',
+        'task.image',
+        'task.attachment',
+        'attemptAnswers.id',
+        'answer.answerText',
+        'answer.image',
+      ])
+      .where('attemptTask.id = :attemptTaskId', { attemptTaskId })
+      .getOne()
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async isTeacher(attempt: Attempt, user: User): Promise<boolean> {
-    // TODO: refactor
-    return false
-  }
-
-  async accessRelations(
-    attempt: Attempt,
-    user: User,
-  ): Promise<AccessLevelType[]> {
-    const levels: AccessLevelType[] = []
-
-    const [isStudent, isTeacher] = await Promise.all([
-      this.isStudent(attempt, user),
-      this.isTeacher(attempt, user),
-    ])
-
-    if (isStudent) levels.push(AccessLevelType.STUDENT)
-    if (isTeacher) levels.push(AccessLevelType.TEACHER)
-
-    return levels
-  }
-
-  async findTasks(attempt: Attempt): Promise<AttemptTask[]> {
-    return await AttemptTask.find({
-      where: {
-        attempt,
-      },
-      relations: [
-        'task',
-        'task.answers',
-        'level',
-        'attempt',
-        'attemptAnswers',
-        'attemptAnswers.answer',
-      ],
-    })
-  }
-
-  async findTask(id: number): Promise<AttemptTask> {
-    const attemptTask = await AttemptTask.findOne({
-      where: {
-        id,
-      },
-      relations: ['task', 'level', 'attempt', 'attemptAnswers'],
+    attemptTask.attemptAnswers.forEach(attemptAnswer => {
+      if (attemptTask.task.type === TaskType.SHORT_ANSWER)
+        attemptAnswer.answer.answerText = undefined
     })
 
-    if (!attemptTask) {
-      throw new BadRequestExceptionError({
-        property: 'attemptTaskId',
-        value: id,
-        constraints: {
-          isNotExist: 'attemptTask is not exist',
-        },
-      })
-    }
+    if (!attemptTask) throw new BadRequestException('Завдання не знайдено')
 
     return attemptTask
   }
 
-  async findAnswers(attemptTask: AttemptTask): Promise<AttemptAnswer[]> {
-    return await AttemptAnswer.find({
-      where: {
-        attemptTask,
-      },
-      relations: ['answer', 'attemptTask'],
-    })
+  attemptDurationRemainsMs(attempt: Attempt): number {
+    return moment(attempt.maxEndTime)
+      .add(this.configService.get<string>('attempt.maxDelayTime'), 'seconds')
+      .diff(moment())
   }
 
-  async findAnswer(id: number): Promise<AttemptAnswer> {
-    const attemptAnswer = await AttemptAnswer.findOne({
-      where: {
-        id,
-      },
-      relations: ['answer', 'attemptTask'],
-    })
+  timeOutHandlerBuilder(attempt: Attempt) {
+    const timeOutHandler = async () => {
+      await getConnection().transaction(async transactionalEntityManager => {
+        const timeOutAttempt = await transactionalEntityManager
+          .getRepository(Attempt)
+          .createQueryBuilder('attempt')
+          .leftJoin('attempt.attemptTasks', 'attemptTasks')
+          .select([
+            'attempt.id',
+            'attempt.endTime',
+            'attempt.maxScore',
+            'attempt.maxScore',
+            'attemptTasks.id',
+          ])
+          .where('attempt.id = :attemptId', { attemptId: attempt.id })
+          .andWhere('attempt.endTime IS NULL')
+          .getOne()
 
-    if (!attemptAnswer) {
-      throw new BadRequestExceptionError({
-        property: 'attemptAnswerId',
-        value: id,
-        constraints: {
-          isNotExist: 'attemptAnswer is not exist',
-        },
+        if (timeOutAttempt._active)
+          await this.complete(
+            timeOutAttempt,
+            new Array(timeOutAttempt.attemptTasks.length).fill([]),
+          )
       })
     }
 
-    return attemptAnswer
-  }
-
-  private checkSingleChoice(
-    answers: number[],
-    attemptAnswers: AttemptAnswer[],
-  ): AnswerCheckResult {
-    const [answer] = answers
-
-    if (answer === undefined || typeof answers === 'string')
-      return { correct: [], inrcorect: [] }
-
-    const result: AnswerCheckResult = {
-      correct: [],
-      inrcorect: [],
-    }
-
-    const attemptAnswer = attemptAnswers.find(value => value.id === answer)
-
-    if (!attemptAnswer) {
-      return result
-    }
-
-    attemptAnswer.answer.correct
-      ? result.correct.push(attemptAnswer.answer.text)
-      : result.inrcorect.push(attemptAnswer.answer.text)
-
-    return result
-  }
-
-  private checkMultyChoice(
-    answers: number[],
-    attemptAnswers: AttemptAnswer[],
-  ): AnswerCheckResult {
-    const result: AnswerCheckResult = {
-      correct: [],
-      inrcorect: [],
-    }
-
-    attemptAnswers
-      .filter(value => value.answer.correct)
-      .forEach(value => {
-        if (answers.includes(value.id)) {
-          result.correct.push(value.answer.text)
-        }
-      })
-
-    attemptAnswers
-      .filter(value => !value.answer.correct)
-      .forEach(value => {
-        if (answers.includes(value.id)) {
-          result.inrcorect.push(value.answer.text)
-        }
-      })
-
-    return result
-  }
-
-  private checkTextInput(
-    answer: string,
-    attemptAnswers: AttemptAnswer[],
-    ignoreCase: boolean,
-  ): AnswerCheckResult {
-    const result: AnswerCheckResult = {
-      correct: [],
-      inrcorect: [],
-    }
-
-    if (ignoreCase) answer = answer.toLowerCase()
-
-    let text
-
-    const isCorrect = attemptAnswers.some(value => {
-      text = value.answer.text
-
-      if (ignoreCase) {
-        text = text.toLowerCase()
-      }
-
-      return text === answer
-    })
-
-    isCorrect ? result.correct.push(answer) : result.inrcorect.push(answer)
-
-    return result
+    const timeout = setTimeout(
+      timeOutHandler,
+      this.attemptDurationRemainsMs(attempt),
+    )
+    this.schedulerRegistry.addTimeout(`attempt-${attempt.id}`, timeout)
   }
 
   async complete(
-    completeAttemptDto: CompleteAttemptDto,
     attempt: Attempt,
-  ): Promise<Result> {
-    // TODO: refactor structure
-    const resultTasks = completeAttemptDto.tasks
-    const tasks = await this.findTasks(attempt)
+    resultAnswers: ResultAnswer[],
+  ): Promise<Attempt> {
+    if (!attempt._active) {
+      throw new BadRequestException(
+        'Спробу вже завершено, або час виконання спроби закінчився',
+      )
+    }
 
-    if (resultTasks.length !== tasks.length)
-      throw new BadRequestExceptionError({
-        property: 'tasks.length',
-        value: tasks.length,
-        constraints: {
-          countOfTasks: 'You must sand all answers',
-        },
-      })
+    const attemptTasks = await AttemptTask.createQueryBuilder('attemptTasks')
+      .leftJoin('attemptTasks.attempt', 'attempt')
+      .leftJoin('attemptTasks.task', 'task')
+      .leftJoin('attemptTasks.attemptAnswers', 'attemptAnswers')
+      .leftJoin('attemptAnswers.answer', 'answer')
+      .select([
+        'attemptTasks.id',
+        'attemptAnswers.id',
+        'task.id',
+        'task.type',
+        'answer.id',
+        'answer.correct',
+        'answer.position',
+        'answer.answerText',
+      ])
+      .where('attempt.id = :attemptId', { attemptId: attempt.id })
+      .getMany()
 
-    // TODO: refactor
-    const test = await Test.createQueryBuilder('test')
-      .leftJoin('test.permissions', 'permissions')
-      .leftJoin('permissions.tickets', 'tickets')
-      .leftJoin('tickets.attempts', 'attempts')
-      .select(['test.id'])
-      .where('attempts.id = :attemptsId', { attemptsId: attempt.id })
-      .getOne()
+    let score = 0
+    const resultTasks = []
 
-    const reportResult = await Result.create({
-      resultScore: 0,
-      persents: 0,
-      test,
-      student: attempt.student,
-    })
-
-    await reportResult.save()
-
-    const reportResultAnswers: ResultAnswer[] = []
-    let fullScore = 0
-
-    resultTasks.forEach((resultTask, index) => {
-      const resultAnswers = resultTask.answers
-      const attemptTask = tasks[index]
-      const task = attemptTask.task
-      let result: AnswerCheckResult
-
-      let taskScore = 0
-
-      switch (task.type) {
-        case TaskTypes.SINGLE_CHOICE:
-          if (typeof resultAnswers === 'string') break
-
-          result = this.checkSingleChoice(
-            resultAnswers,
-            attemptTask.attemptAnswers,
-          )
-
-          taskScore = result.correct.length * attemptTask.level.difficult
-
-          break
-
-        case TaskTypes.MULTY_CHOICE:
-          if (typeof resultAnswers === 'string') {
-            result = {
-              correct: [],
-              inrcorect: task.answers
-                .filter(answer => !answer.correct)
-                .map(answer => answer.text),
-            }
-
-            taskScore =
-              -1 * result.inrcorect.length * attemptTask.level.difficult
-
-            break
-          }
-
-          result = this.checkMultyChoice(
-            resultAnswers,
-            attemptTask.attemptAnswers,
-          )
-
-          taskScore =
-            (result.correct.length - result.inrcorect.length) *
-            attemptTask.level.difficult
-
-          break
-
-        case TaskTypes.TEXT_INPUT:
-          if (typeof resultAnswers !== 'string') {
-            result = {
-              correct: [],
-              inrcorect: [],
-            }
-
-            taskScore = 0
-
-            break
-          }
-
-          result = this.checkTextInput(
-            resultAnswers,
-            attemptTask.attemptAnswers,
-            attemptTask.task.ignoreCase,
-          )
-
-          taskScore = result.correct.length * attemptTask.level.difficult
-
-          break
-      }
-
-      reportResultAnswers.push(
-        ResultAnswer.create({
-          retrievedScore: taskScore,
-          correctAnswers: result.correct,
-          incorrectAnswers: result.inrcorect,
-          result: reportResult,
-          possibleScore: task.maxScore,
-        }),
+    attemptTasks.forEach((attemptTask, index) => {
+      const result = this.tasksService.checkTask(
+        attemptTask.task,
+        resultAnswers[index],
+        attemptTask,
       )
 
-      fullScore += taskScore
+      resultTasks.push(
+        this.resultsService.resultTaskBuilder(
+          null,
+          attemptTask.task,
+          result.correct,
+          result.incorrect,
+          result.maxScore,
+          result.receivedScore,
+        ),
+      )
+
+      score += result.receivedScore
+
+      return result
     })
 
-    reportResult.persents = (fullScore / attempt.maxScore) * 100
-    reportResult.resultScore = fullScore
+    await getConnection().transaction(async transactionalEntityManager => {
+      let result = await this.resultsService.entityBuilder(
+        attempt,
+        score,
+        score ? (score / attempt.maxScore) * 100 : 0,
+      )
 
-    attempt.endTime = new Date()
-    attempt.result = reportResult
+      result = await transactionalEntityManager.save(result)
 
-    const [report] = await Promise.all([
-      reportResult.save(),
-      ResultAnswer.save(reportResultAnswers),
-      attempt.save(),
-    ])
+      resultTasks.forEach(resultTask => (resultTask.result = result))
 
-    return report
+      await transactionalEntityManager
+        .getRepository(Attempt)
+        .createQueryBuilder('attempt')
+        .update()
+        .set({
+          endTime: new Date(),
+        })
+        .where('id = :attemptId', { attemptId: attempt.id })
+        .execute()
+
+      await transactionalEntityManager.save(resultTasks)
+    })
+
+    return this.findOne(attempt.id)
+  }
+
+  entityBuilder(
+    test: Test,
+    permission: Permission,
+    ticket: Ticket,
+    maxScore = 0,
+  ): Attempt {
+    return Attempt.create({
+      ticket,
+      maxScore,
+      maxEndTime: moment()
+        .add(test.duration, 'minutes')
+        .isAfter(moment(permission.endTime))
+        ? moment()
+            .add(test.duration, 'minutes')
+            .toDate()
+        : permission.endTime,
+    })
+  }
+  attemptTaskEntityBuilder(task: Task, attempt?: Attempt): AttemptTask {
+    return AttemptTask.create({ task, attempt })
+  }
+
+  attemptAnswerBuilder(
+    answer: Answer,
+    attemptTask?: AttemptTask,
+  ): AttemptAnswer {
+    return AttemptAnswer.create({ answer, attemptTask })
+  }
+
+  maxScore(attemptTask: AttemptTask): number {
+    return attemptTask.attemptAnswers.filter(
+      attemptTask => attemptTask.answer.correct,
+    ).length
   }
 }

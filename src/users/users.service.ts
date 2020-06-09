@@ -1,22 +1,14 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { User } from './user.entity'
 import { hash } from 'bcryptjs'
-import { BadRequestExceptionError } from '../tools/exceptions/BadRequestExceptionError'
 import { classToClass } from 'class-transformer'
-import { UserRolesType } from '../enums/userRolesType'
+
 import { FilterUserDto } from './dto/filterUser.dto'
-import { dbStringLikeBuilder } from '../tools/dbRequestBuilers/dbStringLike.builder'
-import { Group } from '../groups/group.entity'
-import { College } from '../colleges/college.entity'
-import { Ticket } from '../tickets/ticket.entity'
-import { Result } from '../results/result.entity'
-import { Subject } from '../subjects/subject.entity'
-import { Permission } from '../permissions/permission.entity'
-import { Attempt } from '../attempts/attempt.entity'
-import { Test } from '../tests/test.entity'
-import { Study } from '../studies/study.entity'
+
 import { ConfigService } from '@nestjs/config'
-import { Environments } from '../config/environments.enum'
+
+import { dbStringLikeBuilder } from '../tools/dbRequestBuilders/dbStringLike.builder'
+import { UserRolesType } from '../enums/userRolesType'
 
 @Injectable()
 export class UsersService {
@@ -24,50 +16,85 @@ export class UsersService {
 
   async findOne(id: number): Promise<User> {
     const user = await User.createQueryBuilder('user')
+      .leftJoin('user.students', 'students')
+      .leftJoin('students.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
+      .leftJoin('user.teachers', 'teachers')
+      .leftJoin('teachers.subject', 'subject')
       .select([
         'user.id',
-        'user.firstName',
-        'user.lastName',
         'user.patronymic',
         'user.firstName',
+        'user.lastName',
         'user.email',
-        'user.roles',
         'user.createAt',
+        'students.id',
+        'students.scoringBook',
+        'group.id',
+        'group.number',
+        'group.startYear',
+        'speciality.id',
+        'speciality.name',
+        'speciality.symbol',
+        'speciality.yearOfStudy',
+        'speciality.code',
+        'teachers.id',
+        'subject.id',
+        'subject.name',
       ])
       .where('user.id = :userId', { userId: id })
       .getOne()
 
-    if (!user) {
-      throw new BadRequestExceptionError({
-        property: 'id',
-        value: id,
-        constraints: {
-          isNotExist: 'user is not exist',
-        },
-      })
-    }
+    if (!user) throw new BadRequestException('користувача з таки id не існує')
 
     return user
   }
 
-  async findAll(filterUserDto: FilterUserDto, like = true): Promise<User[]> {
+  async findAll(
+    filterUserDto: FilterUserDto,
+    offset: number,
+    limit: number,
+    like = true,
+  ): Promise<User[]> {
     const filter = like ? dbStringLikeBuilder(filterUserDto) : filterUserDto
 
-    return await User.find({
-      where: {
-        ...filter,
-      },
-      select: [
-        'id',
-        'firstName',
-        'lastName',
-        'patronymic',
-        'firstName',
-        'email',
-        'roles',
-        'createAt',
-      ],
-    })
+    let quaryBuilder = await User.createQueryBuilder('users')
+      .leftJoin('users.teachers', 'teachers')
+      .leftJoin('users.students', 'students')
+      .leftJoin('users.admin', 'admin')
+      .select([
+        'users.id',
+        'users.firstName',
+        'users.lastName',
+        'users.patronymic',
+        'users.email',
+      ])
+      .where(filter)
+
+    // TODO: refactor to function
+
+    if (filterUserDto.roles.includes(UserRolesType.ADMIN))
+      quaryBuilder = quaryBuilder.andWhere('admin.id IS NOT NULL')
+
+    if (filterUserDto.roles.includes(UserRolesType.TEACHER))
+      quaryBuilder = quaryBuilder.andWhere('teachers.id IS NOT NULL')
+
+    if (filterUserDto.roles.includes(UserRolesType.STUDENT))
+      quaryBuilder = quaryBuilder.andWhere('students.id IS NOT NULL')
+
+    if (filterUserDto.isNotInRoles.includes(UserRolesType.ADMIN))
+      quaryBuilder = quaryBuilder.andWhere('admin.id IS NULL')
+
+    if (filterUserDto.isNotInRoles.includes(UserRolesType.TEACHER))
+      quaryBuilder = quaryBuilder.andWhere('teachers.id IS NULL')
+
+    if (filterUserDto.isNotInRoles.includes(UserRolesType.STUDENT))
+      quaryBuilder = quaryBuilder.andWhere('students.id IS NULL')
+
+    return await quaryBuilder
+      .limit(limit)
+      .offset(offset)
+      .getMany()
   }
 
   async create({
@@ -79,21 +106,14 @@ export class UsersService {
   }): Promise<User> {
     const hashPassword = await hash(password, 8)
 
+    // TODO: add transaction
     const emailIsFree = await User.findOne({
       where: {
         email,
       },
     })
 
-    if (emailIsFree) {
-      throw new BadRequestExceptionError({
-        value: email,
-        property: 'email',
-        constraints: {
-          unique: 'email must be never used',
-        },
-      })
-    }
+    if (emailIsFree) throw new BadRequestException('Email зайнятий')
 
     const user = await User.create({
       firstName,
@@ -101,261 +121,36 @@ export class UsersService {
       patronymic,
       password: hashPassword,
       email,
-      roles:
-        this.configService.get<string>('env') === Environments.DEVELOPMENT
-          ? [UserRolesType.USER]
-          : null,
     }).save()
 
-    return classToClass(user, { groups: [...user.roles] })
-  }
-
-  isAdmin(user: User): boolean {
-    return user.roles.includes(UserRolesType.ADMIN)
-  }
-
-  async findGroups(userId: number): Promise<Group[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.groups', 'groups')
-      .leftJoin('groups.speciality', 'speciality')
-      .select([
-        'user.id',
-        'groups.id',
-        'speciality.id',
-        'groups.startEducation',
-        'groups.endEducation',
-        'groups.number',
-        'speciality.symbol',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.groups
-  }
-
-  async findOwnColleges(userId: number): Promise<College[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.ownColleges', 'ownColleges')
-      .leftJoin('ownColleges.specialties', 'specialties')
-      .leftJoin('ownColleges.creator', 'creator')
-      .select([
-        'user.id',
-        'ownColleges.name',
-        'ownColleges.address',
-        'ownColleges.confirmed',
-        'ownColleges.email',
-        'ownColleges.site',
-        'ownColleges.EDBO',
-        'specialties.id',
-        'creator.id',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.ownColleges
-  }
-
-  async findEditableColleges(userId: number): Promise<College[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.editableColleges', 'editableColleges')
-      .leftJoin('editableColleges.specialties', 'specialties')
-      .leftJoin('editableColleges.creator', 'creator')
-      .select([
-        'user.id',
-        'editableColleges.name',
-        'editableColleges.address',
-        'editableColleges.confirmed',
-        'editableColleges.email',
-        'editableColleges.site',
-        'editableColleges.EDBO',
-        'specialties.id',
-        'creator.id',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.editableColleges
-  }
-
-  async findTickets(userId: number): Promise<Ticket[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.tickets', 'tickets')
-      .leftJoin('tickets.student', 'student')
-      .leftJoin('tickets.permission', 'permission')
-      .select([
-        'user.id',
-        'tickets.id',
-        'tickets.title',
-        'tickets.used',
-        'tickets.usedTime',
-        'student.id',
-        'student.firstName',
-        'student.lastName',
-        'student.patronymic',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.tickets
-  }
-
-  async findResults(userId: number): Promise<Result[]> {
-    // TODO: refactor
-
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.results', 'results')
-      .leftJoin('results.attempt', 'attempt')
-      .leftJoin('results.student', 'student')
-      .leftJoin('results.test', 'test')
-      .select([
-        'user.id',
-        'results.id',
-        'results.resultScore',
-        'results.persents',
-        'attempt.maxScore',
-        'attempt.endTime',
-        'student.id',
-        'student.firstName',
-        'student.lastName',
-        'student.patronymic',
-        'test.id',
-        'test.title',
-        'test.description',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.results
-  }
-
-  async findSubjects(userId: number): Promise<Subject[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.teachSubjects', 'teachSubjects')
-      .select([
-        'user.id',
-        'teachSubjects.id',
-        'teachSubjects.name',
-        'teachSubjects.confirmed',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.teachSubjects
-  }
-
-  async findPermissions(userId: number): Promise<Permission[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.permissions', 'permissions')
-      .leftJoin('permissions.groups', 'groups')
-      .leftJoin('permissions.test', 'test')
-      .leftJoin('permissions.study', 'study')
-      .leftJoin('permissions.tickets', 'tickets')
-      .select([
-        'user.id',
-        'permissions.id',
-        'permissions.startTime',
-        'permissions.endTime',
-        'permissions.createAt',
-        'permissions.createAt',
-        'groups.id',
-        'study.id',
-        'test.id',
-        'test.title',
-        'test.description',
-        'tickets.id',
-        'tickets.used',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.permissions
-  }
-
-  async findAttempts(userId: number): Promise<Attempt[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.attempts', 'attempts')
-      .leftJoin('attempts.result', 'result')
-      .leftJoin('attempts.ticket', 'ticket')
-      .select([
-        'user.id',
-        'attempts.id',
-        'attempts.maxScore',
-        'attempts.endTime',
-        'result.id',
-        'result.resultScore',
-        'ticket.id',
-        'ticket.title',
-        'ticket.usedTime',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.attempts
-  }
-
-  async findTests(userId: number): Promise<Test[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.tests', 'tests')
-      .leftJoin('tests.subject', 'subject')
-      .leftJoin('tests.studies', 'studies')
-      .leftJoin('tests.levels', 'levels')
-      .leftJoin('tests.colleges', 'colleges')
-      .select([
-        'user.id',
-        'tests.id',
-        'tests.title',
-        'tests.description',
-        'tests.isPublic',
-        'subject.id',
-        'subject.name',
-        'studies.id',
-        'colleges.id',
-        'colleges.name',
-        'levels.id',
-        'levels.title',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.tests
-  }
-
-  async findStudies(userId: number): Promise<Study[]> {
-    const user = await User.createQueryBuilder('user')
-      .leftJoin('user.studies', 'studies')
-      .leftJoin('studies.subject', 'subject')
-      .leftJoin('studies.specialties', 'specialties')
-      .leftJoin('studies.college', 'college')
-      .select([
-        'user.id',
-        'studies.id',
-        'subject.id',
-        'subject.name',
-        'college.id',
-        'college.name',
-        'specialties.id',
-        'specialties.name',
-        'specialties.code',
-        'specialties.yearOfStudy',
-      ])
-      .where('user.id = :userId', { userId })
-      .getOne()
-
-    return user.studies
+    return classToClass(user)
   }
 
   async findByIds(userIds: number[]): Promise<User[]> {
-    return await User.findByIds(userIds, {
-      select: [
+    return await User.createQueryBuilder('user')
+      .select([
         'id',
         'firstName',
         'lastName',
         'patronymic',
         'firstName',
         'email',
-        'roles',
         'createAt',
-      ],
-    })
+      ])
+      .whereInIds(userIds)
+      .getMany()
+  }
+
+  async findEntity(userId: number): Promise<User> {
+    const user = await User.createQueryBuilder('user')
+      .leftJoin('user.teachers', 'teachers')
+      .leftJoin('user.students', 'students')
+      .select(['user.id', 'teachers.id', 'students.id'])
+      .where('user.id = :userId ', { userId })
+      .getOne()
+
+    if (!user) throw new BadRequestException('Користувача не знайдено')
+
+    return user
   }
 }

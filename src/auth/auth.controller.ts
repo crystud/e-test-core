@@ -1,10 +1,4 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Post,
-  UseInterceptors,
-} from '@nestjs/common'
+import { Body, Controller, Post } from '@nestjs/common'
 import { TokensInterface } from './interfaces/tokens.interface'
 import { AuthService } from './auth.service'
 import { RefreshTokenDto } from './dto/refreshToken.dto'
@@ -16,7 +10,6 @@ import { LoginDto } from './dto/login.dto'
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Post('refresh')
   async refreshToken(
     @Body() { token }: RefreshTokenDto,
@@ -24,7 +17,6 @@ export class AuthController {
     return await this.authService.refresh(token)
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Post('login')
   async login(@Body() { email, password }: LoginDto): Promise<TokensInterface> {
     return await this.authService.login(email, password)

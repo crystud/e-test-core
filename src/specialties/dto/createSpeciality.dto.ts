@@ -1,25 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, Length, Max, Min } from 'class-validator'
+import { IsInt, IsString, Length } from 'class-validator'
 
 export class CreateSpecialityDto {
   @ApiProperty()
-  @IsNotEmpty()
+  @Length(1, 50)
   name: string
 
   @ApiProperty()
-  @Length(1, 5)
-  symbol: string
-
-  @ApiProperty()
-  @Min(1)
-  @Max(6)
-  yearOfStudy: number
-
-  @ApiProperty()
-  @IsNotEmpty()
+  @IsInt()
   code: number
 
   @ApiProperty()
-  @IsNotEmpty()
-  college: number
+  @IsInt()
+  yearOfStudy: number
+
+  @ApiProperty()
+  @Length(1, 8)
+  @IsString()
+  symbol: string
 }

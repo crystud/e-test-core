@@ -3,45 +3,28 @@ import {
   Column,
   Entity,
   ManyToMany,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { College } from '../colleges/college.entity'
-
 import { Group } from '../groups/group.entity'
-import { Study } from '../studies/study.entity'
-
-export enum SubjectStudyType {
-  DAILY = 'daily',
-  EXTERNAL = 'external',
-}
+import { Subject } from '../subject/subject.entity'
 
 @Entity('specialties')
 export class Speciality extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
+  @Column({ type: 'varchar', length: 50 })
   name: string
 
   @Column({ type: 'varchar', length: 8 })
   symbol: string
 
-  @Column({ type: 'smallint' })
+  @Column({ name: 'year_of_studt', type: 'tinyint' })
   yearOfStudy: number
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: 'smallint' })
   code: number
-
-  @ManyToOne(
-    () => College,
-    college => college.specialties,
-    {
-      nullable: false,
-    },
-  )
-  college: College
 
   @OneToMany(
     () => Group,
@@ -49,16 +32,9 @@ export class Speciality extends BaseEntity {
   )
   groups: Group[]
 
-  @Column({
-    type: 'set',
-    enum: SubjectStudyType,
-    default: [SubjectStudyType.DAILY, SubjectStudyType.EXTERNAL],
-  })
-  types: SubjectStudyType[]
-
   @ManyToMany(
-    () => Study,
-    study => study.specialties,
+    () => Subject,
+    subject => subject.specialties,
   )
-  studies: Study[]
+  subjects: Subject[]
 }

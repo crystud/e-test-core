@@ -1,13 +1,18 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { PermissionsService } from './permissions.service'
 import { PermissionsController } from './permissions.controller'
+import { TeachersModule } from '../teachers/teachers.module'
 import { TestsModule } from '../tests/tests.module'
 import { GroupsModule } from '../groups/groups.module'
 import { TicketsModule } from '../tickets/tickets.module'
-import { StudiesModule } from '../studies/studies.module'
 
 @Module({
-  imports: [TestsModule, GroupsModule, TicketsModule, StudiesModule],
+  imports: [
+    TeachersModule,
+    forwardRef(() => TestsModule),
+    GroupsModule,
+    TicketsModule,
+  ],
   exports: [PermissionsService],
   providers: [PermissionsService],
   controllers: [PermissionsController],

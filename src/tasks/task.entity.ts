@@ -2,56 +2,43 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose, Transform } from 'class-transformer'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { UserRolesType } from '../enums/userRolesType'
-import { transformToId } from '../tools/transformers/transformToId'
-import { Topic } from '../topics/topics.entity'
-import { Level } from '../levels/level.entity'
-import { TaskTypes } from '../enums/TaskTypes.enum'
-import { Answer } from '../answers/answer.entity'
-import { AttemptTask } from '../attempts/attemptTask.entity'
+import { Topic } from '../topics/topic.entity'
 
-@Exclude()
+import { Transform } from 'class-transformer'
+import { TaskType } from './enums/TaskType.enum'
+import { Answer } from '../answers/answer.entity'
+import { Test } from '../tests/test.entity'
+import { User } from '../users/user.entity'
+import { AttemptTask } from '../attempts/attemptTask.entity'
+import { ResultTask } from '../results/resultTask.entity'
+
 @Entity('tasks')
 export class Task extends BaseEntity {
-  @Expose()
-  @ApiModelProperty()
   @PrimaryGeneratedColumn()
   id: number
 
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty()
-  @Column()
-  ask: string
+  @Column({ type: 'varchar' })
+  question: string
 
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({
-    description: `Ignore when type isn't ${TaskTypes.TEXT_INPUT}`,
+  @Transform(image => {
+    return image ? Buffer.from(image).toString() : null
   })
-  @Column({ default: false })
-  ignoreCase: boolean
+  @Column({ type: 'blob', nullable: true })
+  image: string
 
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty()
-  @Column({ default: '' })
-  description: string
+  @Transform(type => TaskType[type])
+  @Column({ type: 'smallint' })
+  type: TaskType
 
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty()
-  @Column()
-  type: TaskTypes
+  @Column({ type: 'mediumtext', nullable: true })
+  attachment: string
 
-  @Transform(transformToId)
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: Number })
   @ManyToOne(
     () => Topic,
     topic => topic.tasks,
@@ -59,43 +46,40 @@ export class Task extends BaseEntity {
       nullable: false,
     },
   )
+  @JoinColumn({ name: 'topic_id' })
   topic: Topic
 
-  @Exclude()
-  @ManyToMany(
-    () => Level,
-    level => level.tasks,
+  @ManyToOne(
+    () => User,
+    user => user.tasks,
+    {
+      nullable: false,
+    },
   )
-  levels: Level[]
+  @JoinColumn({ name: 'user_id' })
+  creator: User
 
-  @Transform(transformToId)
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: [Number] })
+  @OneToMany(
+    () => ResultTask,
+    resultTask => resultTask.task,
+  )
+  taskResults: ResultTask[]
+
   @OneToMany(
     () => Answer,
     answer => answer.task,
   )
   answers: Answer[]
 
-  @Exclude()
+  @ManyToMany(
+    () => Test,
+    test => test.tasks,
+  )
+  tests: Test[]
+
   @OneToMany(
     () => AttemptTask,
     attemptTask => attemptTask.task,
   )
-  attempt_tasks: AttemptTask[]
-
-  @Expose({
-    groups: [UserRolesType.USER],
-  })
-  @ApiModelProperty({ type: Number })
-  get maxScore(): number | null {
-    if (!this.answers) return null
-
-    let sum = 0
-    this.answers.forEach(answers => (sum += Number(answers.correct)))
-
-    return sum
-  }
+  attemptTasks: AttemptTask
 }

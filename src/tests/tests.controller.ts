@@ -12,90 +12,118 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
+import { UserRolesType } from '../enums/userRolesType'
 import { RolesGuard } from '../auth/roles.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
-import { Test } from './test.entity'
+
 import { CreateTestDto } from './dto/createTest.dto'
 import { TestsService } from './tests.service'
-import { SubjectsService } from '../subjects/subjects.service'
-import { ShareToCollegeDto } from './dto/shareToCollege.dto'
-import { CollegesService } from '../colleges/colleges.service'
-import { UserRolesType } from '../enums/userRolesType'
-import { classToClass } from 'class-transformer'
+import { TeachersService } from '../teachers/teachers.service'
+import { Test } from './test.entity'
+import { TasksService } from '../tasks/tasks.service'
+import { AddTaskDto } from './dto/addTask.dto'
+import { AddTopicDto } from './dto/addTopic.dto'
+import { TopicsService } from '../topics/topics.service'
 
 @ApiTags('tests')
 @Controller('tests')
 export class TestsController {
   constructor(
     private readonly testsService: TestsService,
-    private readonly subjectsService: SubjectsService,
-    private readonly collegesService: CollegesService,
+    private readonly teachersService: TeachersService,
+    private readonly tasksService: TasksService,
+    private readonly topicService: TopicsService,
   ) {}
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.USER)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
-    @Body() createTestDto: CreateTestDto,
-    @Request() req,
+    @Body() { name, countOfTasks, duration, teacher: teacherId }: CreateTestDto,
+    @Request() { user: { user, roles } },
   ): Promise<Test> {
-    const subject = await this.subjectsService.findOne(createTestDto.subject)
+    const teacher = await this.teachersService.findEntity(teacherId)
 
-    const test = await this.testsService.create(
-      createTestDto,
-      subject,
-      req.user,
+    if (
+      !(
+        this.teachersService.belongsToUser(teacher, user) ||
+        roles.includes(UserRolesType.ADMIN)
+      )
     )
+      throw new ForbiddenException()
 
-    return classToClass(test, {
-      groups: [...req.user.roles],
-    })
-  }
-
-  @ApiBearerAuth()
-  @Roles(UserRolesType.USER)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  async findOne(@Param('id') id: number, @Request() req): Promise<Test> {
-    const test = await this.testsService.findOne(id)
-
-    if (this.testsService.hasAccess(test, req.user)) {
-      return classToClass(test, {
-        groups: [...req.user.roles],
-      })
-    }
-
-    throw new ForbiddenException()
+    return await this.testsService.create(name, countOfTasks, duration, teacher)
   }
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.USER)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
-  @Post(':test/share/college')
-  async shareToCollege(
-    @Param('test') testId: number,
-    @Body() shareToCollegeDto: ShareToCollegeDto,
-    @Request() req,
+  @Get(':testId')
+  async findOne(@Param('testId') testId: number): Promise<Test> {
+    return await this.testsService.findOne(testId)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('own/:teacherId')
+  async findOwn(
+    @Param('teacherId') teacherId: number,
+    @Request() { user: { user, roles } },
+  ): Promise<Test[]> {
+    const teacher = await this.teachersService.findEntity(teacherId)
+
+    if (
+      !(
+        this.teachersService.belongsToUser(teacher, user) ||
+        roles.includes(UserRolesType.ADMIN)
+      )
+    )
+      throw new ForbiddenException()
+
+    return await this.testsService.findByTeacher(teacher)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('addTask')
+  async addTask(
+    @Body() { task: taskId, test: testId }: AddTaskDto,
   ): Promise<Test> {
-    const [test, college] = await Promise.all([
-      this.testsService.findOne(testId),
-      this.collegesService.findOne(testId),
+    // TODO: add access check
+    const [task, test] = await Promise.all([
+      this.tasksService.findEntity(taskId),
+      this.testsService.findEntity(testId),
     ])
 
-    if (this.testsService.hasAccess(test, req.user)) {
-      const shaderedTest = await this.testsService.shareToCollage(test, college)
+    return await this.testsService.addTask(test, task)
+  }
 
-      return classToClass(shaderedTest, {
-        groups: [...req.user.roles],
-      })
-    }
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Post('addTopic')
+  async addTopic(
+    @Body() { topic: topicId, test: testId }: AddTopicDto,
+  ): Promise<Test> {
+    // TODO: add access check
+    const [topic, test] = await Promise.all([
+      this.topicService.findEntity(topicId),
+      this.testsService.findEntity(testId),
+    ])
 
-    throw new ForbiddenException()
+    return await this.testsService.addTopic(test, topic)
   }
 }

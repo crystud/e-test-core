@@ -5,7 +5,6 @@ import { TasksModule } from '../tasks/tasks.module'
 
 @Module({
   imports: [TasksModule],
-  exports: [AnswersService],
   providers: [AnswersService],
   controllers: [AnswersController],
 })

@@ -3,73 +3,53 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Exclude, Expose } from 'class-transformer'
+
 import { Token } from '../auth/token.entity'
-import { College } from '../colleges/college.entity'
 
-import { Group } from '../groups/group.entity'
-import { Subject } from '../subjects/subject.entity'
-import { Study } from '../studies/study.entity'
+import { Student } from '../students/student.entity'
+
+import { Teacher } from '../teachers/teachers.entity'
+import { Exclude } from 'class-transformer'
+import { Admin } from '../admins/admin.entity'
+import { Task } from '../tasks/task.entity'
 import { Test } from '../tests/test.entity'
-import { UserRolesType } from '../enums/userRolesType'
-import { AccessLevelType } from '../enums/accessLevelType'
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator'
-import { Topic } from '../topics/topics.entity'
-import { Permission } from '../permissions/permission.entity'
-import { Ticket } from '../tickets/ticket.entity'
-import { Attempt } from '../attempts/attempt.entity'
-import { Result } from '../results/result.entity'
+import { Invite } from '../invites/invite.entity'
 
-@Exclude()
 @Entity('users')
 export class User extends BaseEntity {
-  @Expose()
   @PrimaryGeneratedColumn()
-  @ApiModelProperty()
   id: number
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
-  @ApiModelProperty()
-  @Column()
+  @Column({ name: 'first_name', type: 'varchar', length: 40 })
   firstName: string
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
-  @ApiModelProperty()
-  @Column()
+  @Column({ name: 'last_name', type: 'varchar', length: 40 })
   lastName: string
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
-  @ApiModelProperty()
-  @Column()
+  @Column({ type: 'varchar', length: 40 })
   patronymic: string
 
-  @Column()
-  password: string
+  @Exclude()
+  @Column({ type: 'varchar', length: 60, nullable: true })
+  password: string | null
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
-  @ApiModelProperty()
   @Column({
     unique: true,
+    nullable: true,
   })
-  email: string
+  email: string | null
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
-  @ApiModelProperty()
-  @Column({
-    type: 'set',
-    enum: UserRolesType,
-    default: [UserRolesType.GHOST],
-  })
-  roles: UserRolesType[]
+  @OneToOne(
+    () => Admin,
+    admin => admin.user,
+  )
+  admin: Admin
 
-  @Expose({ groups: [UserRolesType.USER, AccessLevelType.TOKEN] })
-  @ApiModelProperty()
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'create_at' })
   createAt: Date
 
   @OneToMany(
@@ -78,102 +58,27 @@ export class User extends BaseEntity {
   )
   tokens: Token[]
 
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @ManyToMany(
-    () => College,
-    college => college.editors,
-  )
-  @JoinTable()
-  editableColleges: College[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @ManyToMany(
-    () => Group,
-    group => group.students,
-  )
-  @JoinTable()
-  groups: Group[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
   @OneToMany(
-    () => College,
-    college => college.creator,
+    () => Teacher,
+    teacher => teacher.user,
   )
-  ownColleges: College[]
+  teachers: Teacher[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
-  @ApiModelProperty({ type: [Number] })
   @OneToMany(
-    () => Subject,
-    subject => subject.creator,
+    () => Student,
+    student => student.user,
   )
-  createSubjectRequests: Subject[]
+  students: Student[]
 
-  @Expose({ groups: [UserRolesType.ADMIN, AccessLevelType.OWNER] })
-  @ApiModelProperty({ type: [Number] })
   @OneToMany(
-    () => Topic,
-    topic => topic.creator,
+    () => Task,
+    task => task.creator,
   )
-  createTopicRequests: Subject[]
+  tasks: Test[]
 
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @ManyToMany(
-    () => Subject,
-    subject => subject.teachers,
-  )
-  @JoinTable()
-  teachSubjects: Subject[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @ManyToMany(
-    () => Study,
-    study => study.teachers,
-  )
-  @JoinTable()
-  studies: Study[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
   @OneToMany(
-    () => Test,
-    test => test.creator,
+    () => Invite,
+    invite => invite.creator,
   )
-  tests: Test[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @OneToMany(
-    () => Result,
-    result => result.student,
-  )
-  results: Result[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number] })
-  @OneToMany(
-    () => Permission,
-    permission => permission.allower,
-  )
-  permissions: Permission[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @OneToMany(
-    () => Ticket,
-    ticket => ticket.student,
-  )
-  tickets: Ticket[]
-
-  @Expose({ groups: [UserRolesType.USER] })
-  @ApiModelProperty({ type: [Number], description: 'Active testing' })
-  @OneToMany(
-    () => Attempt,
-    attempt => attempt.student,
-  )
-  attempts: Attempt[]
+  invites: Invite[]
 }
