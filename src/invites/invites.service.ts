@@ -183,7 +183,16 @@ export class InvitesService {
         .createQueryBuilder('invite')
         .leftJoin('invite.student', 'student')
         .leftJoin('student.user', 'user')
-        .select(['invite.id', 'student.id', 'user.id', 'user.createAt'])
+        .select([
+          'invite.id',
+          'student.id',
+          'user.id',
+          'user.firstName',
+          'user.lastName',
+          'user.patronymic',
+          'user.email',
+          'user.createAt',
+        ])
         .where('invite.code = :code', { code })
         .andWhere('invite.usedAt IS NULL')
         .getOne()
