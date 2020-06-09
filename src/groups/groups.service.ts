@@ -22,6 +22,27 @@ export class GroupsService {
     return this.findOne(group.id)
   }
 
+  async findEntityPreview(groupId: number): Promise<Group> {
+    const group = await Group.createQueryBuilder('groups')
+      .leftJoin('groups.speciality', 'speciality')
+      .select([
+        'groups.id',
+        'groups.startYear',
+        'groups.number',
+        'speciality.id',
+        'speciality.yearOfStudy',
+        'speciality.symbol',
+        'speciality.name',
+        'speciality.code',
+      ])
+      .whereInIds(groupId)
+      .getOne()
+
+    if (!group) throw new BadRequestException('Групу не знайдено')
+
+    return group
+  }
+
   async findOne(groupId: number): Promise<Group> {
     const group = await Group.createQueryBuilder('groups')
       .leftJoin('groups.speciality', 'speciality')

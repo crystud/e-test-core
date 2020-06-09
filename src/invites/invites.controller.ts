@@ -42,7 +42,9 @@ export class InvitesController {
     @Body() createManyInviteDto: CreateManyInviteDto,
     @Request() { user: { user } },
   ): Promise<Invite[]> {
-    const group = await this.groupsService.findOne(createManyInviteDto.group)
+    const group = await this.groupsService.findEntityPreview(
+      createManyInviteDto.group,
+    )
 
     return await this.invitesService.createMany(
       createManyInviteDto.invites,
@@ -52,6 +54,7 @@ export class InvitesController {
   }
 
   @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
@@ -69,6 +72,7 @@ export class InvitesController {
     )
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Post('activate')
   async activate(
     @Body() activateInviteDto: ActivateInviteDto,
@@ -80,6 +84,7 @@ export class InvitesController {
     )
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('findOneByCode')
   async findOneByCode(
     @Query() findOneInviteByCodeDto: FindOneInviteByCodeDto,

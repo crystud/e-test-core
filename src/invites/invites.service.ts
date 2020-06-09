@@ -208,8 +208,6 @@ export class InvitesService {
 
       if (emailIsFree) throw new BadRequestException('Email зайнятий')
 
-      global.console.log(invite.student.user)
-
       await transactionalEntityManager
         .getRepository(User)
         .createQueryBuilder()
@@ -220,6 +218,8 @@ export class InvitesService {
         })
         .where('id = :userId', { userId: invite.student.user.id })
         .execute()
+
+      invite.student.user.email = email
 
       await transactionalEntityManager
         .getRepository(Invite)
