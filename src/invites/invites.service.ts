@@ -8,6 +8,7 @@ import cryptoRandomString from 'crypto-random-string'
 import { TokensInterface } from '../auth/interfaces/tokens.interface'
 import { AuthService } from '../auth/auth.service'
 import { hash } from 'bcryptjs'
+import { InviteInfoInterfaces } from './interfaces/inviteInfo.interfaces'
 
 @Injectable()
 export class InvitesService {
@@ -283,5 +284,32 @@ export class InvitesService {
       .limit(limit)
       .offset(offset)
       .getMany()
+  }
+
+  async info(): Promise<InviteInfoInterfaces> {
+    const info: InviteInfoInterfaces = {
+      usedCount: 0,
+      createdCount: 0,
+    }
+
+    await getConnection().transaction(async transactionalEntityManager => {
+      const [usedCount, createdCount] = await Promise.all([
+        transactionalEntityManager
+          .getRepository(Invite)
+          .createQueryBuilder('invites')
+          .getCount(),
+
+        transactionalEntityManager
+          .getRepository(Invite)
+          .createQueryBuilder('invites')
+          .where('invites.usedAt IS NOT NULL')
+          .getCount(),
+      ])
+
+      info.usedCount = usedCount
+      info.createdCount = createdCount
+    })
+
+    return info
   }
 }

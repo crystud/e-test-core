@@ -23,6 +23,7 @@ import { ActivateInviteDto } from './dto/activateInvite.dto'
 import { TokensInterface } from '../auth/interfaces/tokens.interface'
 import { FilterInvitesDto } from './dto/filterInvites.dto'
 import { FindOneInviteByCodeDto } from './dto/findOneInviteByCode.dto'
+import { InviteInfoInterfaces } from './interfaces/inviteInfo.interfaces'
 
 @ApiTags('invites')
 @Controller('invites')
@@ -70,6 +71,15 @@ export class InvitesController {
       filterInvitesDto.onlyUnused,
       filterInvitesDto.onlyOwn,
     )
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('info')
+  async info(): Promise<InviteInfoInterfaces> {
+    return await this.invitesService.info()
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
