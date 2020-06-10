@@ -6,6 +6,7 @@ import { Test } from '../tests/test.entity'
 import { TicketsService } from '../tickets/tickets.service'
 import { Ticket } from '../tickets/ticket.entity'
 import { TestsService } from '../tests/tests.service'
+import { getConnection } from 'typeorm'
 
 @Injectable()
 export class PermissionsService {
@@ -27,20 +28,33 @@ export class PermissionsService {
     if (!testStatus.completed)
       throw new BadRequestException('В тесті замало питань')
 
-    const permission = await Permission.create({
-      group,
-      test,
-      teacher,
-      startTime,
-      endTime,
-      maxCountOfUse,
-    }).save()
+    let permission
 
-    const tickets = group.students.map<Ticket>(student =>
-      this.ticketsService.entityBuilder(student, permission),
-    )
+    await getConnection().transaction(async transactionalEntityManager => {
+      permission = await transactionalEntityManager
+        .getRepository(Permission)
+        .create({
+          group,
+          test,
+          teacher,
+          startTime,
+          endTime,
+          maxCountOfUse,
+        })
+        .save()
 
-    await Ticket.save(tickets)
+      const tickets = group.students.map<Ticket>(student =>
+        this.ticketsService.entityBuilder(student, permission),
+      )
+
+      await transactionalEntityManager
+        .getRepository(Ticket)
+        .createQueryBuilder()
+        .insert()
+        .into(Ticket)
+        .values(tickets)
+        .execute()
+    })
 
     return await this.findOne(permission.id)
   }
@@ -149,7 +163,7 @@ export class PermissionsService {
         'speciality.symbol',
       ])
       .where('teacher.id = :teacherId', { teacherId })
-      .orderBy('permission.startTime', 'DESC')
+      .orderBy('permission.createAt', 'DESC')
       .getMany()
   }
 }

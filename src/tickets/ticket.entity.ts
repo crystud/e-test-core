@@ -52,7 +52,7 @@ export class Ticket extends BaseEntity {
 
     if (this.permission.maxCountOfUse === null) return false
 
-    return this.attempts.length < this.permission.maxCountOfUse
+    return this.attempts.length >= this.permission.maxCountOfUse
   }
 
   @Expose({ name: 'outstanding' })

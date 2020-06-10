@@ -80,7 +80,7 @@ export class TeachersService {
       .loadRelationCountAndMap('subject.topicsCount', 'subject.topics')
       .select(['teachers.id', 'subject.id', 'subject.name'])
       .where('user.id = :userId ', { userId: user.id })
-      .where('subject.id = :subjectId ', { subjectId: subject.id })
+      .andWhere('subject.id = :subjectId ', { subjectId: subject.id })
       .getOne()
 
     if (!teacher)
