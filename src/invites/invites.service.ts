@@ -293,7 +293,7 @@ export class InvitesService {
     }
 
     await getConnection().transaction(async transactionalEntityManager => {
-      const [usedCount, createdCount] = await Promise.all([
+      const [createdCount, usedCount] = await Promise.all([
         transactionalEntityManager
           .getRepository(Invite)
           .createQueryBuilder('invites')
@@ -306,8 +306,8 @@ export class InvitesService {
           .getCount(),
       ])
 
-      info.usedCount = usedCount
       info.createdCount = createdCount
+      info.usedCount = usedCount
     })
 
     return info

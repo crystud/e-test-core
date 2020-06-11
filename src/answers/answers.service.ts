@@ -15,6 +15,7 @@ export class AnswersService {
   ): Promise<Answer> {
     if (task.type === TaskType.NUMERICAL) {
       const countOfAnswers = this.countOfAnswers(task)
+      correct = true
 
       if (position === null) position = countOfAnswers + 1
       else if (countOfAnswers < position) position = countOfAnswers + 1
