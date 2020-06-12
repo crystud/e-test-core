@@ -11,7 +11,7 @@ import { TaskType } from './enums/TaskType.enum'
 import { User } from '../users/user.entity'
 import { ResultAnswer } from '../attempts/dto/completeAttempt.dto'
 import { AttemptTask } from '../attempts/attemptTask.entity'
-import { TaskResultInterface } from '../results/interfaces/TaskResult.interface'
+import { TaskResultInterface } from '../results/interfaces/taskResult.interface'
 
 import { AttemptsService } from '../attempts/attempts.service'
 
@@ -89,7 +89,19 @@ export class TasksService {
   }
 
   maxScore(task: Task): number {
-    return task.answers.filter(answer => answer.correct).length
+    switch (task.type) {
+      case TaskType.SIMPLE_CHOICE:
+        return 1
+
+      case TaskType.NUMERICAL:
+        return task.answers.length
+
+      case TaskType.SHORT_ANSWER:
+        return 1
+
+      case TaskType.MULTIPLE_CHOICE:
+        return task.answers.filter(answer => answer.correct).length
+    }
   }
 
   checkTask(
@@ -113,7 +125,6 @@ export class TasksService {
     resultAnswer: ResultAnswer,
     attemptTask: AttemptTask,
   ): TaskResultInterface {
-    const maxScore = 1
     const correct = []
     const incorrect = []
 
@@ -137,7 +148,7 @@ export class TasksService {
     return {
       correct,
       incorrect,
-      maxScore,
+      maxScore: 1,
       receivedScore: correct.length,
     }
   }

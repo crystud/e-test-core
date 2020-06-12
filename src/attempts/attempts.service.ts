@@ -71,7 +71,7 @@ export class AttemptsService {
       .leftJoin('tasks.tests', 'tests')
       .leftJoin('tasks.topic', 'topic')
       .leftJoin('tasks.answers', 'answers')
-      .select(['tasks.id', 'answers.id', 'answers.correct'])
+      .select(['tasks.id', 'tasks.type', 'answers.id', 'answers.correct'])
       .where('tests.id = :testId', { testId: test.id })
 
     if (test.topics.length) {
@@ -90,7 +90,6 @@ export class AttemptsService {
 
     tasks.forEach(task => {
       attemptTasks.push(this.attemptTaskEntityBuilder(task))
-
       maxScore += this.tasksService.maxScore(task)
     })
 

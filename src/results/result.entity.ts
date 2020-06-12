@@ -9,6 +9,9 @@ import {
 } from 'typeorm'
 import { Attempt } from '../attempts/attempt.entity'
 import { ResultTask } from './resultTask.entity'
+import { Expose } from 'class-transformer'
+
+import { ResultInfoInterface } from './interfaces/resultInfo.interface'
 
 @Entity('results')
 export class Result extends BaseEntity {
@@ -38,4 +41,21 @@ export class Result extends BaseEntity {
     resultTask => resultTask.result,
   )
   resultTasks: ResultTask[]
+
+  @Expose({ name: 'info' })
+  get _info(): ResultInfoInterface | undefined {
+    if (!this.resultTasks) return undefined
+
+    const resultInfo: ResultInfoInterface = {
+      correct: 0,
+      incorrect: 0,
+    }
+
+    this.resultTasks.forEach(resultTask => {
+      resultInfo.correct += resultTask.correct.length
+      resultInfo.incorrect += resultTask.incorrect.length
+    })
+
+    return resultInfo
+  }
 }

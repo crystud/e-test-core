@@ -8,6 +8,7 @@ import cryptoRandomString from 'crypto-random-string'
 import { TokensInterface } from '../auth/interfaces/tokens.interface'
 import { AuthService } from '../auth/auth.service'
 import { hash } from 'bcryptjs'
+import { InviteInfoInterfaces } from './interfaces/inviteInfo.interfaces'
 
 @Injectable()
 export class InvitesService {
@@ -208,8 +209,6 @@ export class InvitesService {
 
       if (emailIsFree) throw new BadRequestException('Email зайнятий')
 
-      global.console.log(invite.student.user)
-
       await transactionalEntityManager
         .getRepository(User)
         .createQueryBuilder()
@@ -220,6 +219,8 @@ export class InvitesService {
         })
         .where('id = :userId', { userId: invite.student.user.id })
         .execute()
+
+      invite.student.user.email = email
 
       await transactionalEntityManager
         .getRepository(Invite)
@@ -283,5 +284,32 @@ export class InvitesService {
       .limit(limit)
       .offset(offset)
       .getMany()
+  }
+
+  async info(): Promise<InviteInfoInterfaces> {
+    const info: InviteInfoInterfaces = {
+      usedCount: 0,
+      createdCount: 0,
+    }
+
+    await getConnection().transaction(async transactionalEntityManager => {
+      const [createdCount, usedCount] = await Promise.all([
+        transactionalEntityManager
+          .getRepository(Invite)
+          .createQueryBuilder('invites')
+          .getCount(),
+
+        transactionalEntityManager
+          .getRepository(Invite)
+          .createQueryBuilder('invites')
+          .where('invites.usedAt IS NOT NULL')
+          .getCount(),
+      ])
+
+      info.createdCount = createdCount
+      info.usedCount = usedCount
+    })
+
+    return info
   }
 }
