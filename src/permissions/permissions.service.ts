@@ -63,6 +63,8 @@ export class PermissionsService {
     const permission = await Permission.createQueryBuilder('permission')
       .leftJoin('permission.test', 'test')
       .leftJoin('permission.tickets', 'tickets')
+      .leftJoin('tickets.attempts', 'attempts')
+      .leftJoin('attempts.result', 'result')
       .leftJoin('tickets.student', 'student')
       .leftJoin('student.user', 'student_user')
       .leftJoin('permission.teacher', 'teacher')
@@ -70,11 +72,14 @@ export class PermissionsService {
       .leftJoin('teacher.subject', 'subject')
       .leftJoin('permission.group', 'group')
       .leftJoin('group.speciality', 'speciality')
+      .loadRelationCountAndMap('ticket.attemptsCount', 'tickets.attempts')
       .select([
         'permission.id',
         'permission.startTime',
         'permission.endTime',
         'tickets.id',
+        'attempts.id',
+        'result.percent',
         'student.id',
         'student_user.id',
         'student_user.firstName',

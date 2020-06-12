@@ -11,6 +11,7 @@ import { Student } from '../students/student.entity'
 import { Permission } from '../permissions/permission.entity'
 import { Attempt } from '../attempts/attempt.entity'
 import { Expose } from 'class-transformer'
+import { meanBy } from 'lodash'
 
 @Entity('tickets')
 export class Ticket extends BaseEntity {
@@ -45,6 +46,18 @@ export class Ticket extends BaseEntity {
     attempt => attempt.ticket,
   )
   attempts: Attempt[]
+
+  @Expose({ name: 'average' })
+  get _average(): number | undefined {
+    if (!this.attempts) return null
+
+    return meanBy(
+      this.attempts.filter(attempt => attempt.result?.percent),
+      attempt => {
+        return Number(attempt.result.percent)
+      },
+    )
+  }
 
   @Expose({ name: 'used' })
   get _used(): boolean {
