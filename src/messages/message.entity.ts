@@ -7,6 +7,7 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  CreateDateColumn,
 } from 'typeorm'
 import { User } from '../users/user.entity'
 import { Group } from '../groups/group.entity'
@@ -16,7 +17,10 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ type: 'varchar', length: 512, nullable: false })
+  @CreateDateColumn({ name: 'create_at' })
+  createAt: Date
+
+  @Column({ type: 'varchar', length: 512 })
   messageText: string
 
   @ManyToOne(
