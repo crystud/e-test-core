@@ -18,6 +18,7 @@ import { Admin } from '../admins/admin.entity'
 import { Task } from '../tasks/task.entity'
 import { Test } from '../tests/test.entity'
 import { Invite } from '../invites/invite.entity'
+import { Message } from '../messages/message.entity'
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -81,4 +82,10 @@ export class User extends BaseEntity {
     invite => invite.creator,
   )
   invites: Invite[]
+
+  @OneToMany(
+    () => Message,
+    message => message.sender,
+  )
+  sendedMessages: Message[]
 }
