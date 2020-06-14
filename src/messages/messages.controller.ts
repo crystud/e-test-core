@@ -8,6 +8,7 @@ import {
   Body,
   Get,
   Query,
+  ForbiddenException,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '../auth/decorators/roles.decorator'
@@ -72,22 +73,29 @@ export class MessagesController {
 
   @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Roles(UserRolesType.STUDENT)
+  @Roles(UserRolesType.STUDENT, UserRolesType.ADMIN)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get('findByStudent')
   async findByStudent(
+    @Request() { user: { user, roles } },
     @Query() findByStudentDto: FindByStudentDto,
   ): Promise<Message[]> {
-    // TODO: add access check
     const student = await this.studentsService.findEntity(
       findByStudentDto.student,
     )
 
-    return await this.messagesService.findByStudent(
-      student,
-      findByStudentDto.limit,
-      findByStudentDto.offset,
-    )
+    if (
+      roles.includes(UserRolesType.ADMIN) ||
+      (await this.studentsService.hasAccess(user, student))
+    ) {
+      return await this.messagesService.findByStudent(
+        student,
+        findByStudentDto.limit,
+        findByStudentDto.offset,
+      )
+    }
+
+    throw new ForbiddenException()
   }
 }

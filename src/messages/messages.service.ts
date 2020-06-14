@@ -73,6 +73,7 @@ export class MessagesService {
       .where('sender.id = :senderId', { senderId: sender.id })
       .limit(limit)
       .offset(offset)
+      .orderBy('messages.createAt', 'DESC')
       .getMany()
   }
 
@@ -103,6 +104,7 @@ export class MessagesService {
       .where('groups.id = :groupsId', { groupsId: student.group.id })
       .limit(limit)
       .offset(offset)
+      .orderBy('messages.createAt', 'DESC')
       .getMany()
   }
 }

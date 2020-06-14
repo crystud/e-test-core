@@ -84,6 +84,10 @@ export class StudentsService {
     return student
   }
 
+  async hasAccess(user: User, student: Student): Promise<boolean> {
+    return student.user.id === user.id
+  }
+
   async findByUser(user: User): Promise<Student[]> {
     return await Student.createQueryBuilder('students')
       .leftJoin('students.user', 'user')
