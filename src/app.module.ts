@@ -23,6 +23,8 @@ import * as winston from 'winston'
 import { ScheduleModule } from '@nestjs/schedule'
 import { ResultsModule } from './results/results.module'
 import { InvitesModule } from './invites/invites.module'
+import { MessagesModule } from './messages/messages.module'
+import { MessagesGateway } from './messages/messages.gateway'
 
 @Module({
   imports: [
@@ -75,6 +77,8 @@ import { InvitesModule } from './invites/invites.module'
     AttemptsModule,
     ResultsModule,
     InvitesModule,
+    MessagesModule,
   ],
+  providers: [MessagesGateway],
 })
 export class AppModule {}

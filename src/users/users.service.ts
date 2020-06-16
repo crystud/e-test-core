@@ -7,8 +7,8 @@ import { FilterUserDto } from './dto/filterUser.dto'
 
 import { ConfigService } from '@nestjs/config'
 
-import { dbStringLikeBuilder } from '../tools/dbRequestBuilders/dbStringLike.builder'
 import { UserRolesType } from '../enums/userRolesType'
+import { Like } from 'typeorm'
 
 @Injectable()
 export class UsersService {
@@ -56,7 +56,11 @@ export class UsersService {
     limit: number,
     like = true,
   ): Promise<User[]> {
-    const filter = like ? dbStringLikeBuilder(filterUserDto) : filterUserDto
+    const filter = {
+      firstName: Like(`%${filterUserDto.firstName}%`),
+      lastName: Like(`%${filterUserDto.lastName}%`),
+      patronymic: Like(`%${filterUserDto.patronymic}%`),
+    }
 
     let quaryBuilder = await User.createQueryBuilder('users')
       .leftJoin('users.teachers', 'teachers')

@@ -83,4 +83,15 @@ export class GroupsService {
 
     return group
   }
+
+  async findEntityByIds(groupIds: number[]): Promise<Group[]> {
+    try {
+      return await Group.createQueryBuilder('groups')
+        .select(['groups.id'])
+        .where('groups.id IN (:groupIds) ', { groupIds })
+        .getMany()
+    } catch (e) {
+      throw new BadRequestException('Однієї з груп не існує')
+    }
+  }
 }

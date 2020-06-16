@@ -4,6 +4,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -14,6 +15,7 @@ import { now } from 'moment'
 
 import { Student } from '../students/student.entity'
 import { Permission } from '../permissions/permission.entity'
+import { Message } from '../messages/message.entity'
 
 @Entity('groups')
 export class Group extends BaseEntity {
@@ -44,6 +46,12 @@ export class Group extends BaseEntity {
     permission => permission.group,
   )
   permissions: Permission
+
+  @ManyToMany(
+    () => Message,
+    messege => messege.groups,
+  )
+  messages: Message[]
 
   @Expose({ name: 'course' })
   get _course(): number {

@@ -71,6 +71,23 @@ export class StudentsService {
     return student
   }
 
+  async findEntity(studentId: number): Promise<Student> {
+    const student = await Student.createQueryBuilder('student')
+      .leftJoin('student.user', 'user')
+      .leftJoin('student.group', 'group')
+      .select(['student.id', 'student.scoringBook', 'user.id', 'group.id'])
+      .where('student.id = :studentId', { studentId })
+      .getOne()
+
+    if (!student) throw new BadRequestException('Студента не знайдено')
+
+    return student
+  }
+
+  async hasAccess(user: User, student: Student): Promise<boolean> {
+    return student.user.id === user.id
+  }
+
   async findByUser(user: User): Promise<Student[]> {
     return await Student.createQueryBuilder('students')
       .leftJoin('students.user', 'user')
