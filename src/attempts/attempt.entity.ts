@@ -14,7 +14,8 @@ import { Expose } from 'class-transformer'
 import { AttemptTask } from './attemptTask.entity'
 import { Result } from '../results/result.entity'
 import { ApiTags } from '@nestjs/swagger'
-import moment from 'moment'
+
+import { intervalToDuration } from 'date-fns'
 
 @ApiTags('attempts')
 @Entity('attempts')
@@ -59,15 +60,14 @@ export class Attempt extends BaseEntity {
   }
 
   @Expose({ name: 'timeSpent' })
-  get _timeSpent(): number | null {
+  get _timeSpent(): Duration | null {
     if (this.startTime) return undefined
 
     if (this.endTime) {
-      const duration = moment.duration(
-        moment(this.startTime).diff(this.endTime),
-      )
-
-      return duration.asMinutes()
+      return intervalToDuration({
+        start: this.startTime,
+        end: this.endTime,
+      })
     }
 
     return null

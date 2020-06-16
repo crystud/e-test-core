@@ -28,6 +28,8 @@ import { ResultsService } from '../results/results.service'
 import { getConnection } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import moment = require('moment')
+import { add, isAfter } from 'date-fns'
+import { getLocalTime } from '../tools/dateUtils/getLocalTime'
 
 @Injectable()
 export class AttemptsService {
@@ -57,6 +59,8 @@ export class AttemptsService {
 
   async create(ticket: Ticket): Promise<Attempt> {
     // TODO: add transaction
+    if (ticket._unstarted)
+      throw new BadRequestException('Час спроби, ще не настав')
     if (ticket._used) throw new BadRequestException('Всі спроби вичерпано')
     if (ticket._outstanding) throw new BadRequestException('Час вичерпано')
 
@@ -299,16 +303,18 @@ export class AttemptsService {
     ticket: Ticket,
     maxScore = 0,
   ): Attempt {
+    let maxEndTime = add(getLocalTime(), {
+      minutes: test.duration,
+    })
+
+    if (isAfter(maxEndTime, permission.endTime)) {
+      maxEndTime = permission.endTime
+    }
+
     return Attempt.create({
       ticket,
       maxScore,
-      maxEndTime: moment()
-        .add(test.duration, 'minutes')
-        .isAfter(moment(permission.endTime))
-        ? moment()
-            .add(test.duration, 'minutes')
-            .toDate()
-        : permission.endTime,
+      maxEndTime,
     })
   }
   attemptTaskEntityBuilder(task: Task, attempt?: Attempt): AttemptTask {

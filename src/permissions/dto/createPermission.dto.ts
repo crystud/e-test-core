@@ -15,7 +15,7 @@ export class CreatePermissionDto {
 
   @ApiProperty()
   @IsInt()
-  @Min(0)
+  @Min(1)
   @Max(255)
   @IsOptional()
   maxCountOfUse: number | null

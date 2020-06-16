@@ -13,6 +13,10 @@ import { Attempt } from '../attempts/attempt.entity'
 import { Expose } from 'class-transformer'
 import { meanBy } from 'lodash'
 
+import { isAfter, isBefore } from 'date-fns'
+
+import { getLocalTime } from '../tools/dateUtils/getLocalTime'
+
 @Entity('tickets')
 export class Ticket extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -72,6 +76,13 @@ export class Ticket extends BaseEntity {
   get _outstanding(): boolean {
     if (!this.permission) return undefined
 
-    return this.permission.endTime.getTime() < Date.now()
+    return isAfter(getLocalTime(), this.permission.endTime)
+  }
+
+  @Expose({ name: 'unstarted' })
+  get _unstarted(): boolean {
+    if (!this.permission) return undefined
+
+    return isBefore(getLocalTime(), this.permission.startTime)
   }
 }
