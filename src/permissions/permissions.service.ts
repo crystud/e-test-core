@@ -75,6 +75,8 @@ export class PermissionsService {
       .loadRelationCountAndMap('ticket.attemptsCount', 'tickets.attempts')
       .select([
         'permission.id',
+        'permission.createAt',
+        'permission.maxCountOfUse',
         'permission.startTime',
         'permission.endTime',
         'tickets.id',
@@ -149,6 +151,8 @@ export class PermissionsService {
         'permission.id',
         'permission.startTime',
         'permission.endTime',
+        'permission.createAt',
+        'permission.maxCountOfUse',
         'test.id',
         'test.name',
         'test.duration',
