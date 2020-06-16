@@ -46,6 +46,7 @@ export class PermissionsController {
       startTime,
       endTime,
       maxCountOfUse,
+      resultSelectingMethod,
     }: CreatePermissionDto,
     @Request() { user: { user } },
   ): Promise<Permission> {
@@ -63,6 +64,7 @@ export class PermissionsController {
       startTime,
       endTime,
       maxCountOfUse,
+      resultSelectingMethod,
     )
   }
 

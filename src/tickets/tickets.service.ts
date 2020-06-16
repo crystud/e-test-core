@@ -74,6 +74,7 @@ export class TicketsService {
         'permission.maxCountOfUse',
         'permission.startTime',
         'permission.endTime',
+        'permission.resultSelectingMethod',
       ])
       .where('ticket.id = :ticketId', { ticketId })
       .getOne()

@@ -7,6 +7,7 @@ import { TicketsService } from '../tickets/tickets.service'
 import { Ticket } from '../tickets/ticket.entity'
 import { TestsService } from '../tests/tests.service'
 import { getConnection } from 'typeorm'
+import { ResultSelectingMethodType } from './enums/resultSelectingMethodType'
 
 @Injectable()
 export class PermissionsService {
@@ -22,6 +23,7 @@ export class PermissionsService {
     startTime: Date,
     endTime: Date,
     maxCountOfUse: number | null,
+    resultSelectingMethod: ResultSelectingMethodType,
   ): Promise<Permission> {
     const testStatus = await this.testsService.status(test)
 
@@ -40,6 +42,7 @@ export class PermissionsService {
           startTime,
           endTime,
           maxCountOfUse,
+          resultSelectingMethod,
         })
         .save()
 
@@ -79,6 +82,7 @@ export class PermissionsService {
         'permission.maxCountOfUse',
         'permission.startTime',
         'permission.endTime',
+        'permission.resultSelectingMethod',
         'tickets.id',
         'attempts.id',
         'result.percent',
@@ -153,6 +157,7 @@ export class PermissionsService {
         'permission.endTime',
         'permission.createAt',
         'permission.maxCountOfUse',
+        'permission.resultSelectingMethod',
         'test.id',
         'test.name',
         'test.duration',
