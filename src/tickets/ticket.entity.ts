@@ -15,8 +15,6 @@ import { meanBy } from 'lodash'
 
 import { isAfter, isBefore } from 'date-fns'
 
-import { getLocalTime } from '../tools/dateUtils/getLocalTime'
-
 @Entity('tickets')
 export class Ticket extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -76,13 +74,13 @@ export class Ticket extends BaseEntity {
   get _outstanding(): boolean {
     if (!this.permission) return undefined
 
-    return isAfter(getLocalTime(), this.permission.endTime)
+    return isAfter(new Date(), this.permission.endTime)
   }
 
   @Expose({ name: 'unstarted' })
   get _unstarted(): boolean {
     if (!this.permission) return undefined
 
-    return isBefore(getLocalTime(), this.permission.startTime)
+    return isBefore(new Date(), this.permission.startTime)
   }
 }

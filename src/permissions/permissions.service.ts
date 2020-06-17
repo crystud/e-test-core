@@ -8,6 +8,11 @@ import { Ticket } from '../tickets/ticket.entity'
 import { TestsService } from '../tests/tests.service'
 import { getConnection } from 'typeorm'
 import { ResultSelectingMethodType } from './enums/resultSelectingMethodType'
+import { maxBy, meanBy, last } from 'lodash'
+import { PermissionReportInterface } from './interfaces/permissionReport.interface'
+import { classToClass } from 'class-transformer'
+import { PermissionReportResultInterface } from './interfaces/permissionReportResult.interface'
+import { Attempt } from '../attempts/attempt.entity'
 
 @Injectable()
 export class PermissionsService {
@@ -179,5 +184,91 @@ export class PermissionsService {
       .where('teacher.id = :teacherId', { teacherId })
       .orderBy('permission.createAt', 'DESC')
       .getMany()
+  }
+
+  async getReport(permissionId: number): Promise<PermissionReportInterface> {
+    const permission = await Permission.createQueryBuilder('permission')
+      .leftJoin('permission.test', 'test')
+      .leftJoin('permission.teacher', 'teacher')
+      .leftJoin('teacher.user', 'teacher_user')
+      .leftJoin('teacher.subject', 'subject')
+      .leftJoin('permission.group', 'group')
+      .leftJoin('group.speciality', 'speciality')
+      .leftJoin('permission.tickets', 'tickets')
+      .leftJoin('tickets.attempts', 'attempts')
+      .leftJoin('attempts.result', 'result')
+      .leftJoin('tickets.student', 'student')
+      .leftJoin('student.user', 'student_user')
+      .select([
+        'permission.id',
+        'permission.startTime',
+        'permission.endTime',
+        'permission.createAt',
+        'permission.maxCountOfUse',
+        'permission.resultSelectingMethod',
+        'test.id',
+        'test.name',
+        'test.duration',
+        'teacher.id',
+        'teacher_user.firstName',
+        'teacher_user.lastName',
+        'teacher_user.patronymic',
+        'teacher_user.firstName',
+        'subject.name',
+        'group.startYear',
+        'group.number',
+        'speciality.yearOfStudy',
+        'speciality.symbol',
+        'tickets.id',
+        'attempts.startTime',
+        'attempts.endTime',
+        'attempts.maxScore',
+        'result.score',
+        'result.percent',
+        'student.scoringBook',
+        'student_user.firstName',
+        'student_user.lastName',
+        'student_user.patronymic',
+        'student_user.firstName',
+      ])
+      .where('permission.id = :permissionId', { permissionId })
+      .andWhere('attempts.endTime IS NOT NULL')
+      .orderBy('attempts.endTime', 'ASC')
+      .getOne()
+
+    const results: PermissionReportResultInterface[] = []
+
+    permission.tickets.forEach(ticket => {
+      let result: Attempt | number
+
+      switch (permission.resultSelectingMethod) {
+        case ResultSelectingMethodType.BEST_RESULT:
+          result = maxBy(ticket.attempts, attempt =>
+            Number(attempt.result.percent),
+          )
+
+          break
+        case ResultSelectingMethodType.AVG_RESULT:
+          result = meanBy(ticket.attempts, attempt => attempt.result.percent)
+
+          break
+        case ResultSelectingMethodType.LAST_RESULT:
+          result = last(ticket.attempts)
+
+          break
+      }
+
+      results.push({
+        student: ticket.student,
+        result,
+      })
+    })
+
+    delete permission.tickets
+
+    return {
+      permission: classToClass(permission),
+      results,
+    }
   }
 }

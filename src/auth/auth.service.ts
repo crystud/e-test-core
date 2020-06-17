@@ -20,13 +20,13 @@ export class AuthService {
     })
 
     if (!user) {
-      throw new BadRequestException()
+      throw new BadRequestException('Користувача не знайдено')
     }
 
     const passwordIsCorrect = await compare(password, user.password)
 
     if (!passwordIsCorrect) {
-      throw new BadRequestException()
+      throw new BadRequestException('Пароль не правильний')
     }
 
     return await this.createTokens(
