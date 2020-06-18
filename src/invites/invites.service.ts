@@ -243,7 +243,7 @@ export class InvitesService {
     onlyUnused: boolean,
     onlyOwn: boolean,
   ): Promise<Invite[]> {
-    let invitesQuaryBuilder = Invite.createQueryBuilder('invites')
+    let invitesQueryBuilder = Invite.createQueryBuilder('invites')
       .leftJoin('invites.creator', 'creator')
       .leftJoin('invites.student', 'student')
       .leftJoin('student.user', 'user')
@@ -270,17 +270,19 @@ export class InvitesService {
       ])
 
     if (onlyUnused) {
-      invitesQuaryBuilder = invitesQuaryBuilder.where('invites.usedAt IS NULL')
+      invitesQueryBuilder = invitesQueryBuilder.andWhere(
+        'invites.usedAt IS NULL',
+      )
     }
 
     if (onlyOwn) {
-      invitesQuaryBuilder = invitesQuaryBuilder.where(
+      invitesQueryBuilder = invitesQueryBuilder.andWhere(
         'creator.id = :creatorId',
         { creatorId: user.id },
       )
     }
 
-    return invitesQuaryBuilder
+    return invitesQueryBuilder
       .take(limit)
       .skip(offset)
       .getMany()

@@ -46,6 +46,8 @@ export class StudentsService {
       .leftJoin('student.user', 'user')
       .leftJoin('student.group', 'group')
       .leftJoin('group.speciality', 'speciality')
+      .leftJoin('student.invite', 'invite')
+      .leftJoin('invite.creator', 'creator')
       .select([
         'student.id',
         'student.scoringBook',
@@ -61,7 +63,15 @@ export class StudentsService {
         'speciality.name',
         'speciality.symbol',
         'speciality.yearOfStudy',
-        'speciality.code',
+        'invite.id',
+        'invite.createAt',
+        'invite.usedAt',
+        'invite.code',
+        'creator.id',
+        'creator.firstName',
+        'creator.lastName',
+        'creator.patronymic',
+        'creator.email',
       ])
       .whereInIds(studentId)
       .getOne()

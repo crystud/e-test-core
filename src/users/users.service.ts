@@ -64,7 +64,7 @@ export class UsersService {
       patronymic: Like(`%${patronymic}%`),
     }
 
-    let quaryBuilder = await User.createQueryBuilder('users')
+    let usersQueryBuilder = await User.createQueryBuilder('users')
       .leftJoin('users.teachers', 'teachers')
       .leftJoin('users.students', 'students')
       .leftJoin('users.admin', 'admin')
@@ -80,24 +80,24 @@ export class UsersService {
     // TODO: refactor to function
 
     if (roles.includes(UserRolesType.ADMIN))
-      quaryBuilder = quaryBuilder.andWhere('admin.id IS NOT NULL')
+      usersQueryBuilder = usersQueryBuilder.andWhere('admin.id IS NOT NULL')
 
     if (roles.includes(UserRolesType.TEACHER))
-      quaryBuilder = quaryBuilder.andWhere('teachers.id IS NOT NULL')
+      usersQueryBuilder = usersQueryBuilder.andWhere('teachers.id IS NOT NULL')
 
     if (roles.includes(UserRolesType.STUDENT))
-      quaryBuilder = quaryBuilder.andWhere('students.id IS NOT NULL')
+      usersQueryBuilder = usersQueryBuilder.andWhere('students.id IS NOT NULL')
 
     if (isNotInRoles.includes(UserRolesType.ADMIN))
-      quaryBuilder = quaryBuilder.andWhere('admin.id IS NULL')
+      usersQueryBuilder = usersQueryBuilder.andWhere('admin.id IS NULL')
 
     if (isNotInRoles.includes(UserRolesType.TEACHER))
-      quaryBuilder = quaryBuilder.andWhere('teachers.id IS NULL')
+      usersQueryBuilder = usersQueryBuilder.andWhere('teachers.id IS NULL')
 
     if (isNotInRoles.includes(UserRolesType.STUDENT))
-      quaryBuilder = quaryBuilder.andWhere('students.id IS NULL')
+      usersQueryBuilder = usersQueryBuilder.andWhere('students.id IS NULL')
 
-    return await quaryBuilder
+    return await usersQueryBuilder
       .take(limit)
       .skip(offset)
       .getMany()
