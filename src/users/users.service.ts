@@ -163,4 +163,13 @@ export class UsersService {
 
     return user
   }
+
+  async getAvatar(user: User): Promise<string | null> {
+    const { avatar } = await User.createQueryBuilder('user')
+      .select(['user.id', 'user.avatar'])
+      .where('user.id = :userId', { userId: user.id })
+      .getOne()
+
+    return avatar
+  }
 }
