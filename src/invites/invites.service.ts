@@ -61,6 +61,7 @@ export class InvitesService {
       lastName: string
       patronymic: string
       scoringBook: number
+      avatar: string
     }[],
     group: Group,
     creator: User,
@@ -75,6 +76,7 @@ export class InvitesService {
           patronymic: inviteData.patronymic,
           email: null,
           password: null,
+          avatar: inviteData.avatar,
         }),
       )
 

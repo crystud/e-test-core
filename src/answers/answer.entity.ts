@@ -28,7 +28,7 @@ export class Answer extends BaseEntity {
   @Transform(image => {
     return image ? Buffer.from(image).toString() : null
   })
-  @Column({ type: 'blob', nullable: true })
+  @Column({ type: 'mediumblob', nullable: true })
   image: string
 
   @ManyToOne(

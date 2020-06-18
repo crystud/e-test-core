@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt, Length, Min } from 'class-validator'
+import { IsBase64, IsInt, IsOptional, Length, Min } from 'class-validator'
 import { Type } from 'class-transformer'
 
 export class InviteData {
@@ -20,6 +20,14 @@ export class InviteData {
   @Min(0)
   @Type(() => Number)
   scoringBook: number
+
+  @ApiProperty({ required: false })
+  @IsBase64()
+  @Length(0, ((16 * 1024) / 3) * 4, {
+    message: 'Максимальний розмір файлу 16KB',
+  })
+  @IsOptional()
+  avatar: string = null
 }
 
 export class CreateManyInviteDto {

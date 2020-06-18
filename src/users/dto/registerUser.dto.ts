@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail, Length } from 'class-validator'
+import { IsBase64, IsEmail, IsOptional, Length } from 'class-validator'
 
 export class RegisterUserDto {
   @ApiProperty()
@@ -13,6 +13,14 @@ export class RegisterUserDto {
   @ApiProperty()
   @Length(2, 40)
   patronymic: string
+
+  @ApiProperty({ required: false })
+  @IsBase64()
+  @Length(0, ((16 * 1024) / 3) * 4, {
+    message: 'Максимальний розмір файлу 16KB',
+  })
+  @IsOptional()
+  avatar: string = null
 
   @ApiProperty()
   @Length(8)

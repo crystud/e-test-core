@@ -13,11 +13,18 @@ export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
   async login(email: string, password: string): Promise<TokensInterface> {
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    })
+    const user = await User.createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'user.password',
+        'user.email',
+        'user.createAt',
+      ])
+      .where('user.email = :email', { email })
+      .getOne()
 
     if (!user) {
       throw new BadRequestException('Користувача не знайдено')

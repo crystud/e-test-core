@@ -26,6 +26,7 @@ export class UsersService {
         'user.lastName',
         'user.email',
         'user.createAt',
+        'user.avatar',
         'students.id',
         'students.scoringBook',
         'group.id',
@@ -74,6 +75,7 @@ export class UsersService {
         'users.lastName',
         'users.patronymic',
         'users.email',
+        'users.avatar',
       ])
       .where(filter)
 
@@ -109,6 +111,7 @@ export class UsersService {
     patronymic,
     password,
     email,
+    avatar,
   }): Promise<User> {
     const hashPassword = await hash(password, 8)
 
@@ -127,6 +130,7 @@ export class UsersService {
       patronymic,
       password: hashPassword,
       email,
+      avatar,
     }).save()
 
     return classToClass(user)
