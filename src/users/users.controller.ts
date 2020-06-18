@@ -57,7 +57,11 @@ export class UsersController {
   @Get()
   async findAll(@Query() filterUserDto: FilterUserDto): Promise<User[]> {
     return await this.usersService.findAll(
-      filterUserDto,
+      filterUserDto.firstName,
+      filterUserDto.lastName,
+      filterUserDto.patronymic,
+      filterUserDto.roles,
+      filterUserDto.isNotInRoles,
       filterUserDto.offset,
       filterUserDto.limit,
     )

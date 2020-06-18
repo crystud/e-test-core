@@ -3,8 +3,6 @@ import { User } from './user.entity'
 import { hash } from 'bcryptjs'
 import { classToClass } from 'class-transformer'
 
-import { FilterUserDto } from './dto/filterUser.dto'
-
 import { ConfigService } from '@nestjs/config'
 
 import { UserRolesType } from '../enums/userRolesType'
@@ -51,15 +49,19 @@ export class UsersService {
   }
 
   async findAll(
-    filterUserDto: FilterUserDto,
+    firstName: string,
+    lastName: string,
+    patronymic: string,
+    roles: UserRolesType[],
+    isNotInRoles: UserRolesType[],
     offset: number,
     limit: number,
     like = true,
   ): Promise<User[]> {
     const filter = {
-      firstName: Like(`%${filterUserDto.firstName}%`),
-      lastName: Like(`%${filterUserDto.lastName}%`),
-      patronymic: Like(`%${filterUserDto.patronymic}%`),
+      firstName: Like(`%${firstName}%`),
+      lastName: Like(`%${lastName}%`),
+      patronymic: Like(`%${patronymic}%`),
     }
 
     let quaryBuilder = await User.createQueryBuilder('users')
@@ -77,27 +79,27 @@ export class UsersService {
 
     // TODO: refactor to function
 
-    if (filterUserDto.roles.includes(UserRolesType.ADMIN))
+    if (roles.includes(UserRolesType.ADMIN))
       quaryBuilder = quaryBuilder.andWhere('admin.id IS NOT NULL')
 
-    if (filterUserDto.roles.includes(UserRolesType.TEACHER))
+    if (roles.includes(UserRolesType.TEACHER))
       quaryBuilder = quaryBuilder.andWhere('teachers.id IS NOT NULL')
 
-    if (filterUserDto.roles.includes(UserRolesType.STUDENT))
+    if (roles.includes(UserRolesType.STUDENT))
       quaryBuilder = quaryBuilder.andWhere('students.id IS NOT NULL')
 
-    if (filterUserDto.isNotInRoles.includes(UserRolesType.ADMIN))
+    if (isNotInRoles.includes(UserRolesType.ADMIN))
       quaryBuilder = quaryBuilder.andWhere('admin.id IS NULL')
 
-    if (filterUserDto.isNotInRoles.includes(UserRolesType.TEACHER))
+    if (isNotInRoles.includes(UserRolesType.TEACHER))
       quaryBuilder = quaryBuilder.andWhere('teachers.id IS NULL')
 
-    if (filterUserDto.isNotInRoles.includes(UserRolesType.STUDENT))
+    if (isNotInRoles.includes(UserRolesType.STUDENT))
       quaryBuilder = quaryBuilder.andWhere('students.id IS NULL')
 
     return await quaryBuilder
-      .limit(limit)
-      .offset(offset)
+      .take(limit)
+      .skip(offset)
       .getMany()
   }
 

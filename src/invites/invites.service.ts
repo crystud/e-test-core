@@ -281,8 +281,8 @@ export class InvitesService {
     }
 
     return invitesQuaryBuilder
-      .limit(limit)
-      .offset(offset)
+      .take(limit)
+      .skip(offset)
       .getMany()
   }
 
