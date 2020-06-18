@@ -54,13 +54,21 @@ export class AuthService {
   }
 
   async refresh(token: string): Promise<TokensInterface> {
-    const refreshToken = await Token.findOne({
-      where: {
-        value: token,
-        active: true,
-      },
-      relations: ['user'],
-    })
+    const refreshToken = await Token.createQueryBuilder('token')
+      .leftJoin('token.user', 'user')
+      .select([
+        'token.id',
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'user.password',
+        'user.email',
+        'user.createAt',
+      ])
+      .where('token.value = :token', { token })
+      .andWhere('token.active IS TRUE')
+      .getOne()
 
     if (!refreshToken) {
       throw new BadRequestException()
