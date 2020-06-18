@@ -19,6 +19,7 @@ import { Teacher } from './teachers.entity'
 import { CreateTeacherDto } from './dto/createTeacher.dto'
 import { TeachersService } from './teachers.service'
 import { UsersService } from '../users/users.service'
+import { TeacherInfoInterface } from './interfaces/teacherInfo.interface'
 
 @ApiTags('teachers')
 @Controller('teachers')
@@ -70,5 +71,17 @@ export class TeachersController {
     const user = await this.usersService.findEntity(userId)
 
     return await this.teachersService.findByUser(user)
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Roles(UserRolesType.TEACHER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('getInfo/own')
+  async getInfo(@Request() { user: { user } }): Promise<TeacherInfoInterface> {
+    const teachers = await this.teachersService.findByUser(user)
+
+    return await this.teachersService.getInfo(user, teachers)
   }
 }
