@@ -48,6 +48,7 @@ export class TeachersService {
         'user.lastName',
         'user.patronymic',
         'user.email',
+        'user.avatar',
         'subject.id',
         'subject.name',
       ])

@@ -56,6 +56,7 @@ export class StudentsService {
         'user.lastName',
         'user.patronymic',
         'user.email',
+        'user.avatar',
         'group.id',
         'group.startYear',
         'group.number',
