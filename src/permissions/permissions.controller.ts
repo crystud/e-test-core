@@ -21,6 +21,7 @@ import { PermissionsService } from './permissions.service'
 import { CreatePermissionDto } from './dto/createPermission.dto'
 import { TestsService } from '../tests/tests.service'
 import { GroupsService } from '../groups/groups.service'
+import { PermissionReportInterface } from './interfaces/permissionReport.interface'
 
 @ApiTags('permissions')
 @Controller('permissions')
@@ -46,6 +47,7 @@ export class PermissionsController {
       startTime,
       endTime,
       maxCountOfUse,
+      resultSelectingMethod,
     }: CreatePermissionDto,
     @Request() { user: { user } },
   ): Promise<Permission> {
@@ -63,6 +65,7 @@ export class PermissionsController {
       startTime,
       endTime,
       maxCountOfUse,
+      resultSelectingMethod,
     )
   }
 
@@ -88,5 +91,17 @@ export class PermissionsController {
     @Param('teacherId') teacherId: number,
   ): Promise<Permission[]> {
     return await this.permissionsService.findByTeacher(teacherId)
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.TEACHER, UserRolesType.ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('/:permissionId/report')
+  async getReport(
+    @Param('permissionId') permissionId: number,
+  ): Promise<PermissionReportInterface> {
+    // TODO: add access check
+    return await this.permissionsService.getReport(permissionId)
   }
 }

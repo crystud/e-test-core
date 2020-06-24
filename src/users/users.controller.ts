@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Query,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
@@ -50,16 +51,39 @@ export class UsersController {
   }
 
   @ApiBearerAuth()
-  @UseInterceptors(ClassSerializerInterceptor)
   @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Query() filterUserDto: FilterUserDto): Promise<User[]> {
     return await this.usersService.findAll(
-      filterUserDto,
+      filterUserDto.firstName,
+      filterUserDto.lastName,
+      filterUserDto.patronymic,
+      filterUserDto.roles,
+      filterUserDto.isNotInRoles,
       filterUserDto.offset,
       filterUserDto.limit,
     )
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.USER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('avatar')
+  async getOwnAvatar(@Request() { user: { user } }): Promise<string> {
+    return await this.usersService.getAvatar(user)
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRolesType.ADMIN, UserRolesType.TEACHER)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/avatar')
+  async getAvatar(@Param('id') userId: number): Promise<string> {
+    const user = await this.usersService.findEntity(userId)
+
+    return await this.usersService.getAvatar(user)
   }
 }

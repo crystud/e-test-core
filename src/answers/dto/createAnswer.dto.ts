@@ -11,8 +11,11 @@ export class CreateAnswerDto {
 
   @ApiProperty({ required: false })
   @IsBase64()
+  @Length(0, ((512 * 1024) / 3) * 4, {
+    message: 'Максимальний розмір файлу 512KB',
+  })
   @IsOptional()
-  image: string
+  image: string = null
 
   @ApiProperty({ required: false })
   @IsInt()

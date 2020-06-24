@@ -14,11 +14,23 @@ import { Group } from '../groups/group.entity'
 import { Ticket } from '../tickets/ticket.entity'
 
 import { Teacher } from '../teachers/teachers.entity'
+import { Transform } from 'class-transformer'
+
+import { ResultSelectingMethodType } from './enums/resultSelectingMethodType'
 
 @Entity('permissions')
 export class Permission extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
+
+  @Transform(method => ResultSelectingMethodType[method])
+  @Column({
+    type: 'smallint',
+    name: 'result_selecting_method',
+    default: ResultSelectingMethodType.LAST_RESULT,
+    nullable: false,
+  })
+  resultSelectingMethod: ResultSelectingMethodType
 
   @ManyToOne(() => Test)
   @JoinColumn({ name: 'test_id' })

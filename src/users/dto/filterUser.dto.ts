@@ -15,17 +15,17 @@ export class FilterUserDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  firstName?: string
+  firstName?: string = ''
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  lastName?: string
+  lastName?: string = ''
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  patronymic?: string
+  patronymic?: string = ''
 
   @ApiProperty({ type: Number, required: false })
   @IsInt()

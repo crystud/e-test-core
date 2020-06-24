@@ -6,6 +6,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  AfterLoad,
 } from 'typeorm'
 import { Attempt } from '../attempts/attempt.entity'
 import { ResultTask } from './resultTask.entity'
@@ -23,7 +24,7 @@ export class Result extends BaseEntity {
 
   @Column({
     name: 'percent',
-    type: 'decimal',
+    type: 'numeric',
     unsigned: true,
   })
   percent: number
@@ -41,6 +42,11 @@ export class Result extends BaseEntity {
     resultTask => resultTask.result,
   )
   resultTasks: ResultTask[]
+
+  @AfterLoad()
+  afterLoad() {
+    this.percent = Number(this.percent)
+  }
 
   @Expose({ name: 'info' })
   get _info(): ResultInfoInterface | undefined {

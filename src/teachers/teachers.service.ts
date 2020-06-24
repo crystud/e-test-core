@@ -2,6 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { Teacher } from './teachers.entity'
 import { User } from '../users/user.entity'
 import { Subject } from '../subject/subject.entity'
+import { TeacherInfoInterface } from './interfaces/teacherInfo.interface'
+import { sumBy } from 'lodash'
+import { Task } from '../tasks/task.entity'
 
 @Injectable()
 export class TeachersService {
@@ -45,6 +48,7 @@ export class TeachersService {
         'user.lastName',
         'user.patronymic',
         'user.email',
+        'user.avatar',
         'subject.id',
         'subject.name',
       ])
@@ -93,6 +97,8 @@ export class TeachersService {
     const teacher = await Teacher.createQueryBuilder('teacher')
       .leftJoin('teacher.user', 'user')
       .leftJoin('teacher.subject', 'subject')
+      .leftJoin('teacher.tests', 'tests')
+      .leftJoin('user.tasks', 'tasks')
       .select(['teacher.id', 'user.id', 'subject.id'])
       .where('teacher.id = :teacherId ', { teacherId })
       .getOne()
@@ -104,5 +110,19 @@ export class TeachersService {
 
   belongsToUser(teacher: Teacher, user: User): boolean {
     return teacher.user.id === user.id
+  }
+
+  async getInfo(
+    user: User,
+    teachers: Teacher[],
+  ): Promise<TeacherInfoInterface> {
+    return {
+      subjectsCount: teachers.length,
+      tasksCount: await Task.createQueryBuilder('task')
+        .leftJoin('task.creator', 'user')
+        .where('user.id = :userId', { userId: user.id })
+        .getCount(),
+      testsCount: sumBy(teachers, teacher => teacher.tests.length),
+    }
   }
 }

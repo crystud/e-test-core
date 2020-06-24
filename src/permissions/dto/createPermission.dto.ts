@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator'
 import { Transform, Type } from 'class-transformer'
-import { ResultSelectingMethodEnum } from '../enums/resultSelectingMethod.enum'
+import { ResultSelectingMethodType } from '../enums/resultSelectingMethodType'
 
 export class CreatePermissionDto {
   @ApiProperty()
@@ -15,20 +15,20 @@ export class CreatePermissionDto {
 
   @ApiProperty()
   @IsInt()
-  @Min(0)
+  @Min(1)
   @Max(255)
   @IsOptional()
   maxCountOfUse: number | null
 
   @ApiProperty({
-    enum: Object.keys(ResultSelectingMethodEnum).filter(
+    enum: Object.keys(ResultSelectingMethodType).filter(
       x => !(parseInt(x) >= 0),
     ),
   })
-  @IsEnum(ResultSelectingMethodEnum)
-  @Transform(type => ResultSelectingMethodEnum[type])
-  resultSelectingMethod: ResultSelectingMethodEnum =
-    ResultSelectingMethodEnum.BEST_RESULT
+  @IsEnum(ResultSelectingMethodType)
+  @Transform(type => ResultSelectingMethodType[type])
+  resultSelectingMethod: ResultSelectingMethodType =
+    ResultSelectingMethodType.LAST_RESULT
 
   @ApiProperty()
   @IsInt()

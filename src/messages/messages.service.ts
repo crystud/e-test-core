@@ -71,8 +71,8 @@ export class MessagesService {
         'speciality.yearOfStudy',
       ])
       .where('sender.id = :senderId', { senderId: sender.id })
-      .limit(limit)
-      .offset(offset)
+      .take(limit)
+      .skip(offset)
       .orderBy('messages.createAt', 'DESC')
       .getMany()
   }
@@ -102,8 +102,8 @@ export class MessagesService {
         'speciality.yearOfStudy',
       ])
       .where('groups.id = :groupsId', { groupsId: student.group.id })
-      .limit(limit)
-      .offset(offset)
+      .take(limit)
+      .skip(offset)
       .orderBy('messages.createAt', 'DESC')
       .getMany()
   }

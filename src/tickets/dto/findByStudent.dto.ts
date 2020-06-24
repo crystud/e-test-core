@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsInt, IsOptional, Max, Min } from 'class-validator'
-import { Type } from 'class-transformer'
+import { Transform, Type } from 'class-transformer'
 
 export class FindByStudentDto {
   @ApiProperty({ type: Number, required: false })
@@ -20,11 +20,11 @@ export class FindByStudentDto {
 
   @ApiProperty({ type: Boolean, required: false })
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(onlyIsNotOutstanding => onlyIsNotOutstanding === 'true')
   onlyIsNotOutstanding: boolean
 
   @ApiProperty({ type: Boolean, required: false })
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(onlyUnused => onlyUnused === 'true')
   onlyUnused: boolean
 }

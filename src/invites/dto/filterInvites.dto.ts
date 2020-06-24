@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsInt, IsOptional, Min, Max, IsBoolean } from 'class-validator'
-import { Type } from 'class-transformer'
+import { Transform, Type } from 'class-transformer'
 
 export class FilterInvitesDto {
   @ApiProperty({ type: Number, required: false })
@@ -21,12 +21,12 @@ export class FilterInvitesDto {
   @ApiProperty({ type: Boolean, required: false })
   @IsBoolean()
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(onlyOwn => onlyOwn === 'true')
   onlyUnused = false
 
   @ApiProperty({ type: Boolean, required: false })
   @IsBoolean()
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(onlyOwn => onlyOwn === 'true')
   onlyOwn = false
 }

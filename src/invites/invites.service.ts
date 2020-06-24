@@ -61,6 +61,7 @@ export class InvitesService {
       lastName: string
       patronymic: string
       scoringBook: number
+      avatar: string
     }[],
     group: Group,
     creator: User,
@@ -75,6 +76,7 @@ export class InvitesService {
           patronymic: inviteData.patronymic,
           email: null,
           password: null,
+          avatar: inviteData.avatar,
         }),
       )
 
@@ -243,7 +245,7 @@ export class InvitesService {
     onlyUnused: boolean,
     onlyOwn: boolean,
   ): Promise<Invite[]> {
-    let invitesQuaryBuilder = Invite.createQueryBuilder('invites')
+    let invitesQueryBuilder = Invite.createQueryBuilder('invites')
       .leftJoin('invites.creator', 'creator')
       .leftJoin('invites.student', 'student')
       .leftJoin('student.user', 'user')
@@ -270,19 +272,21 @@ export class InvitesService {
       ])
 
     if (onlyUnused) {
-      invitesQuaryBuilder = invitesQuaryBuilder.where('invites.usedAt IS NULL')
+      invitesQueryBuilder = invitesQueryBuilder.andWhere(
+        'invites.usedAt IS NULL',
+      )
     }
 
     if (onlyOwn) {
-      invitesQuaryBuilder = invitesQuaryBuilder.where(
+      invitesQueryBuilder = invitesQueryBuilder.andWhere(
         'creator.id = :creatorId',
         { creatorId: user.id },
       )
     }
 
-    return invitesQuaryBuilder
-      .limit(limit)
-      .offset(offset)
+    return invitesQueryBuilder
+      .take(limit)
+      .skip(offset)
       .getMany()
   }
 

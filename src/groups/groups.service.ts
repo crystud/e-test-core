@@ -8,7 +8,11 @@ import { Speciality } from '../specialties/speciality.entity'
 export class GroupsService {
   async create(createGroupDto: CreateGroupDto): Promise<Group> {
     const thread = await Group.createQueryBuilder('group')
-      .where('group.startYear = :startYear ', {
+      .leftJoin('group.speciality', 'speciality')
+      .where('speciality.id = :specialityId', {
+        specialityId: createGroupDto.speciality,
+      })
+      .andWhere('group.startYear = :startYear ', {
         startYear: createGroupDto.startYear,
       })
       .getCount()

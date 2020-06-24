@@ -13,20 +13,27 @@ export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
   async login(email: string, password: string): Promise<TokensInterface> {
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    })
+    const user = await User.createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'user.password',
+        'user.email',
+        'user.createAt',
+      ])
+      .where('user.email = :email', { email })
+      .getOne()
 
     if (!user) {
-      throw new BadRequestException()
+      throw new BadRequestException('Користувача не знайдено')
     }
 
     const passwordIsCorrect = await compare(password, user.password)
 
     if (!passwordIsCorrect) {
-      throw new BadRequestException()
+      throw new BadRequestException('Пароль не правильний')
     }
 
     return await this.createTokens(
@@ -47,13 +54,21 @@ export class AuthService {
   }
 
   async refresh(token: string): Promise<TokensInterface> {
-    const refreshToken = await Token.findOne({
-      where: {
-        value: token,
-        active: true,
-      },
-      relations: ['user'],
-    })
+    const refreshToken = await Token.createQueryBuilder('token')
+      .leftJoin('token.user', 'user')
+      .select([
+        'token.id',
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.patronymic',
+        'user.password',
+        'user.email',
+        'user.createAt',
+      ])
+      .where('token.value = :token', { token })
+      .andWhere('token.active IS TRUE')
+      .getOne()
 
     if (!refreshToken) {
       throw new BadRequestException()
