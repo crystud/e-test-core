@@ -3,6 +3,8 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { Group } from './group.entity'
 import { CreateGroupDto } from './dto/createGroup.dto'
 import { Speciality } from '../specialties/speciality.entity'
+import { Cron } from '@nestjs/schedule'
+import { getConnection } from 'typeorm'
 
 @Injectable()
 export class GroupsService {
@@ -27,19 +29,19 @@ export class GroupsService {
   }
 
   async findEntityPreview(groupId: number): Promise<Group> {
-    const group = await Group.createQueryBuilder('groups')
-      .leftJoin('groups.speciality', 'speciality')
+    const group = await Group.createQueryBuilder('group')
+      .leftJoin('group.speciality', 'speciality')
       .select([
-        'groups.id',
-        'groups.startYear',
-        'groups.number',
+        'group.id',
+        'group.startYear',
+        'group.number',
         'speciality.id',
         'speciality.yearOfStudy',
         'speciality.symbol',
         'speciality.name',
         'speciality.code',
       ])
-      .whereInIds(groupId)
+      .where('group.id = :groupId', { groupId })
       .getOne()
 
     if (!group) throw new BadRequestException('Групу не знайдено')
@@ -48,14 +50,14 @@ export class GroupsService {
   }
 
   async findOne(groupId: number): Promise<Group> {
-    const group = await Group.createQueryBuilder('groups')
-      .leftJoin('groups.speciality', 'speciality')
-      .leftJoin('groups.students', 'students')
+    const group = await Group.createQueryBuilder('group')
+      .leftJoin('group.speciality', 'speciality')
+      .leftJoin('group.students', 'students')
       .leftJoin('students.user', 'users')
       .select([
-        'groups.id',
-        'groups.startYear',
-        'groups.number',
+        'group.id',
+        'group.startYear',
+        'group.number',
         'speciality.id',
         'speciality.yearOfStudy',
         'speciality.symbol',
@@ -68,7 +70,7 @@ export class GroupsService {
         'users.lastName',
         'users.patronymic',
       ])
-      .whereInIds(groupId)
+      .where('group.id = :groupId', { groupId })
       .getOne()
 
     if (!group) throw new BadRequestException('Групу не знайдено')
@@ -97,5 +99,25 @@ export class GroupsService {
     } catch (e) {
       throw new BadRequestException('Однієї з груп не існує')
     }
+  }
+
+  @Cron('0 0 1 9 *')
+  async groupDeactivation(): Promise<void> {
+    await getConnection().transaction(async transactionalEntityManager => {
+      const groups = await transactionalEntityManager
+        .getRepository(Group)
+        .createQueryBuilder('groups')
+        .leftJoin('groups.speciality', 'speciality')
+        .select(['groups.id', 'groups.active'])
+        .where(
+          `(${new Date().getFullYear()} - groups.startYear) >= speciality.yearOfStudy`,
+        )
+        .andWhere('groups.active IS TRUE')
+        .getMany()
+
+      groups.map(group => (group.active = false))
+
+      await transactionalEntityManager.getRepository(Group).save(groups)
+    })
   }
 }

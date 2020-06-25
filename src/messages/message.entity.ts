@@ -12,7 +12,7 @@ import {
 import { User } from '../users/user.entity'
 import { Group } from '../groups/group.entity'
 
-@Entity('message')
+@Entity('messages')
 export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number

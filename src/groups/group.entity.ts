@@ -28,6 +28,9 @@ export class Group extends BaseEntity {
   @Column({ type: 'tinyint' })
   number: number
 
+  @Column({ default: true })
+  active: boolean
+
   @ManyToOne(
     () => Speciality,
     speciality => speciality.groups,
