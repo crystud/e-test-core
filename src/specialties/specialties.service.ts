@@ -26,6 +26,7 @@ export class SpecialtiesService {
         'groups.id',
         'groups.startYear',
         'groups.number',
+        'groups.active',
       ])
       .where('speciality.id = :specialityId ', { specialityId })
       .getOne()
@@ -41,8 +42,13 @@ export class SpecialtiesService {
     return speciality
   }
 
-  async findAll(specialityName = ''): Promise<Speciality[]> {
-    return await Speciality.createQueryBuilder('specialties')
+  async findAll(
+    specialityName = '',
+    showDisactivated = false,
+  ): Promise<Speciality[]> {
+    let specialtiesQueryBuilder = await Speciality.createQueryBuilder(
+      'specialties',
+    )
       .leftJoin('specialties.groups', 'groups')
       .leftJoin('specialties.subjects', 'subjects')
       .select([
@@ -54,11 +60,19 @@ export class SpecialtiesService {
         'subjects.id',
         'subjects.name',
         'groups.id',
+        'groups.active',
       ])
       .where('specialties.name like :name ', {
         name: `%${specialityName}%`,
       })
-      .getMany()
+
+    if (showDisactivated) {
+      specialtiesQueryBuilder = specialtiesQueryBuilder.andWhere(
+        'groups.active IS TRUE',
+      )
+    }
+
+    return specialtiesQueryBuilder.getMany()
   }
 
   async findEntity(specialityId: number): Promise<Speciality> {
@@ -73,6 +87,7 @@ export class SpecialtiesService {
         'groups.id',
         'groups.startYear',
         'groups.number',
+        'groups.active',
       ])
       .where('speciality.id = :specialityId ', { specialityId })
       .getOne()
