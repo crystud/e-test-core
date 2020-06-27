@@ -8,11 +8,12 @@ import { Ticket } from '../tickets/ticket.entity'
 import { TestsService } from '../tests/tests.service'
 import { getConnection } from 'typeorm'
 import { ResultSelectingMethodType } from './enums/resultSelectingMethodType'
-import { maxBy, meanBy, last } from 'lodash'
+import { maxBy, meanBy, last, isEmpty } from 'lodash'
 import { PermissionReportInterface } from './interfaces/permissionReport.interface'
 import { classToClass } from 'class-transformer'
 import { PermissionReportResultInterface } from './interfaces/permissionReportResult.interface'
 import { Attempt } from '../attempts/attempt.entity'
+import { isAfter } from 'date-fns'
 
 @Injectable()
 export class PermissionsService {
@@ -34,6 +35,8 @@ export class PermissionsService {
 
     if (!testStatus.completed)
       throw new BadRequestException('В тесті замало питань')
+
+    if (!group._filled) throw new BadRequestException('В групі немає студентів')
 
     let permission
 
@@ -110,6 +113,7 @@ export class PermissionsService {
         'group.id',
         'group.startYear',
         'group.number',
+        'group.active',
         'speciality.id',
         'speciality.yearOfStudy',
         'speciality.symbol',
@@ -177,6 +181,7 @@ export class PermissionsService {
         'group.id',
         'group.startYear',
         'group.number',
+        'group.active',
         'speciality.id',
         'speciality.yearOfStudy',
         'speciality.symbol',
@@ -214,9 +219,11 @@ export class PermissionsService {
         'teacher_user.lastName',
         'teacher_user.patronymic',
         'teacher_user.firstName',
+        'teacher_user.avatar',
         'subject.name',
         'group.startYear',
         'group.number',
+        'group.active',
         'speciality.yearOfStudy',
         'speciality.symbol',
         'tickets.id',
@@ -230,32 +237,45 @@ export class PermissionsService {
         'student_user.lastName',
         'student_user.patronymic',
         'student_user.firstName',
+        'student_user.avatar',
       ])
       .where('permission.id = :permissionId', { permissionId })
-      .andWhere('attempts.endTime IS NOT NULL')
       .orderBy('attempts.endTime', 'ASC')
       .getOne()
+
+    if (!permission) {
+      throw new BadRequestException('Дозвіл не знайдено')
+    }
+
+    if (isAfter(permission.endTime, new Date())) {
+      throw new BadRequestException('Тестування ще не закінчено')
+    }
 
     const results: PermissionReportResultInterface[] = []
 
     permission.tickets.forEach(ticket => {
-      let result: Attempt | number
+      let result: Attempt | number | null
 
-      switch (permission.resultSelectingMethod) {
-        case ResultSelectingMethodType.BEST_RESULT:
-          result = maxBy(ticket.attempts, attempt =>
-            Number(attempt.result.percent),
-          )
+      if (isEmpty(ticket.attempts)) result = null
+      else {
+        ticket.attempts = ticket.attempts.filter(attempt => attempt.endTime)
 
-          break
-        case ResultSelectingMethodType.AVG_RESULT:
-          result = meanBy(ticket.attempts, attempt => attempt.result.percent)
+        switch (permission.resultSelectingMethod) {
+          case ResultSelectingMethodType.BEST_RESULT:
+            result = maxBy(ticket.attempts, attempt =>
+              Number(attempt.result.percent),
+            )
 
-          break
-        case ResultSelectingMethodType.LAST_RESULT:
-          result = last(ticket.attempts)
+            break
+          case ResultSelectingMethodType.AVG_RESULT:
+            result = meanBy(ticket.attempts, attempt => attempt.result.percent)
 
-          break
+            break
+          case ResultSelectingMethodType.LAST_RESULT:
+            result = last(ticket.attempts)
+
+            break
+        }
       }
 
       results.push({
@@ -268,7 +288,7 @@ export class PermissionsService {
 
     return {
       permission: classToClass(permission),
-      results,
+      results: classToClass(results),
     }
   }
 }

@@ -20,7 +20,7 @@ export class Speciality extends BaseEntity {
   @Column({ type: 'varchar', length: 8 })
   symbol: string
 
-  @Column({ name: 'year_of_studt', type: 'tinyint' })
+  @Column({ name: 'year_of_study', type: 'tinyint' })
   yearOfStudy: number
 
   @Column({ unique: true, type: 'smallint' })
