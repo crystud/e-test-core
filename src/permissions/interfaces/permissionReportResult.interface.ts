@@ -4,5 +4,5 @@ import { Attempt } from '../../attempts/attempt.entity'
 export interface PermissionReportResultInterface {
   student: Student
 
-  result: Attempt | number
+  result: Attempt | number | null
 }

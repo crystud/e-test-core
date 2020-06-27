@@ -12,6 +12,7 @@ import {
 import { Speciality } from '../specialties/speciality.entity'
 import moment from 'moment'
 import { now } from 'moment'
+import { isEmpty } from 'lodash'
 
 import { Student } from '../students/student.entity'
 import { Permission } from '../permissions/permission.entity'
@@ -57,7 +58,7 @@ export class Group extends BaseEntity {
   messages: Message[]
 
   @Expose({ name: 'course' })
-  get _course(): number {
+  get _course(): number | undefined {
     if (!this.startYear) return undefined
 
     return Math.abs(
@@ -68,9 +69,16 @@ export class Group extends BaseEntity {
   }
 
   @Expose({ name: 'name' })
-  get _name(): string {
+  get _name(): string | undefined {
     if (!this.speciality?.symbol || !this.number) return undefined
 
     return `${this.speciality.symbol}-${this._course}${this.number}`
+  }
+
+  @Expose({ name: 'filled' })
+  get _filled(): boolean | undefined {
+    if (!this.students) return undefined
+
+    return !isEmpty(this.students)
   }
 }
