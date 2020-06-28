@@ -69,6 +69,7 @@ export class GroupsService {
         'users.firstName',
         'users.lastName',
         'users.patronymic',
+        'users.avatar',
       ])
       .where('group.id = :groupId', { groupId })
       .getOne()
