@@ -44,6 +44,7 @@ export class SpecialtiesService {
 
   async findAll(
     specialityName = '',
+    subject: Subject | undefined,
     showDisactivated = false,
   ): Promise<Speciality[]> {
     let specialtiesQueryBuilder = await Speciality.createQueryBuilder(
@@ -65,6 +66,13 @@ export class SpecialtiesService {
       .where('specialties.name like :name ', {
         name: `%${specialityName}%`,
       })
+
+    if (subject) {
+      specialtiesQueryBuilder = specialtiesQueryBuilder.andWhere(
+        'subjects.id = :subjectId',
+        { subjectId: subject.id },
+      )
+    }
 
     if (showDisactivated) {
       specialtiesQueryBuilder = specialtiesQueryBuilder.andWhere(
