@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
@@ -55,6 +56,11 @@ export class PermissionsController {
       this.groupsService.findEntity(groupId),
       this.testsService.findEntity(testId),
     ])
+
+    if (
+      group.speciality.subjects.some(subject => subject.id === test.subject.id)
+    )
+      throw new BadRequestException('Група не вивчає цей предмет')
 
     const teacher = await this.teachersService.findOneByUser(user, test.subject)
 

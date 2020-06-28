@@ -52,6 +52,7 @@ export class GroupsService {
   async findOne(groupId: number): Promise<Group> {
     const group = await Group.createQueryBuilder('group')
       .leftJoin('group.speciality', 'speciality')
+      .leftJoin('speciality.subjects', 'subjects')
       .leftJoin('group.students', 'students')
       .leftJoin('students.user', 'users')
       .select([
@@ -63,6 +64,7 @@ export class GroupsService {
         'speciality.symbol',
         'speciality.name',
         'speciality.code',
+        'subjects.id',
         'students.id',
         'students.scoringBook',
         'users.id',
