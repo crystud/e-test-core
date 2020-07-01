@@ -41,7 +41,7 @@ export class User extends BaseEntity {
   @Transform(image => {
     return image ? Buffer.from(image).toString() : null
   })
-  @Column({ type: 'blob', nullable: true })
+  @Column({ type: 'mediumblob', nullable: true })
   avatar: string | null
 
   @Column({

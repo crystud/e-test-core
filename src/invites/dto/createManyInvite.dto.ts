@@ -23,8 +23,8 @@ export class InviteData {
 
   @ApiProperty({ required: false })
   @IsBase64()
-  @Length(0, ((16 * 1024) / 3) * 4, {
-    message: 'Максимальний розмір файлу 16KB',
+  @Length(0, ((64 * 1024) / 3) * 4, {
+    message: 'Максимальний розмір файлу 64KB',
   })
   @IsOptional()
   avatar: string = null
