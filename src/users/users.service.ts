@@ -190,4 +190,12 @@ export class UsersService {
 
     return avatar
   }
+
+  async setAvatar(user: User, avatar): Promise<object | null> {
+    user.avatar = avatar.base64
+
+    await user.save()
+
+    return user
+  }
 }
