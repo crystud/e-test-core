@@ -20,6 +20,7 @@ import { Speciality } from './speciality.entity'
 import { FindAllSpecialityDto } from './dto/findAllSpeciality.dto'
 import { AddSubjectDto } from './dto/addSubject.dto'
 import { SubjectsService } from '../subject/subjects.service'
+import { Subject } from '../subject/subject.entity'
 
 @ApiTags('specialties')
 @Controller('specialties')
@@ -75,6 +76,17 @@ export class SpecialtiesController {
   async findAll(
     @Query() findAllSpecialityDto: FindAllSpecialityDto,
   ): Promise<Speciality[]> {
-    return await this.specialtiesService.findAll(findAllSpecialityDto.name)
+    let subject: Subject = undefined
+
+    if (findAllSpecialityDto.subject) {
+      subject = await this.subjectsService.findEntity(
+        findAllSpecialityDto.subject,
+      )
+    }
+
+    return await this.specialtiesService.findAll(
+      findAllSpecialityDto.name,
+      subject,
+    )
   }
 }

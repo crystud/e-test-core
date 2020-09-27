@@ -1,16 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { User } from './user.entity'
 import { hash } from 'bcryptjs'
-import { classToClass } from 'class-transformer'
 
 import { ConfigService } from '@nestjs/config'
 
 import { UserRolesType } from '../enums/userRolesType'
-import { Like } from 'typeorm'
+import { getConnection, Like } from 'typeorm'
+import { AdminsService } from '../admins/admins.service'
 
 @Injectable()
 export class UsersService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly adminsService: AdminsService,
+  ) {}
 
   async findOne(id: number): Promise<User> {
     const user = await User.createQueryBuilder('user')
@@ -113,27 +116,42 @@ export class UsersService {
     email,
     avatar,
   }): Promise<User> {
-    const hashPassword = await hash(password, 8)
+    let user: User
 
-    // TODO: add transaction
-    const emailIsFree = await User.findOne({
-      where: {
+    await getConnection().transaction(async transactionalEntityManager => {
+      const [emailIsFree, countOfUser] = await Promise.all([
+        transactionalEntityManager.getRepository(User).findOne({
+          where: {
+            email,
+          },
+        }),
+        transactionalEntityManager
+          .getRepository(User)
+          .createQueryBuilder()
+          .getCount(),
+      ])
+
+      if (emailIsFree) throw new BadRequestException('Email зайнятий')
+
+      const hashPassword = await hash(password, 8)
+
+      user = await User.create({
+        firstName,
+        lastName,
+        patronymic,
+        password: hashPassword,
         email,
-      },
+        avatar,
+      }).save()
+
+      if (countOfUser === 0) {
+        await this.adminsService.create(user)
+      }
     })
 
-    if (emailIsFree) throw new BadRequestException('Email зайнятий')
+    delete user.password
 
-    const user = await User.create({
-      firstName,
-      lastName,
-      patronymic,
-      password: hashPassword,
-      email,
-      avatar,
-    }).save()
-
-    return classToClass(user)
+    return user
   }
 
   async findByIds(userIds: number[]): Promise<User[]> {
@@ -171,5 +189,13 @@ export class UsersService {
       .getOne()
 
     return avatar
+  }
+
+  async setAvatar(user: User, avatar): Promise<User> {
+    user.avatar = avatar.base64
+
+    await user.save()
+
+    return user
   }
 }

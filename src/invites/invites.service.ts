@@ -123,6 +123,7 @@ export class InvitesService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'user.avatar',
         'group.id',
         'group.startYear',
         'group.number',
@@ -156,6 +157,7 @@ export class InvitesService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'user.avatar',
         'group.id',
         'group.startYear',
         'group.number',
@@ -195,6 +197,7 @@ export class InvitesService {
           'user.patronymic',
           'user.email',
           'user.createAt',
+          'user.avatar',
         ])
         .where('invite.code = :code', { code })
         .andWhere('invite.usedAt IS NULL')
@@ -262,6 +265,7 @@ export class InvitesService {
         'user.firstName',
         'user.lastName',
         'user.patronymic',
+        'user.avatar',
         'group.id',
         'group.startYear',
         'group.number',

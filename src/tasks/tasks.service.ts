@@ -59,6 +59,7 @@ export class TasksService {
         'creator.firstName',
         'creator.lastName',
         'creator.patronymic',
+        'creator.avatar',
         'answers.id',
         'answers.answerText',
         'answers.correct',

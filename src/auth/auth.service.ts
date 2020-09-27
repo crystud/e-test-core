@@ -47,8 +47,17 @@ export class AuthService {
     user: User,
     roles: UserRolesType[],
   ): Promise<string> {
+    const { id, firstName, lastName, patronymic, email, createAt } = user
+
     return this.jwtService.signAsync({
-      user,
+      user: {
+        id,
+        firstName,
+        lastName,
+        patronymic,
+        email,
+        createAt,
+      },
       roles,
     })
   }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsOptional, IsString } from 'class-validator'
+import { IsInt, IsOptional, IsString, Min } from 'class-validator'
 import { Type } from 'class-transformer'
 
 export class FindAllSpecialityDto {
@@ -8,4 +8,11 @@ export class FindAllSpecialityDto {
   @IsOptional()
   @Type(() => String)
   name = ''
+
+  @ApiProperty({ required: false, type: Number })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  @Type(() => Number)
+  subject: number
 }
