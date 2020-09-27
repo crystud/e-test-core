@@ -10,18 +10,18 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import {RegisterUserDto} from './dto/registerUser.dto'
-import {UsersService} from './users.service'
-import {AuthService} from '../auth/auth.service'
-import {TokensInterface} from '../auth/interfaces/tokens.interface'
-import {ApiBearerAuth, ApiTags} from '@nestjs/swagger'
-import {Roles} from '../auth/decorators/roles.decorator'
-import {User} from './user.entity'
-import {RolesGuard} from '../auth/roles.guard'
-import {JwtAuthGuard} from '../auth/jwt-auth.guard'
-import {UserRolesType} from '../enums/userRolesType'
-import {FilterUserDto} from './dto/filterUser.dto'
-import {SetAvatarDto} from './dto/setAvatar.dto'
+import { RegisterUserDto } from './dto/registerUser.dto'
+import { UsersService } from './users.service'
+import { AuthService } from '../auth/auth.service'
+import { TokensInterface } from '../auth/interfaces/tokens.interface'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { User } from './user.entity'
+import { RolesGuard } from '../auth/roles.guard'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { UserRolesType } from '../enums/userRolesType'
+import { FilterUserDto } from './dto/filterUser.dto'
+import { SetAvatarDto } from './dto/setAvatar.dto'
 
 @ApiTags('users')
 @Controller('users')
@@ -96,7 +96,8 @@ export class UsersController {
   @Post(':userId/set')
   async setAvatar(
     @Param('userId') userId: number,
-    @Body() setAvatarDto: SetAvatarDto): Promise<object> {
+    @Body() setAvatarDto: SetAvatarDto,
+  ): Promise<object> {
     const user = await this.usersService.findOne(userId)
 
     return await this.usersService.setAvatar(user, setAvatarDto)

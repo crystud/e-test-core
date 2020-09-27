@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {IsBase64, IsOptional, Length} from 'class-validator'
+import { IsBase64, IsOptional, Length } from 'class-validator'
 
 export class SetAvatarDto {
   @ApiProperty({ required: false })
